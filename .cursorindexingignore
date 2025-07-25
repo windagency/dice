@@ -1,0 +1,6 @@
+# Generated files
+!generated/
+
+# No contextual value
+documentation/
+CHANGELOG.md

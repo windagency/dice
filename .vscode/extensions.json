@@ -1,0 +1,65 @@
+{
+	"recommendations": [
+		"adelphes.android-dev-ext", // Android
+		"DiemasMichiels.emulate", // Android iOS Emulator
+		"apollographql.vscode-apollo", // Apollo GraphQL
+		"astro-build.astro-vscode", // Astro
+		"toroxx.vscode-avdmanager", // AVD Manager
+		"amazonwebservices.aws-toolkit-vscode", // AWS Toolkit
+		"hediet.vscode-drawio", // Draw.io Integration
+		"mgmcdermott.vscode-language-babel", // Babel JavaScript
+		"FelixAngelov.bloc", // Bloc
+		"ms-azuretools.vscode-containers", // Container Tools
+		"firefox-devtools.vscode-firefox-debug", // Debugger for Firefox
+		"ms-vscode-remote.remote-containers", // Dev Containers
+		"ms-azuretools.vscode-docker", // Docker
+		"docker.docker", // Docker DX
+		"oouo-diogo-perdigao.docthis", // Document This
+		"mikestead.dotenv", // Dotenv
+		"editorconfig.editorconfig", // EditorConfig
+		"usernamehw.errorlens", // Error Lens
+		"dbaeumer.vscode-eslint", // ESLint
+		"xiaoluoboding.vscode-folder-size", // Folder Size
+		"Dart-Code.flutter", // Flutter
+		"robert-brunhage.flutter-riverpod-snippets", // Flutter Riverpod Snippets
+		"mhutchie.git-graph", // Git Graph
+		"donjayamanne.githistory", // Git History
+		"eamodio.gitlens", // GitLens
+		"teamhub.teamhub", // GitLive
+		"GraphQL.vscode-graphql-execution", // GraphQL: Inline Operation Execution
+		"GraphQL.vscode-graphql", // GraphQL: Language Feature Support
+		"GraphQL.vscode-graphql-syntax", // GraphQL: Syntax Highlighting
+		"hashicorp.terraform", // HashiCorp Terraform
+		"lokalise.i18n-ally", // i18n Ally
+		"wix.vscode-import-cost", // Import Cost
+		"orta.vscode-jest", // Jest
+		"firsttris.vscode-jest-runner", // Jest Runner
+		"AykutSarac.jsoncrack-vscode", // JSON Crack
+		"eriklynd.json-tools", // JSON Tools
+		"gregorbiswanger.json2ts", // JSON to TypeScript
+		"ms-kubernetes-tools.vscode-kubernetes-tools", // Kubernetes
+		"ritwickdey.LiveServer", // Live Server
+		"yzhang.markdown-all-in-one", // Markdown All in One
+		"bierner.markdown-mermaid", // Markdown Preview Mermaid Support
+		"davidanson.vscode-markdownlint", // MarkdownLint
+		"unifiedjs.vscode-mdx", // MDX
+		"bpruitt-goddard.mermaid-markdown-syntax-highlighting", // Mermaid Markdown Syntax Highlighting
+		"ms-edgedevtools.vscode-edge-devtools", // Microsoft Edge Tools
+		"christian-kohler.npm-intellisense", // npm Intellisense
+		"codeandstuff.package-json-upgrade", // Package JSON Upgrade
+		"christian-kohler.path-intellisense", // Path Intellisense
+		"esbenp.prettier-vscode", // Prettier
+		"yoavbls.pretty-ts-errors", // Pretty TypeScript Errors
+		"ms-vscode-remote.vscode-remote-extensionpack", // Remote Development
+		"sonarsource.sonarlint-vscode", // SonarQube for IDE
+		"temporal-technologies.temporalio", // Temporal.io
+		"wayou.vscode-todo-highlight", // TODO Highlight
+		"gruntfuggly.todo-tree", // TODO Tree
+		"mattpocock.ts-error-translator", // Total TypeScript
+		"pflannery.vscode-versionlens", // Version Lens
+		"planbcoding.vscode-react-refactor", // VSCode React Refactor
+		"MaxvanderSchee.web-accessibility", // Web Accessibility
+		"redhat.vscode-xml", // XML
+		"redhat.vscode-yaml" // YAML
+	]
+}

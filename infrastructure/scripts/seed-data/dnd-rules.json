@@ -1,0 +1,197 @@
+{
+  "races": [
+    {
+      "id": "human",
+      "name": "Human",
+      "ability_score_increase": {"all": 1},
+      "size": "Medium",
+      "speed": 30,
+      "languages": ["Common"],
+      "traits": ["Extra Skill", "Extra Feat"],
+      "description": "Versatile and ambitious, humans are known for their adaptability and drive to achieve greatness in their brief lives."
+    },
+    {
+      "id": "elf",
+      "name": "Elf",
+      "ability_score_increase": {"dex": 2},
+      "size": "Medium", 
+      "speed": 30,
+      "languages": ["Common", "Elvish"],
+      "traits": ["Darkvision", "Fey Ancestry", "Trance", "Keen Senses"],
+      "description": "Elves are magical people of otherworldly grace, living in places of ethereal beauty, in the midst of ancient forests or in silvery spires."
+    },
+    {
+      "id": "dwarf",
+      "name": "Dwarf",
+      "ability_score_increase": {"con": 2},
+      "size": "Medium",
+      "speed": 25,
+      "languages": ["Common", "Dwarvish"],
+      "traits": ["Darkvision", "Dwarven Resilience", "Stonecunning", "Dwarven Combat Training"],
+      "description": "Bold and hardy, dwarves are known as skilled warriors, miners, and workers of stone and metal."
+    },
+    {
+      "id": "halfling",
+      "name": "Halfling",
+      "ability_score_increase": {"dex": 2},
+      "size": "Small",
+      "speed": 25,
+      "languages": ["Common", "Halfling"],
+      "traits": ["Lucky", "Brave", "Halfling Nimbleness"],
+      "description": "The diminutive halflings survive in a world full of larger creatures by avoiding notice or, barring that, avoiding offense."
+    }
+  ],
+  "classes": [
+    {
+      "id": "fighter",
+      "name": "Fighter",
+      "hit_die": "d10",
+      "primary_ability": ["Strength", "Dexterity"],
+      "saving_throw_proficiencies": ["Strength", "Constitution"],
+      "skill_proficiencies": 2,
+      "armor_proficiencies": ["Light", "Medium", "Heavy", "Shields"],
+      "weapon_proficiencies": ["Simple", "Martial"],
+      "description": "A master of martial combat, skilled with a variety of weapons and armor. Fighters learn the basics of all combat styles."
+    },
+    {
+      "id": "wizard",
+      "name": "Wizard",
+      "hit_die": "d6", 
+      "primary_ability": ["Intelligence"],
+      "saving_throw_proficiencies": ["Intelligence", "Wisdom"],
+      "skill_proficiencies": 2,
+      "armor_proficiencies": [],
+      "weapon_proficiencies": ["Simple"],
+      "spellcasting_ability": "Intelligence",
+      "description": "A scholarly magic-user capable of manipulating the structures of reality in ways that most other people can only dream of."
+    },
+    {
+      "id": "rogue",
+      "name": "Rogue",
+      "hit_die": "d8",
+      "primary_ability": ["Dexterity"],
+      "saving_throw_proficiencies": ["Dexterity", "Intelligence"], 
+      "skill_proficiencies": 4,
+      "armor_proficiencies": ["Light"],
+      "weapon_proficiencies": ["Simple", "Hand crossbows", "Longswords", "Rapiers", "Shortswords"],
+      "description": "A scoundrel who uses stealth and trickery to accomplish what others do with brute force."
+    },
+    {
+      "id": "cleric",
+      "name": "Cleric",
+      "hit_die": "d8",
+      "primary_ability": ["Wisdom"],
+      "saving_throw_proficiencies": ["Wisdom", "Charisma"],
+      "skill_proficiencies": 2,
+      "armor_proficiencies": ["Light", "Medium", "Shields"],
+      "weapon_proficiencies": ["Simple"],
+      "spellcasting_ability": "Wisdom",
+      "description": "A priestly champion who wields divine magic in service of a higher power."
+    }
+  ],
+  "ability_scores": {
+    "names": ["Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma"],
+    "abbreviations": ["STR", "DEX", "CON", "INT", "WIS", "CHA"],
+    "descriptions": {
+      "Strength": "Physical power, athletic ability, and bodily force",
+      "Dexterity": "Agility, reflexes, balance, and poise",
+      "Constitution": "Health, stamina, and vital force",
+      "Intelligence": "Reasoning ability, memory, and analytical thinking",
+      "Wisdom": "Awareness, intuition, and insight",
+      "Charisma": "Force of personality, leadership, and confidence"
+    },
+    "modifiers": {
+      "1": -5, "2": -4, "3": -4, "4": -3, "5": -3,
+      "6": -2, "7": -2, "8": -1, "9": -1, "10": 0,
+      "11": 0, "12": 1, "13": 1, "14": 2, "15": 2,
+      "16": 3, "17": 3, "18": 4, "19": 4, "20": 5
+    }
+  },
+  "skills": [
+    {"name": "Acrobatics", "ability": "Dexterity"},
+    {"name": "Animal Handling", "ability": "Wisdom"},
+    {"name": "Arcana", "ability": "Intelligence"},
+    {"name": "Athletics", "ability": "Strength"},
+    {"name": "Deception", "ability": "Charisma"},
+    {"name": "History", "ability": "Intelligence"},
+    {"name": "Insight", "ability": "Wisdom"},
+    {"name": "Intimidation", "ability": "Charisma"},
+    {"name": "Investigation", "ability": "Intelligence"},
+    {"name": "Medicine", "ability": "Wisdom"},
+    {"name": "Nature", "ability": "Intelligence"},
+    {"name": "Perception", "ability": "Wisdom"},
+    {"name": "Performance", "ability": "Charisma"},
+    {"name": "Persuasion", "ability": "Charisma"},
+    {"name": "Religion", "ability": "Intelligence"},
+    {"name": "Sleight of Hand", "ability": "Dexterity"},
+    {"name": "Stealth", "ability": "Dexterity"},
+    {"name": "Survival", "ability": "Wisdom"}
+  ],
+  "spells": [
+    {
+      "id": "magic-missile",
+      "name": "Magic Missile",
+      "level": 1,
+      "school": "Evocation",
+      "casting_time": "1 action",
+      "range": "120 feet",
+      "components": ["V", "S"],
+      "duration": "Instantaneous",
+      "description": "You create three glowing darts of magical force. Each dart hits a creature of your choice that you can see within range."
+    },
+    {
+      "id": "cure-wounds",
+      "name": "Cure Wounds",
+      "level": 1,
+      "school": "Evocation",
+      "casting_time": "1 action",
+      "range": "Touch",
+      "components": ["V", "S"],
+      "duration": "Instantaneous",
+      "description": "A creature you touch regains a number of hit points equal to 1d8 + your spellcasting ability modifier."
+    },
+    {
+      "id": "fireball",
+      "name": "Fireball",
+      "level": 3,
+      "school": "Evocation",
+      "casting_time": "1 action",
+      "range": "150 feet",
+      "components": ["V", "S", "M"],
+      "duration": "Instantaneous",
+      "description": "A bright streak flashes from your pointing finger to a point you choose within range and then blossoms with a low roar into an explosion of flame."
+    }
+  ],
+  "equipment": [
+    {
+      "id": "longsword",
+      "name": "Longsword",
+      "type": "Weapon",
+      "category": "Martial Melee",
+      "damage": "1d8 slashing",
+      "weight": 3,
+      "cost": "15 gp",
+      "properties": ["Versatile (1d10)"]
+    },
+    {
+      "id": "leather-armor",
+      "name": "Leather Armor",
+      "type": "Armor",
+      "category": "Light Armor",
+      "ac": "11 + Dex modifier",
+      "weight": 10,
+      "cost": "10 gp",
+      "properties": []
+    },
+    {
+      "id": "shortbow",
+      "name": "Shortbow",
+      "type": "Weapon",
+      "category": "Simple Ranged",
+      "damage": "1d6 piercing",
+      "weight": 2,
+      "cost": "25 gp",
+      "properties": ["Ammunition (150/600)", "Two-handed"]
+    }
+  ]
+} 
