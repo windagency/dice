@@ -1,6 +1,6 @@
 {
   "name": "DICE Development Environment",
-  "dockerComposeFile": ["../docker-compose.devcontainer.yml"],
+  "dockerComposeFile": ["docker-compose.yml"],
   "service": "backend",
   "workspaceFolder": "/app",
   "shutdownAction": "stopCompose",
