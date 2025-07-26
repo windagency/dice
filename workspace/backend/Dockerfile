@@ -3,40 +3,20 @@ FROM node:22-bullseye
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies and pnpm
 RUN apt-get update && apt-get install -y \
     postgresql-client \
     curl \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && npm install -g pnpm@latest
 
-# Create package.json for initial setup if not present
-COPY package*.json ./
-RUN if [ ! -f package.json ]; then \
-    echo '{ "name": "dice-backend", "version": "1.0.0", "scripts": { "start": "echo \"Backend starting...\"", "start:dev": "echo \"Backend dev mode...\"" } }' > package.json; \
-fi
-
-# Install dependencies or create minimal setup
-RUN if [ -f package-lock.json ]; then \
-    npm ci --only=production && npm cache clean --force; \
-else \
-    npm init -y && \
-    npm install --save @nestjs/core @nestjs/common @nestjs/platform-express typescript @types/node; \
-fi
-
-# Copy source code if present
-COPY src* ./src/ || true
-COPY tsconfig*.json ./ || true
-
-# Create basic src structure if not present
-RUN if [ ! -d src ]; then \
-    mkdir -p src && \
-    echo 'console.log("DICE Backend Service Starting...");' > src/main.ts; \
-fi
+# Note: package.json, tsconfig.json, and source files are provided via volume mount in development
+# Dependencies will be installed in the node_modules volume to avoid conflicts
 
 # Create non-root user
 RUN groupadd -r dice && useradd -r -g dice dice
 RUN chown -R dice:dice /app
-USER dice
+# Note: USER dice will be set by docker-compose command
 
 # Expose ports
 EXPOSE 3001 9229

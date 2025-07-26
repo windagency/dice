@@ -3,44 +3,19 @@ FROM node:22-bullseye
 # Set working directory
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies and pnpm
 RUN apt-get update && apt-get install -y \
     curl \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && npm install -g pnpm@latest
 
-# Create package.json for initial setup if not present
-COPY package*.json ./
-RUN if [ ! -f package.json ]; then \
-    echo '{ "name": "dice-pwa", "version": "1.0.0", "scripts": { "dev": "echo \"PWA starting...\"", "build": "echo \"PWA building...\"" } }' > package.json; \
-fi
-
-# Copy configuration files if present
-COPY astro.config* ./ || true
-COPY tsconfig*.json ./ || true
-
-# Install dependencies or create minimal setup
-RUN if [ -f package-lock.json ]; then \
-    npm ci && npm cache clean --force; \
-else \
-    npm init -y && \
-    npm install --save astro @astrojs/react react react-dom @astrojs/tailwind tailwindcss typescript @types/node @types/react @types/react-dom; \
-fi
-
-# Copy source code if present
-COPY src* ./src/ || true
-COPY public* ./public/ || true
-
-# Create basic project structure if not present
-RUN if [ ! -d src ]; then \
-    mkdir -p src/pages src/components public && \
-    echo '<html><head><title>DICE PWA</title></head><body><h1>DICE Character Manager PWA</h1><p>Loading...</p></body></html>' > src/pages/index.astro && \
-    echo 'import { defineConfig } from "astro/config"; export default defineConfig({ server: { host: "0.0.0.0", port: 3000 } });' > astro.config.mjs; \
-fi
+# Note: package.json, config files, and source files are provided via volume mount in development
+# Dependencies will be installed in the node_modules volume to avoid conflicts
 
 # Create non-root user
 RUN groupadd -r dice && useradd -r -g dice dice
 RUN chown -R dice:dice /app
-USER dice
+# Note: USER dice will be set by docker-compose command
 
 # Expose port
 EXPOSE 3000

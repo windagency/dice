@@ -9,7 +9,7 @@
       "version": "22"
     }
   },
-  "postCreateCommand": "npm install",
+  "postCreateCommand": "pnpm install && cd ../.. && ./infrastructure/scripts/setup-dev-environment.sh",
   "forwardPorts": [
     3000
   ],

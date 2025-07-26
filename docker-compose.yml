@@ -106,6 +106,7 @@ services:
     ports:
       - "3001:3001"
       - "9229:9229"  # Debug port
+    command: sh -c "pnpm install && pnpm run start:dev"
     depends_on:
       postgres:
         condition: service_healthy
@@ -136,6 +137,7 @@ services:
       - pwa_node_modules:/app/node_modules
     ports:
       - "3000:3000"
+    command: sh -c "pnpm install && pnpm run dev"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.pwa.rule=Host(`pwa.dice.local`)"

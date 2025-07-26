@@ -2,7 +2,7 @@
   "name": "DICE Development Environment",
   "dockerComposeFile": "../docker-compose.yml",
   "service": "backend",
-  "workspaceFolder": "/workspace",
+  "workspaceFolder": "/app",
   "shutdownAction": "stopCompose",
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
@@ -15,7 +15,7 @@
       "version": "22"
     }
   },
-  "postCreateCommand": "infrastructure/scripts/setup-dev-environment.sh",
+  "postCreateCommand": "pnpm install && cd ../.. && ./infrastructure/scripts/setup-dev-environment.sh",
   "forwardPorts": [
     3001,
     3000,

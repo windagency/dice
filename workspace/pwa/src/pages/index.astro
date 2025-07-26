@@ -1,0 +1,139 @@
+---
+// Component script (runs at build time)
+const title = "DICE Character Manager";
+const version = "1.0.0";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#1e40af" />
+    <meta name="description" content="D&D Character Manager - Create, manage, and play your characters" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content="D&D Character Manager PWA" />
+    
+    <!-- Preconnect to API -->
+    <link rel="preconnect" href="https://api.dice.local" />
+  </head>
+  
+  <body class="bg-gray-900 text-white min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+      <header class="text-center mb-12">
+        <h1 class="text-4xl font-bold mb-4 text-blue-400">
+          🎲 {title}
+        </h1>
+        <p class="text-xl text-gray-300">
+          Progressive Web App for D&D Character Management
+        </p>
+        <p class="text-sm text-gray-500 mt-2">
+          Version {version} • Ready for Development
+        </p>
+      </header>
+      
+      <main class="max-w-4xl mx-auto">
+        <div class="grid md:grid-cols-2 gap-8">
+          <!-- Status Card -->
+          <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <h2 class="text-2xl font-semibold mb-4 text-green-400">
+              ✅ PWA Status
+            </h2>
+            <ul class="space-y-2 text-gray-300">
+              <li>🚀 Astro Framework</li>
+              <li>⚛️ React Integration</li>
+              <li>🎨 Tailwind CSS</li>
+              <li>📱 PWA Ready</li>
+              <li>🔧 TypeScript Support</li>
+            </ul>
+          </div>
+          
+          <!-- API Connection Card -->
+          <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+            <h2 class="text-2xl font-semibold mb-4 text-blue-400">
+              🔗 Backend API
+            </h2>
+            <div class="space-y-2 text-gray-300">
+              <p>
+                <span class="font-medium">Endpoint:</span> 
+                <code class="bg-gray-700 px-2 py-1 rounded text-sm">api.dice.local</code>
+              </p>
+              <p>
+                <span class="font-medium">Status:</span>
+                <span class="text-yellow-400">Connecting...</span>
+              </p>
+              <button 
+                id="test-api" 
+                class="mt-4 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded transition-colors"
+              >
+                Test API Connection
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Features Section -->
+        <section class="mt-12">
+          <h2 class="text-3xl font-bold text-center mb-8 text-purple-400">
+            🎮 Features Coming Soon
+          </h2>
+          <div class="grid md:grid-cols-3 gap-6">
+            <div class="bg-gray-800 rounded-lg p-6 text-center border border-gray-700">
+              <div class="text-4xl mb-4">⚔️</div>
+              <h3 class="text-xl font-semibold mb-2">Character Creation</h3>
+              <p class="text-gray-400">Build your perfect D&D character</p>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-6 text-center border border-gray-700">
+              <div class="text-4xl mb-4">📊</div>
+              <h3 class="text-xl font-semibold mb-2">Stats Management</h3>
+              <p class="text-gray-400">Track abilities, skills, and progress</p>
+            </div>
+            <div class="bg-gray-800 rounded-lg p-6 text-center border border-gray-700">
+              <div class="text-4xl mb-4">🎲</div>
+              <h3 class="text-xl font-semibold mb-2">Dice Rolling</h3>
+              <p class="text-gray-400">Integrated dice mechanics</p>
+            </div>
+          </div>
+        </section>
+      </main>
+      
+      <footer class="text-center mt-12 text-gray-500">
+        <p>DICE Character Manager • Built with Astro + React + Tailwind</p>
+      </footer>
+    </div>
+    
+    <script>
+      // Test API connection
+      document.getElementById('test-api')?.addEventListener('click', async () => {
+        const button = document.getElementById('test-api');
+        const statusEl = button?.parentElement?.querySelector('span[class*="text-yellow"]');
+        
+        if (button) button.textContent = 'Testing...';
+        
+        try {
+          const response = await fetch('/api/health');
+          const data = await response.json();
+          
+          if (statusEl) {
+            statusEl.textContent = '✅ Connected';
+            statusEl.className = 'text-green-400';
+          }
+          if (button) button.textContent = 'API Connected!';
+        } catch (error) {
+          if (statusEl) {
+            statusEl.textContent = '❌ Failed';
+            statusEl.className = 'text-red-400';
+          }
+          if (button) button.textContent = 'Connection Failed';
+        }
+      });
+    </script>
+  </body>
+</html> 

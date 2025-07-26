@@ -1,0 +1,5 @@
+packages:
+  - 'workspace/*'
+  - 'workspace/backend'
+  - 'workspace/pwa'
+  - 'workspace/shared' 

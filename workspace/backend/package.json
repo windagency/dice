@@ -1,0 +1,27 @@
+{
+  "name": "dice-backend",
+  "version": "1.0.0",
+  "description": "DICE Backend API Service",
+  "author": "DICE Team",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "pnpm exec ts-node src/main.ts",
+    "start:dev": "pnpm exec ts-node src/main.ts",
+    "dev": "pnpm exec ts-node src/main.ts",
+    "build": "pnpm exec tsc",
+    "start:prod": "node dist/main"
+  },
+  "dependencies": {
+    "@nestjs/core": "^10.0.0",
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/platform-express": "^10.0.0",
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^7.8.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.0"
+  }
+} 
