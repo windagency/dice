@@ -123,7 +123,7 @@ Nearly all magic items have a listed purchase price and item crafting prerequisi
 
 ### 3.2. Data Storage
 
-- **Local:** SQLite or SecureStorage for offline-first behavior
+- **Local:** SQLite or SecureStorage for offline-first behaviour
 - **Cloud:** Firebase, Supabase, or AWS Amplify for:
   - Auth
   - Database (Firestore/PostgreSQL)

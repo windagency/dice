@@ -1,0 +1,26 @@
+FROM amazon/aws-cli:latest
+
+# Install Python and pip if not available
+USER root
+RUN yum update -y && \
+    yum install -y python3-pip jq --allowerasing && \
+    yum clean all
+
+# Install setuptools and awscli-local for easy LocalStack interaction
+RUN pip3 install setuptools && \
+    pip3 install awscli-local
+
+# Set default environment variables for LocalStack
+ENV AWS_ACCESS_KEY_ID=test
+ENV AWS_SECRET_ACCESS_KEY=test
+ENV AWS_DEFAULT_REGION=us-east-1
+ENV AWS_ENDPOINT_URL=http://localstack:4566
+
+# Create working directory
+WORKDIR /workspace
+
+# Override the AWS CLI entrypoint to allow normal shell commands
+ENTRYPOINT []
+
+# Default command keeps container running
+CMD ["sh", "-c", "echo 'AWS CLI with LocalStack support ready!' && sleep infinity"] 

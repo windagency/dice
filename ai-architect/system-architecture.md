@@ -57,7 +57,7 @@ The initial architecture supports mocked-data development for fast iteration, wi
 
 - **Technology**: MirageJS (web), Local JSON Fixtures (Flutter)
 - **Responsibilities**:
-  - Simulate API behavior for frontend development
+  - Simulate API behaviour for frontend development
   - Maintain parity with API schema
   - Easily replaceable when real backend is ready
 

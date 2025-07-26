@@ -20,7 +20,7 @@
 - Follow the Single Responsibility Principle, one function = one task
 - Use clear, descriptive variable names
 - Limit parameters and prefer immutability
-- Update any reference docs if behavior changes
+- Update any reference docs if behaviour changes
 
 ## Regarding files
 
@@ -30,6 +30,6 @@
 
 ## When writing a test
 
-- Focus on behavior, not internal implementation
+- Focus on behaviour, not internal implementation
 - Avoid over-mocking external services
 - Use concise, realistic scenarios

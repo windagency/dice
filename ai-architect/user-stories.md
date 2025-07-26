@@ -36,7 +36,7 @@
 
 **As a** player  
 **I want** to choose my character’s alignment  
-**So that** it reflects their moral and ethical behavior
+**So that** it reflects their moral and ethical behaviour
 
 * Acceptance Criteria:
   * [ ] Options include 9 alignments from D&D 3.0 (e.g., Lawful Good)

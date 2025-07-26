@@ -1,33 +1,72 @@
 # TODO - DICE Containerised Development Environment
 
-**Last Updated**: 2024-12-26  
+**Last Updated**: 2025-07-26  
 **Current Phase**: Phase 1 Implementation - Infrastructure Foundation  
-**Overall Status**: Core infrastructure services deployed and validated, proceeding with service implementation
+**Overall Status**: DevContainer issues resolved, services implemented, proceeding with database integration
 
 ## 🎯 Current Priority Tasks
 
-### HIGH PRIORITY - Phase 1 Service Implementation
+### IMMEDIATE NEXT STEPS - Complete Phase 1 *(~85% Complete)*
 
-- [ ] **Implement Backend Service (Nest.js)** *(Status: In Progress - 2024-12-26)*
-  - [ ] Create basic Nest.js application with health endpoints
+**Current Status**: Core services implemented and working, DevContainer issues resolved, pnpm migration complete.  
+**Next Focus**: Database integration and client-server communication.
+
+- [ ] **Backend Database Integration** *(Status: Next Priority - Ready to implement)*
+  - [ ] Configure TypeORM with existing PostgreSQL connection
+  - [ ] Create basic entity models (User, Character, Campaign)
+  - [ ] Set up database migrations and schema management
+  - [ ] Add database health checks to existing /health endpoint
+
+- [ ] **API Layer Implementation** *(Status: Next Priority)*
+  - [ ] Set up GraphQL Federation schema for mobile clients  
+  - [ ] Add tRPC router for web client communication
+  - [ ] Create basic CRUD operations for D&D characters
+  - [ ] Test API endpoints with both GraphQL and tRPC
+
+- [ ] **PWA Backend Integration** *(Status: Ready after API layer)*
+  - [ ] Add tRPC client to existing Astro PWA
+  - [ ] Create character management components using React
+  - [ ] Connect beautiful landing page to real backend data
+  - [ ] Test full-stack data flow and hot reload
+
+### HIGH PRIORITY - Phase 1 Service Implementation *(Archive - Mostly Complete)*
+
+- [x] **Implement Backend Service (Nest.js)** *(Status: 75% Complete - 2025-07-26)*
+  - [x] Create basic Nest.js application with health endpoints
   - [ ] Configure TypeORM with PostgreSQL connection
   - [ ] Implement GraphQL Federation and tRPC endpoints
-  - [ ] Set up hot reload and debugging support
+  - [x] Set up hot reload and debugging support
 
-- [ ] **Implement PWA Frontend (Astro.js)** *(Status: Ready to start)*
-  - [ ] Create basic Astro.js application with service worker
-  - [ ] Configure React integration and TailwindCSS
+- [x] **Implement PWA Frontend (Astro.js)** *(Status: 75% Complete - 2025-07-26)*
+  - [x] Create basic Astro.js application with PWA-ready configuration
+  - [x] Configure React integration and TailwindCSS
   - [ ] Set up tRPC client for backend communication
-  - [ ] Implement hot reload functionality
+  - [x] Implement hot reload functionality
 
 - [ ] **Complete Phase 1 Validation** *(Status: Pending service implementation)*
   - [ ] Add local development domains to /etc/hosts file
   - [ ] Run comprehensive Phase 1 validation script
   - [ ] Test full service integration and hot reload functionality
 
+### COMPLETED - DevContainer & Package Management *(2025-07-26)*
+
+- [x] **Resolve DevContainer Build Issues** *(Status: Completed - 2025-07-26)*
+  - [x] Fix invalid Docker COPY syntax in backend and PWA Dockerfiles
+  - [x] Correct postCreateCommand paths in all devcontainer configurations  
+  - [x] Add proper workspace folder mapping for development environment
+  - [x] Clean up permission issues with volume mounts
+
+- [x] **Migrate to pnpm Package Manager** *(Status: Completed - 2025-07-26)*
+  - [x] Replace npm with pnpm across entire project for better performance
+  - [x] Add pnpm installation to all Docker containers
+  - [x] Update all package.json scripts to use pnpm commands
+  - [x] Create pnpm workspace configuration for monorepo management
+  - [x] Add .npmrc files with optimised pnpm settings
+  - [x] Remove npm artifacts (package-lock.json files)
+
 ### MEDIUM PRIORITY - Documentation
 
-- [ ] **Update CHANGELOG.md** with Phase 1 progress *(Due: 2024-12-27)*
+- [ ] **Update CHANGELOG.md** with Phase 1 progress *(Due: 2025-07-27)*
 - [ ] **Create service implementation documentation** based on actual implementation *(Status: Planned)*
 
 ## 📋 Implementation Phases (For AI Editor)
@@ -62,17 +101,21 @@
 
 - [x] Create backend devcontainer using `node:22-bullseye` with debugging support *(Completed: 2024-12-26)*
 - [x] Create backend Dockerfile with development setup *(Completed: 2024-12-26)*
-- [ ] Configure Nest.js backend with GraphQL Federation + tRPC *(Status: In Progress)*
+- [x] Create basic Nest.js application with TypeScript *(Completed: 2025-07-26)*
+- [x] Implement health check endpoints at `/health` and `/` *(Completed: 2025-07-26)*  
+- [x] Set up hot reload and debugging support with pnpm *(Completed: 2025-07-26)*
+- [ ] Configure Nest.js backend with GraphQL Federation + tRPC *(Status: Next Priority)*
 - [ ] Set up TypeORM migrations with automatic database schema management *(Status: Pending)*
-- [ ] Implement health check endpoints at `/health`, `/ready`, `/metrics` *(Status: Pending)*
 
 #### 1.5 PWA Frontend
 
 - [x] Create PWA devcontainer using `node:22-bullseye` with Astro CLI *(Completed: 2024-12-26)*
 - [x] Create PWA Dockerfile with development setup *(Completed: 2024-12-26)*
-- [ ] Configure Astro.js PWA with React integration and TailwindCSS *(Status: Ready to start)*
-- [ ] Optimise hot reload using volume mounts with optimised file watching *(Status: Pending)*
-- [ ] Set up service worker with offline capability *(Status: Pending)*
+- [x] Configure Astro.js PWA with React integration and TailwindCSS *(Completed: 2025-07-26)*
+- [x] Create beautiful D&D-themed landing page with responsive design *(Completed: 2025-07-26)*
+- [x] Optimise hot reload using volume mounts with optimised file watching *(Completed: 2025-07-26)*
+- [x] Add favicon and PWA meta tags *(Completed: 2025-07-26)*
+- [ ] Set up service worker with offline capability *(Status: Next Priority)*
 
 ### Phase 2: Enhanced Development Experience
 
@@ -166,6 +209,23 @@
   - [x] Create service Dockerfiles for backend and PWA with hot reload support
   - [x] Configure workspace-specific DevContainer configurations
 
+- [x] **Resolve DevContainer and Package Management Issues** *(Completed: 2025-07-26)*
+  - [x] Fix invalid Docker COPY syntax preventing container builds
+  - [x] Correct postCreateCommand paths for proper setup script execution
+  - [x] Migrate entire project from npm to pnpm for better performance and disk efficiency
+  - [x] Update all Docker configurations to use pnpm commands
+  - [x] Create pnpm workspace configuration for monorepo management
+  - [x] Clean up npm artifacts and establish consistent pnpm usage
+
+- [x] **Implement Core Application Services** *(Completed: 2025-07-26)*
+  - [x] Create complete NestJS backend application with TypeScript
+  - [x] Implement health check endpoints (/health, /) with proper JSON responses
+  - [x] Create modern Astro PWA with React + Tailwind CSS integration
+  - [x] Design beautiful D&D-themed landing page with responsive layout
+  - [x] Configure hot reload functionality for both services
+  - [x] Set up debugging support with exposed debug ports
+  - [x] Add PWA meta tags and favicon for professional presentation
+
 - [x] **Conduct comprehensive critical review** *(Completed: 2024-12-26)*
   - [x] Fix version inconsistencies in mermaid diagrams
   - [x] Resolve DevContainer configuration to use Docker Compose approach
@@ -198,12 +258,14 @@
 ### Current Phase Progress
 
 - **Planning Phase**: ✅ 100% Complete
-- **Phase 1 Implementation**: 🚧 75% Complete (Infrastructure ready, services in progress)
+- **Phase 1 Implementation**: 🚧 85% Complete (Core services implemented, database integration pending)
   - Foundation Setup: ✅ 100% Complete
   - Data Layer Setup: ✅ 100% Complete  
   - Service Communication: ✅ 100% Complete
-  - Backend Service: 🚧 50% Complete (Dockerfile ready, implementation pending)
-  - PWA Frontend: 🚧 50% Complete (Dockerfile ready, implementation pending)
+  - Backend Service: 🚧 75% Complete (NestJS app + health endpoints done, database integration pending)
+  - PWA Frontend: 🚧 75% Complete (Astro + React + Tailwind done, tRPC client pending)
+  - DevContainer Resolution: ✅ 100% Complete
+  - Package Management Migration: ✅ 100% Complete
 - **Phase 2 Implementation**: ⏳ 0% (Depends on Phase 1)
 - **Phase 3 Implementation**: ⏳ 0% (Depends on Phase 2)
 
@@ -215,9 +277,13 @@
 - [x] AI Editor implementation instructions finalised (2024-12-26)
 - [x] Core infrastructure services deployed and validated (2024-12-26)
 - [x] Phase 1 foundation setup completed (2024-12-26)
-- [ ] Backend service implementation completed (Target: 2024-12-27)
-- [ ] PWA frontend implementation completed (Target: 2024-12-27)
-- [ ] Phase 1 minimal viable environment working (Target: 2024-12-27)
+- [x] DevContainer build issues completely resolved (2025-07-26)
+- [x] Project migrated to pnpm for better performance (2025-07-26)
+- [x] Basic NestJS backend service implemented (2025-07-26) 
+- [x] Basic Astro PWA frontend implemented (2025-07-26)
+- [ ] Backend database integration completed (Target: Next Priority)
+- [ ] PWA tRPC client integration completed (Target: Next Priority)
+- [ ] Phase 1 minimal viable environment working (Target: 2025-07-27)
 - [ ] Phase 2 enhanced development experience complete (Target: TBD)
 - [ ] Phase 3 production-ready features complete (Target: TBD)
 
