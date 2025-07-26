@@ -1,23 +1,17 @@
 {
   "name": "DICE Development Environment",
-  "dockerComposeFile": ["docker-compose.yml"],
+  "dockerComposeFile": [
+    "docker-compose.yml"
+  ],
   "service": "backend",
   "workspaceFolder": "/app",
   "shutdownAction": "stopCompose",
-  "overrideCommand": false,
+  "overrideCommand": true,
   "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
-    "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
-      "version": "latest",
-      "kubectl": "1.33",
-      "helm": "3.16"
-    },
-    "ghcr.io/devcontainers/features/node:1": {
-      "version": "22"
-    }
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },
   "initializeCommand": "cp .env.sample .env.development 2>/dev/null || true",
-  "postCreateCommand": "pnpm install && cd ../.. && ./infrastructure/scripts/setup-dev-environment.sh",
+  "postCreateCommand": "pnpm install",
   "forwardPorts": [
     3001,
     3000,
