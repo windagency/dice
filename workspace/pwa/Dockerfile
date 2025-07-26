@@ -12,10 +12,12 @@ RUN apt-get update && apt-get install -y \
 # Note: package.json, config files, and source files are provided via volume mount in development
 # Dependencies will be installed in the node_modules volume to avoid conflicts
 
-# Create non-root user
+# Create non-root user for security
 RUN groupadd -r dice && useradd -r -g dice dice
 RUN chown -R dice:dice /app
-# Note: USER dice will be set by docker-compose command
+
+# Switch to non-root user
+USER dice
 
 # Expose port
 EXPOSE 3000
@@ -24,5 +26,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3000 || exit 1
 
-# Start command
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"] 
+# Start command (using pnpm for consistency)
+CMD ["pnpm", "run", "dev", "--", "--host", "0.0.0.0"] 

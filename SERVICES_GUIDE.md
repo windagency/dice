@@ -99,10 +99,10 @@ curl -s localhost:4566/_localstack/health | jq
 curl -s localhost:4566/_localstack/health | jq '.services'
 
 # Test S3 Service
-aws --endpoint-url=http://localhost:4566 s3 ls
+aws --endpoint-url=https://localhost.localstack.cloud:4566 s3 ls
 
 # Test DynamoDB Service
-aws --endpoint-url=http://localhost:4566 dynamodb list-tables
+aws --endpoint-url=https://localhost.localstack.cloud:4566 dynamodb list-tables
 ```
 
 ##### Configure AWS CLI for LocalStack (Containerised Approach)
@@ -128,16 +128,17 @@ docker compose run --rm awscli aws --endpoint-url=http://localstack:4566 s3 ls
 # Install AWS CLI locally (alternative method)
 pip install awscli-local  # Provides 'awslocal' command
 
-# Configure local AWS CLI with dummy credentials
+# Configure local AWS CLI with LocalStack development credentials
+# NOTE: These 'test' credentials are standard for LocalStack development
 aws configure set aws_access_key_id test
 aws configure set aws_secret_access_key test
-aws configure set default.region us-east-1
+aws configure set default.region eu-west-3
 
 # Use local awslocal (automatically points to LocalStack)
 awslocal s3 ls
 
 # OR use local standard aws with endpoint
-aws --endpoint-url=http://localhost:4566 s3 ls
+aws --endpoint-url=https://localhost.localstack.cloud:4566 s3 ls
 ```
 
 ##### S3 Operations (Containerised)
@@ -236,7 +237,7 @@ awslocal dynamodb delete-table --table-name Characters
 # For community version, use AWS CLI or direct API calls
 
 # Access LocalStack resource browser (if available)
-open http://localhost:4566/_localstack/health
+open https://localhost.localstack.cloud:4566/_localstack/health
 
 # Check LocalStack logs
 docker compose logs localstack -f
@@ -482,12 +483,13 @@ docker compose run --rm awscli sh
 
 ```bash
 # Create alias for easier LocalStack usage (local installation)
-alias awslocal="aws --endpoint-url=http://localhost:4566"
+alias awslocal="aws --endpoint-url=https://localhost.localstack.cloud:4566"
 
 # Set up environment variables
+# NOTE: Standard LocalStack development credentials (safe for local development)
 export AWS_ACCESS_KEY_ID=test
 export AWS_SECRET_ACCESS_KEY=test
-export AWS_DEFAULT_REGION=us-east-1
+export AWS_DEFAULT_REGION=eu-west-3
 
 # Test LocalStack connectivity
 awslocal s3 ls || echo "LocalStack not ready yet"
@@ -680,14 +682,15 @@ docker compose exec pwa pnpm exec tailwindcss --version
 
 ## 📊 Service Endpoints Reference
 
-| Service               | URL                     | Purpose         | Health Check                             |
-| --------------------- | ----------------------- | --------------- | ---------------------------------------- |
-| **Backend API**       | <http://localhost:3001> | NestJS REST API | `curl localhost:3001/health`             |
-| **PWA Frontend**      | <http://localhost:3000> | Astro PWA       | `curl localhost:3000`                    |
-| **PostgreSQL**        | localhost:5432          | Database        | `pg_isready -h localhost -p 5432`        |
-| **Redis**             | localhost:6379          | Cache           | `redis-cli -h localhost ping`            |
-| **LocalStack**        | <http://localhost:4566> | AWS Services    | `curl localhost:4566/_localstack/health` |
-| **Traefik Dashboard** | <http://localhost:8080> | Proxy Admin     | `curl localhost:8080/ping`               |
+| Service               | URL                                                | Purpose         | Health Check                             |
+| --------------------- | -------------------------------------------------- | --------------- | ---------------------------------------- |
+| **Backend API**       | <http://localhost:3001>                            | NestJS REST API | `curl localhost:3001/health`             |
+| **PWA Frontend**      | <http://localhost:3000>                            | Astro PWA       | `curl localhost:3000`                    |
+| **PostgreSQL**        | localhost:5432                                     | Database        | `pg_isready -h localhost -p 5432`        |
+| **Redis**             | localhost:6379                                     | Cache           | `redis-cli -h localhost ping`            |
+| **LocalStack**        | <https://localhost.localstack.cloud:4566>          | AWS Services    | `curl localhost:4566/_localstack/health` |
+| **LocalStack Web UI** | <https://app.localstack.cloud/inst/default/status> | AWS Services    |                                          |
+| **Traefik Dashboard** | <http://localhost:8080>                            | Proxy Admin     | `curl localhost:8080/ping`               |
 
 ## 🎯 Development Environment Validation
 
@@ -756,11 +759,11 @@ echo "✅ DICE Development Environment is fully operational!"
 
   ```bash
   # Manual table creation if needed
-  aws --endpoint-url=http://localhost:4566 dynamodb create-table \
-      --table-name DiceCharacters \
-      --attribute-definitions AttributeName=UserId,AttributeType=S AttributeName=CharacterId,AttributeType=S \
-      --key-schema AttributeName=UserId,KeyType=HASH AttributeName=CharacterId,KeyType=RANGE \
-      --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
+  aws --endpoint-url=https://localhost.localstack.cloud:4566 dynamodb create-table \
+    --table-name DiceCharacters \
+    --attribute-definitions AttributeName=UserId,AttributeType=S AttributeName=CharacterId,AttributeType=S \
+    --key-schema AttributeName=UserId,KeyType=HASH AttributeName=CharacterId,KeyType=RANGE \
+    --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
   ```
 
 - **Data Persistence**: Community edition may not persist data between container restarts
@@ -772,5 +775,3 @@ echo "✅ DICE Development Environment is fully operational!"
 - [CHANGELOG.md](./CHANGELOG.md) - Version history and updates
 - [docker-compose.yml](./docker-compose.yml) - Service definitions
 - [Infrastructure Scripts](./infrastructure/scripts/) - Automation tools
-
-**Happy D&D Development! 🎲**

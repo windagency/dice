@@ -12,21 +12,22 @@ if ! curl -s localhost:4566/_localstack/health > /dev/null; then
 fi
 
 # Configure AWS CLI for LocalStack
-export AWS_ACCESS_KEY_ID=test
-export AWS_SECRET_ACCESS_KEY=test
-export AWS_DEFAULT_REGION=us-east-1
+# NOTE: 'test' credentials are LocalStack's standard development values (safe for local development)
+export AWS_ACCESS_KEY_ID=${LOCALSTACK_ACCESS_KEY_ID:-test}
+export AWS_SECRET_ACCESS_KEY=${LOCALSTACK_SECRET_ACCESS_KEY:-test}
+export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-eu-west-3}
 
 echo "📦 Creating S3 Buckets..."
-aws --endpoint-url=http://localhost:4566 s3 mb s3://dice-character-portraits || true
-aws --endpoint-url=http://localhost:4566 s3 mb s3://dice-campaign-maps || true
-aws --endpoint-url=http://localhost:4566 s3 mb s3://dice-rule-documents || true
-aws --endpoint-url=http://localhost:4566 s3 mb s3://dice-user-uploads || true
+aws --endpoint-url=https://localhost.localstack.cloud:4566 s3 mb s3://dice-character-portraits || true
+aws --endpoint-url=https://localhost.localstack.cloud:4566 s3 mb s3://dice-campaign-maps || true
+aws --endpoint-url=https://localhost.localstack.cloud:4566 s3 mb s3://dice-rule-documents || true
+aws --endpoint-url=https://localhost.localstack.cloud:4566 s3 mb s3://dice-user-uploads || true
 
 echo "🗄️ Creating DynamoDB Tables..."
 
 # Characters table
 echo "  Creating DiceCharacters table..."
-aws --endpoint-url=http://localhost:4566 dynamodb create-table \
+aws --endpoint-url=https://localhost.localstack.cloud:4566 dynamodb create-table \
     --table-name DiceCharacters \
     --attribute-definitions \
         AttributeName=UserId,AttributeType=S \
@@ -38,7 +39,7 @@ aws --endpoint-url=http://localhost:4566 dynamodb create-table \
 
 # Campaigns table
 echo "  Creating DiceCampaigns table..."
-aws --endpoint-url=http://localhost:4566 dynamodb create-table \
+aws --endpoint-url=https://localhost.localstack.cloud:4566 dynamodb create-table \
     --table-name DiceCampaigns \
     --attribute-definitions \
         AttributeName=CampaignId,AttributeType=S \
@@ -48,7 +49,7 @@ aws --endpoint-url=http://localhost:4566 dynamodb create-table \
 
 # Users table
 echo "  Creating DiceUsers table..."
-aws --endpoint-url=http://localhost:4566 dynamodb create-table \
+aws --endpoint-url=https://localhost.localstack.cloud:4566 dynamodb create-table \
     --table-name DiceUsers \
     --attribute-definitions \
         AttributeName=UserId,AttributeType=S \
@@ -59,7 +60,7 @@ aws --endpoint-url=http://localhost:4566 dynamodb create-table \
 echo "📝 Adding Sample Data..."
 
 # Sample users
-aws --endpoint-url=http://localhost:4566 dynamodb put-item \
+aws --endpoint-url=https://localhost.localstack.cloud:4566 dynamodb put-item \
     --table-name DiceUsers \
     --item '{
         "UserId": {"S": "user-dm-001"},
@@ -69,7 +70,7 @@ aws --endpoint-url=http://localhost:4566 dynamodb put-item \
         "CreatedAt": {"S": "2025-07-26T21:00:00Z"}
     }' > /dev/null
 
-aws --endpoint-url=http://localhost:4566 dynamodb put-item \
+aws --endpoint-url=https://localhost.localstack.cloud:4566 dynamodb put-item \
     --table-name DiceUsers \
     --item '{
         "UserId": {"S": "user-player-001"},
@@ -80,7 +81,7 @@ aws --endpoint-url=http://localhost:4566 dynamodb put-item \
     }' > /dev/null
 
 # Sample characters
-aws --endpoint-url=http://localhost:4566 dynamodb put-item \
+aws --endpoint-url=https://localhost.localstack.cloud:4566 dynamodb put-item \
     --table-name DiceCharacters \
     --item '{
         "UserId": {"S": "user-player-001"},
@@ -109,7 +110,7 @@ aws --endpoint-url=http://localhost:4566 dynamodb put-item \
         "CreatedAt": {"S": "2025-07-26T21:00:00Z"}
     }' > /dev/null
 
-aws --endpoint-url=http://localhost:4566 dynamodb put-item \
+aws --endpoint-url=https://localhost.localstack.cloud:4566 dynamodb put-item \
     --table-name DiceCharacters \
     --item '{
         "UserId": {"S": "user-player-001"},
@@ -139,7 +140,7 @@ aws --endpoint-url=http://localhost:4566 dynamodb put-item \
     }' > /dev/null
 
 # Sample campaigns
-aws --endpoint-url=http://localhost:4566 dynamodb put-item \
+aws --endpoint-url=https://localhost.localstack.cloud:4566 dynamodb put-item \
     --table-name DiceCampaigns \
     --item '{
         "CampaignId": {"S": "campaign-lotr"},
@@ -158,10 +159,10 @@ aws --endpoint-url=http://localhost:4566 dynamodb put-item \
 echo "📁 Uploading Sample Assets..."
 
 # Create sample files and upload to S3
-echo "Gandalf character portrait placeholder" | aws --endpoint-url=http://localhost:4566 s3 cp - s3://dice-character-portraits/gandalf.jpg
-echo "Aragorn character portrait placeholder" | aws --endpoint-url=http://localhost:4566 s3 cp - s3://dice-character-portraits/aragorn.jpg
-echo "Middle Earth campaign map placeholder" | aws --endpoint-url=http://localhost:4566 s3 cp - s3://dice-campaign-maps/middle-earth.jpg
-echo "D&D 5e Player Handbook placeholder" | aws --endpoint-url=http://localhost:4566 s3 cp - s3://dice-rule-documents/players-handbook.pdf
+echo "Gandalf character portrait placeholder" | aws --endpoint-url=https://localhost.localstack.cloud:4566 s3 cp - s3://dice-character-portraits/gandalf.jpg
+echo "Aragorn character portrait placeholder" | aws --endpoint-url=https://localhost.localstack.cloud:4566 s3 cp - s3://dice-character-portraits/aragorn.jpg
+echo "Middle Earth campaign map placeholder" | aws --endpoint-url=https://localhost.localstack.cloud:4566 s3 cp - s3://dice-campaign-maps/middle-earth.jpg
+echo "D&D 5e Player Handbook placeholder" | aws --endpoint-url=https://localhost.localstack.cloud:4566 s3 cp - s3://dice-rule-documents/players-handbook.pdf
 
 echo ""
 echo "✅ LocalStack Development Data Setup Complete!"
@@ -175,8 +176,8 @@ echo "   🎯 Sample Campaigns: 1 added"
 echo "   📁 Sample Assets: 4 uploaded"
 echo ""
 echo "🔍 Verification Commands:"
-echo "   aws --endpoint-url=http://localhost:4566 s3 ls"
-echo "   aws --endpoint-url=http://localhost:4566 dynamodb list-tables"
-echo "   aws --endpoint-url=http://localhost:4566 dynamodb scan --table-name DiceCharacters"
+echo "   aws --endpoint-url=https://localhost.localstack.cloud:4566 s3 ls"
+echo "   aws --endpoint-url=https://localhost.localstack.cloud:4566 dynamodb list-tables"
+echo "   aws --endpoint-url=https://localhost.localstack.cloud:4566 dynamodb scan --table-name DiceCharacters"
 echo ""
-echo "🌐 Access LocalStack Health: http://localhost:4566/_localstack/health" 
+echo "🌐 Access LocalStack Health: https://localhost.localstack.cloud:4566/_localstack/health" 

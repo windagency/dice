@@ -24,8 +24,9 @@ POSTGRES_HOST=postgres
 POSTGRES_PORT=5432
 POSTGRES_DB=dice_db
 POSTGRES_USER=dice_user
-POSTGRES_PASSWORD=dice_dev_password_2024
-DATABASE_URL=postgresql://dice_user:dice_dev_password_2024@postgres:5432/dice_db
+# ⚠️ SECURITY: Generate a strong database password
+POSTGRES_PASSWORD=dice_dev_secure_password_$(openssl rand -hex 16)
+DATABASE_URL=postgresql://dice_user:\$POSTGRES_PASSWORD@postgres:5432/dice_db
 
 # Redis Configuration
 REDIS_HOST=redis
@@ -33,10 +34,13 @@ REDIS_PORT=6379
 REDIS_URL=redis://redis:6379
 
 # LocalStack Configuration (AWS Simulation)
+# NOTE: 'test' credentials are LocalStack's standard development values (safe for local development)
 LOCALSTACK_ENDPOINT=http://localstack:4566
+LOCALSTACK_ACCESS_KEY_ID=test
+LOCALSTACK_SECRET_ACCESS_KEY=test
 AWS_ACCESS_KEY_ID=test
 AWS_SECRET_ACCESS_KEY=test
-AWS_DEFAULT_REGION=us-east-1
+AWS_DEFAULT_REGION=eu-west-3
 
 # Service URLs (Internal Docker Network)
 BACKEND_URL=http://backend:3001
@@ -44,10 +48,11 @@ PWA_URL=http://pwa:3000
 CMS_URL=http://payloadcms:3002
 
 # Authentication Secrets (DEVELOPMENT ONLY!)
-JWT_SECRET=dice_jwt_secret_development_2024
-BACKEND_API_KEY=dice_dev_api_key_2024
-CMS_API_KEY=dice_cms_api_key_2024
-INTERNAL_JWT_SECRET=dice_internal_jwt_secret_dev
+# ⚠️ SECURITY: These are development-only secrets. Generate new ones with: openssl rand -hex 32
+JWT_SECRET=dice_jwt_development_secret_$(openssl rand -hex 16)
+BACKEND_API_KEY=dice_backend_api_dev_key_$(openssl rand -hex 16)
+CMS_API_KEY=dice_cms_api_dev_key_$(openssl rand -hex 16)
+INTERNAL_JWT_SECRET=dice_internal_jwt_dev_$(openssl rand -hex 16)
 
 # Development Settings
 NODE_ENV=development
@@ -68,6 +73,8 @@ VAULT_TOKEN=
 SECURITY_SCANNING=false
 EOF
     echo "✅ Environment file created at .env.development"
+echo "⚠️ SECURITY WARNING: Review all secrets before starting services"
+echo "⚠️ Never commit .env.development to version control"
 fi
 
 # Set proper permissions
