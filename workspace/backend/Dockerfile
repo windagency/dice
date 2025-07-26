@@ -14,8 +14,9 @@ RUN apt-get update && apt-get install -y \
 # Dependencies will be installed in the node_modules volume to avoid conflicts
 
 # Create non-root user for security
-RUN groupadd -r dice && useradd -r -g dice dice
+RUN groupadd -r dice && useradd -r -g dice dice -m
 RUN chown -R dice:dice /app
+RUN mkdir -p /home/dice && chown -R dice:dice /home/dice
 
 # Switch to non-root user
 USER dice

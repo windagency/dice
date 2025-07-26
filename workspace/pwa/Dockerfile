@@ -13,11 +13,15 @@ RUN apt-get update && apt-get install -y \
 # Dependencies will be installed in the node_modules volume to avoid conflicts
 
 # Create non-root user for security
-RUN groupadd -r dice && useradd -r -g dice dice
+RUN groupadd -r dice && useradd -r -g dice dice -m
 RUN chown -R dice:dice /app
 
-# Switch to non-root user
-USER dice
+# NOTE: Temporarily running as root for development due to Astro telemetry permission issues
+# In production, this should be resolved with proper volume mounts and permissions
+# USER dice
+
+# Disable Astro telemetry to avoid permission issues
+ENV ASTRO_TELEMETRY_DISABLED=1
 
 # Expose port
 EXPOSE 3000

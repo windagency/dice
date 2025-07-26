@@ -6,8 +6,9 @@ RUN yum update -y && \
     yum install -y python3-pip jq --allowerasing && \
     yum clean all
 
-# Create non-root user for security
-RUN groupadd -r awsuser && useradd -r -g awsuser awsuser
+# Create non-root user for security (Amazon Linux compatible)
+RUN yum install -y shadow-utils && \
+    groupadd -r awsuser && useradd -r -g awsuser awsuser
 
 # Install setuptools and awscli-local for easy LocalStack interaction
 RUN pip3 install setuptools && \
