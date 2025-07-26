@@ -11,7 +11,7 @@ This guide explains the DICE project's DevContainer setup, which has been specif
 | **File** | **Purpose** | **Security Notes** |
 |----------|-------------|-------------------|
 | `.devcontainer/devcontainer.json` | DevContainer configuration | ✅ Initializes environment files |
-| `docker-compose.devcontainer.yml` | Simplified Docker Compose for DevContainer | ✅ Default values for required variables |
+| `.devcontainer/docker-compose.yml` | Minimal Docker Compose for DevContainer CLI | ✅ Optimized for DevContainer build compatibility |
 | `docker-compose.yml` | Production Docker Compose | ✅ Enforces required environment variables |
 | `.env.development` | Development environment variables | ✅ Generated with secure secrets |
 
@@ -61,7 +61,7 @@ curl http://localhost:4566/_localstack/health
 ```json
 {
   "initializeCommand": "cp .env.sample .env.development 2>/dev/null || true",
-  "dockerComposeFile": ["../docker-compose.devcontainer.yml"],
+  "dockerComposeFile": ["docker-compose.yml"],
   "overrideCommand": false
 }
 ```
@@ -128,16 +128,16 @@ sudo lsof -i :3001 -i :3000 -i :5432 -i :6379 -i :4566
 
 ```bash
 # Start DevContainer services manually
-docker compose -f docker-compose.devcontainer.yml up -d
+docker compose -f .devcontainer/docker-compose.yml up -d
 
 # Check service health
-docker compose -f docker-compose.devcontainer.yml ps
+docker compose -f .devcontainer/docker-compose.yml ps
 
 # View logs
-docker compose -f docker-compose.devcontainer.yml logs -f
+docker compose -f .devcontainer/docker-compose.yml logs -f
 
 # Stop services
-docker compose -f docker-compose.devcontainer.yml down
+docker compose -f .devcontainer/docker-compose.yml down
 ```
 
 ## 📚 Related Documentation
