@@ -115,6 +115,61 @@ services:
       - tools
     restart: "no"
 
+  # Temporal Workflow Engine
+  temporal:
+    image: temporalio/auto-setup:1.24.2
+    container_name: dice_temporal
+    restart: unless-stopped
+    environment:
+      - DB=postgres12
+      - DB_PORT=5432
+      - POSTGRES_USER=${POSTGRES_USER:-dice_user}
+      - POSTGRES_PWD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD environment variable is required}
+      - POSTGRES_SEEDS=postgres
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+      - ENABLE_ES=false
+      - TEMPORAL_CLI_ADDRESS=temporal:7233
+    ports:
+      - "7233:7233"   # gRPC
+      - "7234:7234"   # Membership
+      - "7235:7235"   # History
+      - "7239:7239"   # Worker
+    volumes:
+      - ./infrastructure/temporal:/etc/temporal/config/dynamicconfig
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "tctl", "--address", "temporal:7233", "workflow", "list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - dice_network
+
+  # Temporal Web UI
+  temporal-ui:
+    image: temporalio/ui:2.31.0
+    container_name: dice_temporal_ui
+    restart: unless-stopped
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:8088
+    ports:
+      - "8088:8088"
+    depends_on:
+      temporal:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.temporal-ui.rule=Host(`temporal.dice.local`)"
+      - "traefik.http.routers.temporal-ui.tls=true"
+      - "traefik.http.routers.temporal-ui.tls.certresolver=selfsigned"
+      - "traefik.http.services.temporal-ui.loadbalancer.server.port=8088"
+    networks:
+      - dice_network
+
   # Backend Service
   backend:
     build:
@@ -127,6 +182,7 @@ services:
       - DATABASE_URL=${DATABASE_URL:?DATABASE_URL environment variable is required}
       - REDIS_URL=${REDIS_URL:-redis://redis:6379}
       - JWT_SECRET=${JWT_SECRET:?JWT_SECRET environment variable is required}
+      - TEMPORAL_ADDRESS=temporal:7233
       - PORT=3001
     volumes:
       - ./workspace/backend:/app
@@ -139,6 +195,8 @@ services:
       postgres:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      temporal:
         condition: service_healthy
     labels:
       - "traefik.enable=true"

@@ -259,6 +259,390 @@ curl -X POST localhost:4566/_localstack/state/reset
 curl -s localhost:4566/_localstack/health | jq '.services | to_entries[] | select(.value == "available")'
 ```
 
+#### Temporal Workflow Engine
+
+Temporal is a workflow orchestration platform that provides durable execution for distributed applications. It's integrated with the DICE backend to handle complex business logic and long-running processes.
+
+```bash
+# Start Temporal server and UI
+docker compose up temporal temporal-ui -d
+
+# Health Check - Direct Temporal
+curl -s localhost:3001/health/temporal | jq
+
+# Health Check - Temporal UI
+curl -s localhost:8088 -o /dev/null -w "%{http_code}\n"
+
+# View Temporal Web UI
+open http://localhost:8088
+```
+
+##### Temporal Services Overview
+
+- **Temporal Server**: Core workflow engine (port 7233)
+- **Temporal Web UI**: Web interface for monitoring workflows (port 8088)
+- **Database**: Uses existing PostgreSQL with separate schema
+- **Backend Integration**: NestJS backend includes Temporal client and worker
+
+##### Using Temporal Workflows
+
+```bash
+# Start a sample workflow via API
+curl -X POST http://localhost:3001/workflows/example \
+  -H "Content-Type: application/json" \
+  -d '{"userId": "user123", "data": {"message": "Hello Temporal"}}'
+
+# Check workflow status
+curl http://localhost:3001/workflows/example-workflow-[TIMESTAMP] | jq
+
+# Get workflow result
+curl http://localhost:3001/workflows/example-workflow-[TIMESTAMP]/result | jq
+```
+
+##### Temporal Web UI Features
+
+```bash
+# Access Web UI (local development)
+open http://localhost:8088
+
+# Or via Traefik (with SSL)
+open https://temporal.dice.local
+```
+
+The Temporal Web UI provides:
+
+- **Workflow Executions**: View running and completed workflows
+- **Activity Monitoring**: Track individual activity executions
+- **Task Queues**: Monitor task queue status and worker connections
+- **Search & Filter**: Find workflows by various criteria
+- **Workflow Details**: Inspect workflow history and events
+
+##### Temporal VSCode Extension
+
+The Temporal VSCode extension provides integrated development tools for building and debugging workflows directly within your IDE.
+
+###### Installation
+
+```bash
+# Install via VSCode marketplace
+# Search for "Temporal" in Extensions panel
+# Or install via command line
+code --install-extension temporal-technologies.temporalio
+
+# Alternatively, install via Extensions panel:
+# 1. Open VSCode Extensions (Ctrl+Shift+X)
+# 2. Search for "Temporal"
+# 3. Install "Temporal" by Temporal Technologies
+```
+
+###### Extension Configuration
+
+Create or update your VSCode workspace settings (`.vscode/settings.json`):
+
+```json
+{
+  "temporal.connection.address": "localhost:7233",
+  "temporal.connection.namespace": "default",
+  "temporal.connection.tls": false,
+  "temporal.taskqueue.name": "dice-task-queue",
+  "temporal.worker.build-id": "dice-dev-worker",
+  "temporal.codeLens.enabled": true,
+  "temporal.validation.enabled": true
+}
+```
+
+###### Key Features
+
+**1. Workflow and Activity Code Lenses**
+
+- Inline buttons to start workflows directly from code
+- Quick access to workflow history and results
+- Activity execution monitoring
+
+**2. IntelliSense and Validation**
+
+- Auto-completion for Temporal APIs
+- Real-time validation of workflow and activity definitions
+- Type checking for workflow arguments and return types
+
+**3. Debugging Support**
+
+- Set breakpoints in workflow and activity code
+- Step through workflow execution
+- Inspect workflow state and variables
+
+**4. Task Queue Management**
+
+- View task queue status in sidebar
+- Monitor worker connections
+- Track task execution metrics
+
+###### Setting Up Debugging
+
+To debug workflows in VSCode with the DICE environment:
+
+1. **Configure Launch Configuration** (`.vscode/launch.json`):
+
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Temporal Worker",
+      "type": "node",
+      "request": "attach",
+      "port": 9229,
+      "restart": true,
+      "localRoot": "${workspaceFolder}/workspace/backend",
+      "remoteRoot": "/app",
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Debug Temporal Workflow",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/workspace/backend/src/temporal/worker.ts",
+      "env": {
+        "NODE_ENV": "development",
+        "TEMPORAL_ADDRESS": "localhost:7233"
+      },
+      "outFiles": ["${workspaceFolder}/workspace/backend/dist/**/*.js"],
+      "console": "integratedTerminal",
+      "restart": true
+    }
+  ]
+}
+```
+
+2. **Start Debugging Session**:
+
+```bash
+# Ensure Temporal server is running
+docker compose up temporal -d
+
+# Start backend in debug mode (already configured in docker-compose.yml)
+docker compose up backend -d
+
+# In VSCode: F5 or Debug > Start Debugging
+# Select "Debug Temporal Worker" configuration
+```
+
+###### Workflow Development Workflow
+
+**1. Create New Workflow**:
+
+- Use Command Palette (`Ctrl+Shift+P`)
+- Search for "Temporal: Create Workflow"
+- Follow prompts to generate workflow template
+
+**2. Test Workflow Locally**:
+
+```typescript
+// In workspace/backend/src/temporal/workflows/your-workflow.ts
+import { proxyActivities } from '@temporalio/workflow';
+
+export async function yourWorkflow(input: any): Promise<any> {
+    // Workflow logic here
+    // VSCode provides IntelliSense and validation
+}
+```
+
+**3. Start Workflow via Code Lens**:
+
+- Click "▶ Start Workflow" button above workflow function
+- Enter workflow arguments in popup
+- Monitor execution in Temporal panel
+
+**4. View Results**:
+
+- Check Temporal Web UI: `http://localhost:8088`
+- Use extension's workflow history panel
+- Monitor logs in VSCode terminal
+
+###### Extension Commands
+
+Access via Command Palette (`Ctrl+Shift+P`):
+
+```bash
+# Temporal: Connect to Server
+# Temporal: Disconnect from Server
+# Temporal: Start Workflow
+# Temporal: Describe Workflow
+# Temporal: Show Workflow History
+# Temporal: Show Task Queues
+# Temporal: Reset Workflow
+# Temporal: Terminate Workflow
+# Temporal: Create Workflow Template
+# Temporal: Create Activity Template
+# Temporal: Validate Workflow Code
+```
+
+###### Development Tips
+
+**Best Practices with VSCode Extension**:
+
+1. **Use Code Lenses for Quick Testing**:
+
+   ```typescript
+   // Click the "▶ Start" button that appears above functions
+   export async function exampleWorkflow(input: ExampleWorkflowInput) {
+       // Your workflow logic
+   }
+   ```
+
+2. **Leverage IntelliSense**:
+   - Auto-completion for `proxyActivities`
+   - Type-safe workflow signatures
+   - Activity timeout configurations
+
+3. **Monitor Task Queues**:
+   - Check "Temporal" panel in sidebar
+   - Verify worker connections
+   - Monitor task execution rates
+
+4. **Use Integrated Terminal**:
+
+   ```bash
+   # Terminal panel shows real-time worker logs
+   # Backend container logs appear automatically
+   # Workflow execution traces visible
+   ```
+
+5. **Debugging Workflows**:
+
+   ```typescript
+   // Set breakpoints in workflow code
+   export async function debuggableWorkflow(input: any) {
+       console.log('Workflow started'); // Breakpoint here
+       const result = await someActivity(input);
+       console.log('Activity completed'); // Breakpoint here
+       return result;
+   }
+   ```
+
+###### Integration with DICE Backend
+
+The extension automatically detects the DICE Temporal configuration:
+
+- **Connection**: Points to `localhost:7233` (Temporal server)
+- **Namespace**: Uses `default` namespace
+- **Task Queue**: Connects to `dice-task-queue`
+- **Worker**: Integrates with backend worker process
+
+**Workflow Testing Example**:
+
+```typescript
+// In VSCode, use Code Lens to start this workflow
+export async function diceCharacterWorkflow(input: {
+    userId: string;
+    characterData: any;
+}): Promise<{ characterId: string; status: string }> {
+    
+    // Validate character data
+    const validation = await validateCharacterData(input.characterData);
+    
+    if (!validation.isValid) {
+        throw new Error(`Invalid character: ${validation.errors.join(', ')}`);
+    }
+    
+    // Save to database
+    const characterId = await saveCharacter(input.userId, input.characterData);
+    
+    // Generate character sheet
+    await generateCharacterSheet(characterId);
+    
+    // Send notification
+    await sendCharacterCreatedNotification(input.userId, characterId);
+    
+    return {
+        characterId,
+        status: 'completed'
+    };
+}
+```
+
+###### Troubleshooting VSCode Extension
+
+**Common Issues**:
+
+1. **Connection Failed**:
+
+   ```bash
+   # Ensure Temporal server is running
+   docker compose ps temporal
+   
+   # Check connection settings in VSCode
+   # Verify localhost:7233 is accessible
+   telnet localhost 7233
+   ```
+
+2. **Code Lenses Not Appearing**:
+
+   ```json
+   // Check settings.json
+   {
+     "temporal.codeLens.enabled": true
+   }
+   ```
+
+3. **IntelliSense Not Working**:
+
+   ```bash
+   # Ensure TypeScript extension is active
+   # Reload VSCode window: Ctrl+Shift+P > "Reload Window"
+   ```
+
+4. **Debugging Not Connecting**:
+
+   ```bash
+   # Verify debug port is exposed in docker-compose.yml
+   # Backend service should have: - "9229:9229"
+   ```
+
+##### Advanced Temporal Operations
+
+```bash
+# Using Temporal CLI directly (inside container)
+docker compose exec temporal tctl workflow list
+
+# Describe a specific workflow
+docker compose exec temporal tctl workflow describe \
+  --workflow_id example-workflow-[TIMESTAMP]
+
+# Start workflow using CLI
+docker compose exec temporal tctl workflow start \
+  --taskqueue dice-task-queue \
+  --workflow_type exampleWorkflow \
+  --input '{"userId": "cli-user", "data": {"source": "cli"}}'
+
+# List task queues
+docker compose exec temporal tctl taskqueue list
+
+# Describe task queue
+docker compose exec temporal tctl taskqueue describe \
+  --taskqueue dice-task-queue
+```
+
+##### Temporal Configuration
+
+The Temporal server is configured via `infrastructure/temporal/development-sql.yaml`:
+
+```yaml
+# Key development settings
+history.defaultWorkflowTaskTimeout: "10s"
+history.defaultActivityTaskTimeout: "30s"
+system.advancedVisibilityWritingMode: "dual"
+log.level: "info"
+```
+
+##### Temporal Development Tips
+
+- **Task Queue**: All DICE workflows use `dice-task-queue`
+- **Namespace**: Uses `default` namespace for development
+- **Database**: Shares PostgreSQL with separate Temporal schema
+- **Worker**: Backend automatically starts a Temporal worker
+- **Retry Logic**: Activities have built-in retry with exponential backoff
+
 ### 🎲 Application Services
 
 #### Backend API (NestJS)

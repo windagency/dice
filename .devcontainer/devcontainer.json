@@ -18,7 +18,9 @@
     3002,
     5432,
     6379,
-    8080
+    7233,
+    8080,
+    8088
   ],
   "portsAttributes": {
     "3001": {
@@ -41,9 +43,17 @@
       "label": "Redis",
       "onAutoForward": "ignore"
     },
+    "7233": {
+      "label": "Temporal gRPC",
+      "onAutoForward": "ignore"
+    },
     "8080": {
       "label": "Traefik Dashboard",
       "onAutoForward": "notify"
+    },
+    "8088": {
+      "label": "Temporal Web UI",
+      "onAutoForward": "openPreview"
     }
   },
   "customizations": {

@@ -48,6 +48,32 @@ else
     echo "❌ LocalStack is not responding"
 fi
 
+# Temporal
+echo "🌀 Temporal Workflow Engine:"
+if response=$(curl -s localhost:3001/health/temporal 2>/dev/null); then
+    status=$(echo "$response" | jq -r '.status // "unknown"')
+    if [ "$status" = "ok" ]; then
+        echo "✅ Temporal is connected and healthy"
+    else
+        echo "❌ Temporal connection failed"
+        echo "$response" | jq -r '"   Error: \(.error // "Unknown error")"'
+    fi
+else
+    if docker ps --filter name=dice_temporal --format "{{.Status}}" | grep -q "Up"; then
+        echo "⚠️  Temporal server is running but backend connection failed"
+    else
+        echo "❌ Temporal server is not running"
+    fi
+fi
+
+# Temporal UI
+echo "🖥️  Temporal Web UI:"
+if curl -s localhost:8088 > /dev/null 2>&1; then
+    echo "✅ Temporal UI is responding"
+else
+    echo "❌ Temporal UI is not responding"
+fi
+
 # Traefik
 echo "🌐 Traefik Proxy:"
 if docker ps --filter name=dice_traefik --format "{{.Status}}" | grep -q "Up"; then
@@ -65,7 +91,16 @@ if ! curl -s localhost:3000 > /dev/null 2>&1; then all_healthy=false; fi
 if ! docker compose exec -T postgres pg_isready -U dice_user -d dice_db > /dev/null 2>&1; then all_healthy=false; fi
 if ! docker compose exec -T redis redis-cli ping > /dev/null 2>&1; then all_healthy=false; fi
 if ! curl -s localhost:4566/_localstack/health > /dev/null 2>&1; then all_healthy=false; fi
+if ! curl -s localhost:8088 > /dev/null 2>&1; then all_healthy=false; fi
 if ! docker ps --filter name=dice_traefik --format "{{.Status}}" | grep -q "Up"; then all_healthy=false; fi
+
+# Check Temporal health through backend API
+if response=$(curl -s localhost:3001/health/temporal 2>/dev/null); then
+    status=$(echo "$response" | jq -r '.status // "unknown"')
+    if [ "$status" != "ok" ]; then all_healthy=false; fi
+else
+    all_healthy=false
+fi
 
 if [ "$all_healthy" = true ]; then
     echo "🎉 All services are healthy! Development environment is ready."

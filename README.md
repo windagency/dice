@@ -16,6 +16,7 @@
 [![Docker](https://img.shields.io/badge/Docker-28.x-4B83F1?style=flat-square&logo=docker)](https://www.docker.com/)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-1.33.x-326CE5?style=flat-square&logo=kubernetes)](https://kubernetes.io/)
 [![Terraform](https://img.shields.io/badge/Terraform-1.12.x-7B42BC?style=flat-square&logo=terraform)](https://developer.hashicorp.com/terraform)
+[![Temporal.io](https://img.shields.io/badge/Temporal-1.x-6169ED?style=flat-square&logo=temporal)](https://temporal.io/)
 
 [![pnpm](https://img.shields.io/badge/pnpm-10.x-F69220?style=flat-square&logo=pnpm)](https://pnpm.io/)
 [![Volta](https://img.shields.io/badge/Volta-2.x-257A83?style=flat-square&logo=lightning)](https://volta.sh/)

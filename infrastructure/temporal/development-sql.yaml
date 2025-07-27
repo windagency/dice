@@ -1,0 +1,45 @@
+# Temporal Development Configuration for PostgreSQL
+# This configuration optimises Temporal for development usage
+
+system.forceSearchAttributesCacheRefreshOnRead:
+  - value: true
+
+history.persistenceMaxQPS:
+  - value: 3000
+
+history.historyMgrNumConns:
+  - value: 50
+
+matching.persistenceMaxQPS:
+  - value: 3000
+
+worker.persistenceMaxQPS:
+  - value: 3000
+
+system.enableReadFromClosedExecutionV2:
+  - value: true
+
+# Development-friendly timeouts and limits
+limit.maxIDLength:
+  - value: 1000
+
+history.defaultWorkflowTaskTimeout:
+  - value: "10s"
+
+history.defaultActivityTaskTimeout:
+  - value: "30s"
+
+# Enable advanced visibility features (when using PostgreSQL)
+system.advancedVisibilityWritingMode:
+  - value: "dual"
+
+system.enableReadVisibilityFromES:
+  - value: false
+
+# Development logging
+log.level:
+  - value: "info"
+
+# Workflow execution limits for development
+limit.workflowIDReuseMinimalInterval:
+  - value: "10s" 
