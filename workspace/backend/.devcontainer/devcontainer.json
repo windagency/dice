@@ -1,6 +1,6 @@
 {
   "name": "DICE Backend Service",
-  "dockerComposeFile": "../../docker-compose.yml",
+  "dockerComposeFile": "../docker-compose.yml",
   "service": "backend",
   "workspaceFolder": "/app",
   "shutdownAction": "stopCompose",

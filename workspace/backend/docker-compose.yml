@@ -1,0 +1,158 @@
+# Backend Development Environment
+# This compose file provides all services needed for backend development
+# 
+# ⚠️ SECURITY WARNING: 
+# - Default passwords are weak and for development only
+# - Set POSTGRES_PASSWORD and JWT_SECRET environment variables for security
+# - Never use default secrets in production
+# 
+# Run with: docker compose up -d
+
+services:
+  # Backend API Service
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: backend_dev
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://dice_user:${POSTGRES_PASSWORD:-dice_dev_password}@postgres:5432/dice_db
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET:-backend_dev_jwt_secret}
+      - TEMPORAL_ADDRESS=temporal:7233
+      - PORT=3001
+    volumes:
+      - .:/app
+      - /app/node_modules  # Anonymous volume for node_modules
+    ports:
+      - "3001:3001"
+      - "9229:9229"  # Debug port
+    command: sh -c "chmod 755 /app && pnpm install && pnpm run start:dev"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      temporal:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - backend_network
+
+  # Database (Required for Backend)
+  postgres:
+    image: postgres:17-bullseye
+    container_name: backend_postgres
+    environment:
+      POSTGRES_DB: dice_db
+      POSTGRES_USER: dice_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dice_dev_password}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../../infrastructure/scripts/seed-data:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dice_user -d dice_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend_network
+
+  # Redis Cache (Required for Backend)
+  redis:
+    image: redis:7-bullseye
+    container_name: backend_redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - backend_network
+
+  # Temporal Workflow Engine (Backend Feature)
+  temporal:
+    image: temporalio/auto-setup:1.24.2
+    container_name: backend_temporal
+    environment:
+      - DB=postgres12
+      - DB_PORT=5432
+      - POSTGRES_USER=dice_user
+      - POSTGRES_PWD=${POSTGRES_PASSWORD:-dice_dev_password}
+      - POSTGRES_SEEDS=postgres
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+      - ENABLE_ES=false
+      - TEMPORAL_CLI_ADDRESS=temporal:7233
+    ports:
+      - "7233:7233"
+      - "7234:7234"
+      - "7235:7235"
+      - "7239:7239"
+    volumes:
+      - ../../infrastructure/temporal:/etc/temporal/config/dynamicconfig
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "tctl", "--address", "temporal:7233", "workflow", "list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - backend_network
+
+  # Temporal Web UI (Backend Development Tool)
+  temporal-ui:
+    image: temporalio/ui:2.31.0
+    container_name: backend_temporal_ui
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:8088
+    ports:
+      - "8088:8080"
+    depends_on:
+      temporal:
+        condition: service_healthy
+    networks:
+      - backend_network
+  
+  # Optional: LocalStack for AWS Development
+  localstack:
+    image: localstack/localstack:4.0
+    container_name: backend_localstack
+    environment:
+      - SERVICES=s3,dynamodb,kinesis
+      - DEBUG=1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - localstack_data:/var/lib/localstack
+    ports:
+      - "4566:4566"
+    profiles:
+      - aws  # Optional profile for AWS development
+    networks:
+      - backend_network
+
+volumes:
+  postgres_data:
+    driver: local
+  localstack_data:
+    driver: local
+
+networks:
+  backend_network:
+    driver: bridge
+    name: backend_network 

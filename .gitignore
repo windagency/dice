@@ -327,3 +327,6 @@ workspace/*/coverage/
 workspace/*/.next/
 workspace/*/.astro/
 workspace/*/.nuxt/
+
+*storybook.log
+storybook-static

@@ -1,8 +1,13 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
-import { Controller, Get, Post, Body, Param, Module } from '@nestjs/common';
+import helmet from 'helmet';
+import { Controller, Get, Post, Body, Param, Module, UseGuards, Request, ValidationPipe, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { TemporalService } from './temporal/temporal.service';
 import { TemporalModule } from './temporal/temporal.module';
+import { AuthModule } from './auth/auth.module';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { SecurityInterceptor } from './security/security.interceptor';
+import { RateLimitMiddleware, authRateLimit, authSlowDown } from './security/rate-limit.middleware';
 import { startTemporalWorker } from './temporal/worker';
 
 @Controller()
@@ -55,7 +60,8 @@ class AppController {
   }
 
   @Post('workflows/example')
-  async startExampleWorkflow(@Body() body: { userId: string; data?: any }) {
+  @UseGuards(JwtAuthGuard)
+  async startExampleWorkflow(@Body() body: { userId: string; data?: any }, @Request() req: any) {
     try {
       const workflowId = `example-workflow-${Date.now()}`;
       
@@ -81,7 +87,8 @@ class AppController {
   }
 
   @Get('workflows/:workflowId')
-  async getWorkflowStatus(@Param('workflowId') workflowId: string) {
+  @UseGuards(JwtAuthGuard)
+  async getWorkflowStatus(@Param('workflowId') workflowId: string, @Request() req: any) {
     try {
       const description = await this.temporalService.describeWorkflow(workflowId);
       
@@ -102,7 +109,8 @@ class AppController {
   }
 
   @Get('workflows/:workflowId/result')
-  async getWorkflowResult(@Param('workflowId') workflowId: string) {
+  @UseGuards(JwtAuthGuard)
+  async getWorkflowResult(@Param('workflowId') workflowId: string, @Request() req: any) {
     try {
       const result = await this.temporalService.getWorkflowResult(workflowId);
       
@@ -122,10 +130,26 @@ class AppController {
 }
 
 @Module({
-  imports: [TemporalModule],
+  imports: [TemporalModule, AuthModule],
   controllers: [AppController],
+  providers: [SecurityInterceptor, RateLimitMiddleware],
 })
-class AppModule {}
+class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    // Apply auth rate limiting and slowdown to authentication endpoints
+    consumer
+      .apply(authRateLimit, authSlowDown)
+      .forRoutes(
+        { path: 'auth/register', method: RequestMethod.POST },
+        { path: 'auth/login', method: RequestMethod.POST }
+      );
+
+    // Apply general rate limiting to all routes
+    consumer
+      .apply(RateLimitMiddleware)
+      .forRoutes('*');
+  }
+}
 
 async function bootstrap() {
   console.log('🎲 DICE Backend Service Starting...');
@@ -133,8 +157,52 @@ async function bootstrap() {
   try {
     const app = await NestFactory.create(AppModule);
     
-    // Enable CORS for development
-    app.enableCors();
+    // Security headers
+    app.use(helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"], // Allow inline styles for development
+          scriptSrc: ["'self'"],
+          imgSrc: ["'self'", "data:", "https:"],
+          connectSrc: ["'self'"],
+          fontSrc: ["'self'"],
+          objectSrc: ["'none'"],
+          mediaSrc: ["'self'"],
+          frameSrc: ["'none'"],
+        },
+      },
+      crossOriginEmbedderPolicy: false, // Disable for development
+      // forceHTTPSRedirect: process.env.NODE_ENV === 'production', // Force HTTPS in production (not available in this helmet version)
+      hsts: process.env.NODE_ENV === 'production' ? {
+        maxAge: 31536000, // 1 year
+        includeSubDomains: true,
+        preload: true
+      } : false,
+    }));
+
+    // Global validation pipe
+    app.useGlobalPipes(new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      disableErrorMessages: process.env.NODE_ENV === 'production', // Hide validation details in production
+    }));
+
+    // Global security interceptor
+    app.useGlobalInterceptors(new SecurityInterceptor());
+    
+    // Configure CORS properly
+    const corsOptions = {
+      origin: process.env.NODE_ENV === 'production' 
+        ? ['https://yourdomain.com'] // Replace with actual production domains
+        : ['http://localhost:3000', 'http://localhost:6006'], // Allow PWA and Storybook in development
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      credentials: true,
+    };
+    
+    app.enableCors(corsOptions);
     
     const port = process.env.PORT || 3001;
     await app.listen(port);
@@ -142,7 +210,12 @@ async function bootstrap() {
     console.log(`🚀 NestJS Server running on port ${port}`);
     console.log(`🏥 Health endpoint: http://localhost:${port}/health`);
     console.log(`🌀 Temporal endpoint: http://localhost:${port}/health/temporal`);
+    console.log(`🔐 Auth endpoints: http://localhost:${port}/auth/`);
     console.log(`📡 API endpoint: http://localhost:${port}/`);
+    
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`⚠️  Running in ${process.env.NODE_ENV || 'development'} mode with relaxed security`);
+    }
     
     // Start Temporal Worker in background
     console.log('🔄 Starting Temporal Worker...');

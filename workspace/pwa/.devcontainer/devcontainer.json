@@ -1,6 +1,6 @@
 {
   "name": "DICE PWA Frontend",
-  "dockerComposeFile": "../../docker-compose.yml",
+  "dockerComposeFile": "../docker-compose.yml",
   "service": "pwa",
   "workspaceFolder": "/app",
   "shutdownAction": "stopCompose",

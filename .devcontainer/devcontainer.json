@@ -1,7 +1,9 @@
 {
   "name": "DICE Development Environment",
   "dockerComposeFile": [
-    "docker-compose.yml"
+    "../workspace/backend/docker-compose.yml",
+    "../workspace/pwa/docker-compose.yml",
+    "../infrastructure/docker/docker-compose.orchestrator.yml"
   ],
   "service": "backend",
   "workspaceFolder": "/app",
@@ -10,69 +12,120 @@
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },
-  "initializeCommand": "cp .env.sample .env.development 2>/dev/null || true",
-  "postCreateCommand": "pnpm install",
+  "initializeCommand": [
+    "bash",
+    "-c",
+    "infrastructure/scripts/setup-devcontainer.sh"
+  ],
+  "postCreateCommand": [
+    "bash",
+    "-c",
+    "pnpm install --frozen-lockfile"
+  ],
   "forwardPorts": [
-    3001,
-    3000,
-    3002,
-    5432,
-    6379,
-    7233,
-    8080,
-    8088
+    3001, // Backend API
+    3000, // PWA Frontend  
+    6006, // Storybook Component Library
+    5432, // PostgreSQL
+    6379, // Redis
+    7233, // Temporal gRPC
+    8080, // Traefik Dashboard
+    8088, // Temporal Web UI
+    4566 // LocalStack AWS Services
   ],
   "portsAttributes": {
     "3001": {
       "label": "Backend API",
-      "onAutoForward": "notify"
+      "onAutoForward": "notify",
+      "elevateIfNeeded": false
     },
     "3000": {
       "label": "PWA Frontend",
-      "onAutoForward": "openBrowser"
+      "onAutoForward": "openBrowser",
+      "elevateIfNeeded": false
     },
-    "3002": {
-      "label": "PayloadCMS",
-      "onAutoForward": "notify"
+    "6006": {
+      "label": "Storybook Component Library",
+      "onAutoForward": "openPreview",
+      "elevateIfNeeded": false
     },
     "5432": {
-      "label": "PostgreSQL",
+      "label": "PostgreSQL Database",
       "onAutoForward": "ignore"
     },
     "6379": {
-      "label": "Redis",
+      "label": "Redis Cache",
       "onAutoForward": "ignore"
     },
     "7233": {
-      "label": "Temporal gRPC",
+      "label": "Temporal gRPC Server",
       "onAutoForward": "ignore"
     },
     "8080": {
       "label": "Traefik Dashboard",
-      "onAutoForward": "notify"
+      "onAutoForward": "notify",
+      "elevateIfNeeded": false
     },
     "8088": {
       "label": "Temporal Web UI",
-      "onAutoForward": "openPreview"
+      "onAutoForward": "openPreview",
+      "elevateIfNeeded": false
+    },
+    "4566": {
+      "label": "LocalStack AWS Services",
+      "onAutoForward": "notify",
+      "elevateIfNeeded": false
     }
   },
   "customizations": {
     "vscode": {
       "extensions": [
+        // TypeScript and JavaScript
         "ms-vscode.vscode-typescript-next",
+        "ms-vscode.vscode-eslint",
+        "esbenp.prettier-vscode",
+        // Frameworks and Libraries
         "bradlc.vscode-tailwindcss",
+        "astro-build.astro-vscode",
         "ms-vscode.vscode-json",
-        "redhat.vscode-yaml",
+        // DevOps and Infrastructure
         "ms-azuretools.vscode-docker",
-        "ms-kubernetes-tools.vscode-kubernetes-tools"
+        "redhat.vscode-yaml",
+        // Development Tools
+        "ms-vscode.vscode-thunder-client",
+        "streetsidesoftware.code-spell-checker",
+        // Temporal
+        "temporal-technologies.temporalio"
       ],
       "settings": {
+        // TypeScript Configuration
         "typescript.preferences.importModuleSpecifier": "relative",
+        "typescript.suggest.autoImports": true,
+        "typescript.updateImportsOnFileMove.enabled": "always",
+        // Editor Configuration
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
-          "source.fixAll.eslint": true
-        }
+          "source.fixAll.eslint": "explicit",
+          "source.organizeImports": "explicit"
+        },
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        // File Configuration
+        "files.exclude": {
+          "**/node_modules": true,
+          "**/dist": true,
+          "**/.astro": true
+        },
+        // Terminal Configuration
+        "terminal.integrated.defaultProfile.linux": "bash",
+        // Docker Integration
+        "docker.defaultRegistryPath": "localhost:5000"
       }
     }
+  },
+  "remoteEnv": {
+    "NODE_ENV": "development",
+    "ASTRO_TELEMETRY_DISABLED": "1",
+    "COMPOSE_PROFILES": "devcontainer"
   }
 }

@@ -1,0 +1,1 @@
+export { DiceModal, DiceModalHeader, DiceModalBody, DiceModalFooter } from './DiceModal'; 

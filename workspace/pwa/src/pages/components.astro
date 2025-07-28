@@ -1,0 +1,13 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ComponentsDemo from '../components/ComponentsDemo.tsx';
+---
+
+<Layout title="UI Components Demo">
+  <div class="container mx-auto px-4 py-8 max-w-6xl">
+    <h1 class="text-3xl font-bold mb-8 text-gray-900">DICE UI Components Library</h1>
+    <p class="text-lg text-gray-600 mb-8">Interactive showcase of all base UI components with different variants and states.</p>
+
+    <ComponentsDemo client:load />
+  </div>
+</Layout> 

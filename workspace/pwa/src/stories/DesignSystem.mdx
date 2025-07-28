@@ -1,0 +1,340 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Design System/Overview" />
+
+# DICE Design System
+
+**Component Namespace: `Dice*`**
+
+The DICE (D&D Interactive Character Experience) design system provides a comprehensive set of design tokens, components, and guidelines for building consistent, accessible, and delightful user interfaces.
+
+## 🎨 Design Principles
+
+### 1. **Accessibility First**
+- WCAG 2.1 AA compliance across all components
+- Semantic HTML and proper ARIA attributes
+- Keyboard navigation support
+- Screen reader optimisation
+
+### 2. **Mobile-First Responsive**
+- Touch-friendly interactions (44px minimum touch targets)
+- Fluid typography and spacing
+- Progressive enhancement approach
+
+### 3. **D&D Fantasy Theme**
+- Medieval-inspired aesthetics without being overwhelming
+- Clear information hierarchy for complex game data
+- Consistent iconography and visual language
+
+### 4. **Performance Optimised**
+- Lightweight components with minimal dependencies
+- Tree-shakeable architecture
+- Efficient CSS utility classes with Tailwind
+
+## 🎯 Colour System
+
+### Primary Colours
+Our primary colour palette is built around trustworthy blues that convey reliability and depth.
+
+<div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+  <div style={{ 
+    width: '120px', 
+    height: '80px', 
+    backgroundColor: '#1e40af', 
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'white',
+    fontSize: '12px',
+    fontWeight: 'bold'
+  }}>
+    Primary<br/>#1e40af
+  </div>
+  <div style={{ 
+    width: '120px', 
+    height: '80px', 
+    backgroundColor: '#2563eb', 
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'white',
+    fontSize: '12px',
+    fontWeight: 'bold'
+  }}>
+    Primary Light<br/>#2563eb
+  </div>
+  <div style={{ 
+    width: '120px', 
+    height: '80px', 
+    backgroundColor: '#1d4ed8', 
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'white',
+    fontSize: '12px',
+    fontWeight: 'bold'
+  }}>
+    Primary Dark<br/>#1d4ed8
+  </div>
+</div>
+
+### Secondary Colours
+Grey tones provide neutral backgrounds and text hierarchy.
+
+<div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+  <div style={{ 
+    width: '120px', 
+    height: '80px', 
+    backgroundColor: '#f9fafb', 
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: '#1f2937',
+    fontSize: '12px',
+    fontWeight: 'bold',
+    border: '1px solid #e5e7eb'
+  }}>
+    Grey 50<br/>#f9fafb
+  </div>
+  <div style={{ 
+    width: '120px', 
+    height: '80px', 
+    backgroundColor: '#6b7280', 
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'white',
+    fontSize: '12px',
+    fontWeight: 'bold'
+  }}>
+    Grey 500<br/>#6b7280
+  </div>
+  <div style={{ 
+    width: '120px', 
+    height: '80px', 
+    backgroundColor: '#1f2937', 
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'white',
+    fontSize: '12px',
+    fontWeight: 'bold'
+  }}>
+    Grey 800<br/>#1f2937
+  </div>
+</div>
+
+### Status Colours
+Semantic colours for different states and feedback.
+
+<div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+  <div style={{ 
+    width: '120px', 
+    height: '80px', 
+    backgroundColor: '#dc2626', 
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'white',
+    fontSize: '12px',
+    fontWeight: 'bold'
+  }}>
+    Danger<br/>#dc2626
+  </div>
+  <div style={{ 
+    width: '120px', 
+    height: '80px', 
+    backgroundColor: '#16a34a', 
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'white',
+    fontSize: '12px',
+    fontWeight: 'bold'
+  }}>
+    Success<br/>#16a34a
+  </div>
+  <div style={{ 
+    width: '120px', 
+    height: '80px', 
+    backgroundColor: '#d97706', 
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'white',
+    fontSize: '12px',
+    fontWeight: 'bold'
+  }}>
+    Warning<br/>#d97706
+  </div>
+</div>
+
+## 📝 Typography
+
+### Font Family
+- **Primary**: `ui-sans-serif, system-ui, sans-serif` - Clean, readable system fonts
+- **Monospace**: `ui-monospace, SFMono-Regular, Monaco, Consolas` - For code and data
+
+### Type Scale
+Our typography scale is designed for excellent readability at all sizes.
+
+<div style={{ marginBottom: '2rem' }}>
+  <h1 style={{ fontSize: '2.25rem', fontWeight: '700', lineHeight: '2.5rem', marginBottom: '0.5rem' }}>
+    Heading 1 (36px / 2.25rem)
+  </h1>
+  <h2 style={{ fontSize: '1.875rem', fontWeight: '600', lineHeight: '2.25rem', marginBottom: '0.5rem' }}>
+    Heading 2 (30px / 1.875rem)
+  </h2>
+  <h3 style={{ fontSize: '1.5rem', fontWeight: '600', lineHeight: '2rem', marginBottom: '0.5rem' }}>
+    Heading 3 (24px / 1.5rem)
+  </h3>
+  <h4 style={{ fontSize: '1.25rem', fontWeight: '500', lineHeight: '1.75rem', marginBottom: '0.5rem' }}>
+    Heading 4 (20px / 1.25rem)
+  </h4>
+  <p style={{ fontSize: '1rem', lineHeight: '1.5rem', marginBottom: '0.5rem' }}>
+    Body Text (16px / 1rem) - Default paragraph text for optimal readability
+  </p>
+  <p style={{ fontSize: '0.875rem', lineHeight: '1.25rem', color: '#6b7280' }}>
+    Small Text (14px / 0.875rem) - For secondary information and captions
+  </p>
+</div>
+
+## 📐 Spacing System
+
+Our spacing system is based on a 4px grid, providing consistent rhythm and alignment.
+
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
+  {[
+    { size: '4px', rem: '0.25rem', name: 'xs' },
+    { size: '8px', rem: '0.5rem', name: 'sm' },
+    { size: '12px', rem: '0.75rem', name: 'base' },
+    { size: '16px', rem: '1rem', name: 'md' },
+    { size: '24px', rem: '1.5rem', name: 'lg' },
+    { size: '32px', rem: '2rem', name: 'xl' },
+    { size: '48px', rem: '3rem', name: '2xl' },
+    { size: '64px', rem: '4rem', name: '3xl' }
+  ].map(({ size, rem, name }) => (
+    <div key={name} style={{ 
+      padding: '1rem', 
+      border: '1px solid #e5e7eb', 
+      borderRadius: '8px',
+      backgroundColor: '#f9fafb'
+    }}>
+      <div style={{ 
+        width: size, 
+        height: size, 
+        backgroundColor: '#2563eb', 
+        marginBottom: '0.5rem',
+        borderRadius: '4px'
+      }} />
+      <div style={{ fontSize: '0.875rem', fontWeight: '500' }}>{name}</div>
+      <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>{size} / {rem}</div>
+    </div>
+  ))}
+</div>
+
+## 🎪 Component Architecture
+
+### Component Naming Convention
+
+All DICE design system components are prefixed with `Dice` to avoid conflicts with other libraries:
+
+- `DiceButton` - Interactive button component
+- `DiceInput` - Form input with validation
+- `DiceCard` / `DiceCardHeader` / `DiceCardBody` / `DiceCardFooter` - Content containers
+- `DiceModal` / `DiceModalHeader` / `DiceModalBody` / `DiceModalFooter` - Dialogue overlays
+- `DiceTabs` - Tabbed navigation
+- `DiceLoadingSpinner` - Loading indicators
+- `DiceErrorBoundary` - Error handling wrapper
+- `DiceTooltip` - Contextual help
+
+### React vs Astro Components
+
+**Use React Components When:**
+- Component needs state management (useState, useEffect)
+- Interactive features (onClick, onChange, form handling)
+- Client-side logic and event handlers
+- Dynamic behaviour based on user input
+
+**Use Astro Components When:**
+- Static content and layout
+- Server-side rendering benefits
+- No interactivity required
+- Better performance for static elements
+
+### Component Principles
+
+1. **Single Responsibility**: Each component has one clear purpose
+2. **Composition over Inheritance**: Build complex UIs by combining simple components
+3. **Prop Interface Design**: Clear, typed interfaces with sensible defaults
+4. **Accessibility Built-in**: ARIA attributes and semantic HTML by default
+
+## 📱 Responsive Design
+
+### Breakpoints
+Following mobile-first approach with these breakpoints:
+
+- **Mobile**: `< 640px` - Primary focus, optimised for touch
+- **Tablet**: `640px - 1024px` - Comfortable two-column layouts
+- **Desktop**: `> 1024px` - Multi-column layouts with rich interactions
+
+### Touch Targets
+- Minimum 44px × 44px for all interactive elements
+- Adequate spacing between touchable elements
+- Visual feedback for touch interactions
+
+## ♿ Accessibility Standards
+
+### WCAG 2.1 AA Compliance
+- **Colour Contrast**: 4.5:1 for normal text, 3:1 for large text
+- **Focus Management**: Visible focus indicators, logical tab order
+- **Screen Readers**: Proper ARIA labels, roles, and descriptions
+- **Keyboard Navigation**: All functionality accessible via keyboard
+
+### Testing Checklist
+- [ ] Tab through all interactive elements
+- [ ] Test with screen reader (VoiceOver/NVDA)
+- [ ] Verify colour contrast ratios
+- [ ] Check responsive behaviour
+- [ ] Validate HTML and ARIA attributes
+
+## 🎮 D&D-Specific Guidelines
+
+### Data Presentation
+- **Ability Scores**: Prominent display with modifiers
+- **Character Stats**: Clear hierarchy of information
+- **Dice Rolls**: Visual feedback and animation
+- **Equipment Lists**: Organised, scannable layouts
+
+### Visual Language
+- **Cards**: Primary container for character information
+- **Badges**: For status indicators and quick stats
+- **Progress Bars**: For health, experience, spell slots
+- **Icons**: Consistent D&D iconography
+
+## 🚀 Performance Guidelines
+
+### Component Performance
+- Use React.memo() for expensive re-renders
+- Implement proper dependency arrays in useEffect
+- Avoid inline object creation in render methods
+- Prefer CSS for animations over JavaScript
+
+### Bundle Optimisation
+- Tree-shaking friendly exports
+- Lazy loading for heavy components
+- Efficient Tailwind CSS purging
+- Minimal runtime dependencies
+
+---
+
+This design system evolves with our product needs whilst maintaining consistency and quality. For component-specific documentation, explore the individual component stories in the sidebar. 

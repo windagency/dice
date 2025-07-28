@@ -1,0 +1,33 @@
+---
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#1e40af" />
+    <meta name="description" content="D&D Character Manager - Create, manage, and play your characters" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="DICE Character Manager" />
+    <meta property="og:description" content="D&D Character Manager PWA" />
+    
+    <!-- Preconnect to API -->
+    <link rel="preconnect" href="https://api.dice.local" />
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <slot />
+  </body>
+</html> 

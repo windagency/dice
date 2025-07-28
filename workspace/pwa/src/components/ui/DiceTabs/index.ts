@@ -1,0 +1,1 @@
+export { DiceTabs } from './DiceTabs'; 

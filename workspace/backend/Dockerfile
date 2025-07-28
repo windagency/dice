@@ -15,11 +15,11 @@ RUN apt-get update && apt-get install -y \
 
 # Create non-root user for security
 RUN groupadd -r dice && useradd -r -g dice dice -m
-RUN chown -R dice:dice /app
 RUN mkdir -p /home/dice && chown -R dice:dice /home/dice
 
-# Switch to non-root user
-USER dice
+# NOTE: In development, we'll run as root to avoid volume permission issues
+# In production, we should use the dice user
+# USER dice
 
 # Expose ports
 EXPOSE 3001 9229

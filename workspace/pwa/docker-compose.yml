@@ -1,0 +1,58 @@
+# PWA Frontend Development Environment  
+# This compose file provides all services needed for PWA development
+# Run with: docker compose up -d
+
+services:
+  # PWA Frontend Service
+  pwa:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pwa_dev
+    environment:
+      - NODE_ENV=development
+      - ASTRO_TELEMETRY_DISABLED=1
+      - PORT=3000
+      - VITE_API_URL=http://localhost:3001  # Point to backend for API calls
+    volumes:
+      - .:/app
+      - /app/node_modules  # Anonymous volume for node_modules
+    ports:
+      - "3000:3000"
+      - "6006:6006"  # Storybook Component Library
+    command: sh -c "pnpm install && pnpm run dev"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - pwa_network
+
+  # Mock Backend (Optional - for PWA-only development)
+  mock-backend:
+    image: node:22-bullseye
+    container_name: pwa_mock_backend
+    working_dir: /app
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - .:/app
+    ports:
+      - "3001:3001"
+    command: sh -c "npm install -g json-server && json-server --watch mock-data/db.json --port 3001 --host 0.0.0.0"
+    profiles:
+      - mock  # Enable with: docker compose --profile mock up -d
+    networks:
+      - pwa_network
+
+  # Storybook Development (Built into PWA service by default)
+  # Access via: http://localhost:6006
+  
+volumes: {}
+
+networks:
+  pwa_network:
+    driver: bridge
+    name: pwa_network 

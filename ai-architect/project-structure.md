@@ -27,6 +27,7 @@
 │       ├── 📂 04-tools-and-configurations/
 │       │   └── 📜 4-packages-installation.mdc
 │       ├── 📂 05-workflows-and-processes/
+│       │   ├── 📜 5-commit.mdc
 │       │   └── 📜 5-bug-finder.mdc
 │       ├── 📂 06-templates-and-models/
 │       │   └── 📜 
@@ -40,15 +41,24 @@
 ├── 📂 .husky/
 ├── 📂 .vscode/
 ├── 📂 ai-architect/
-│   ├── 📜 product-requirements-document
+│   ├── 📜 a11y-checklist.md
+│   ├── 📜 functional-specs.md
+│   ├── 📜 product-requirements-document.md
 │   ├── 📜 project-structure.md
-│   └── 📜 system-architecture.md
+│   ├── 📜 system-architecture.md
+│   ├── 📜 user-stories.md
+│   └── 📜 ux-wireframes.md
 ├── 📂 ai-editor/
 │   └── 📜 coding-rules.md
 ├── 📂 documentation/
 ├── 📂 infrastructure/
+│   ├── 📂 config/
+│   ├── 📂 data/
+│   ├── 📂 docker/
 │   ├── 📂 k8s/
 │   ├── 📂 localstack/
+│   ├── 📂 scripts/
+│   ├── 📂 temporal/
 │   └── 📂 tf/
 ├── 📂 memory-bank/
 ├── 📂 rag/
@@ -60,8 +70,13 @@
 │   └── 📂 shared/
 ├── 📜 .cursorignore
 ├── 📜 .cursorindexingignore
+├── 📜 .env.sample
 ├── 📜 .gitattributes
 ├── 📜 .gitignore
 ├── 📜 CHANGELOG.md
-└── 📜 README.md
+├── 📜 LICENSE
+├── 📜 Makefile
+├── 📜 pnpm-workspace.yaml
+├── 📜 README.md
+└── 📜 SECURITY_QUALITY_TRACKER.md
 ```

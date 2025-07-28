@@ -1,4 +1,4 @@
-import { Connection, Worker } from '@temporalio/worker';
+import { NativeConnection, Worker } from '@temporalio/worker';
 import * as activities from './activities/example.activities';
 
 /**
@@ -12,7 +12,7 @@ export async function startTemporalWorker() {
   
   try {
     // Create connection to Temporal server
-    const connection = await Connection.connect({
+    const connection = await NativeConnection.connect({
       address: temporalAddress,
     });
 

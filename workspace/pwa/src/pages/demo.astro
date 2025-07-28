@@ -1,0 +1,617 @@
+---
+// Demo page showcasing Phase 1 functionality
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="DICE PWA - Phase 1 Demo">
+  <main class="container mx-auto px-4 py-8">
+    <div class="max-w-6xl mx-auto">
+      <h1 class="text-4xl font-bold text-center mb-8 text-blue-600">
+        🎲 DICE PWA - Phase 1 Demo
+      </h1>
+      
+      <!-- Demo Interface -->
+      <div class="grid md:grid-cols-2 gap-8">
+        
+        <!-- Character Creation Panel -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <h2 class="text-2xl font-semibold mb-4 text-gray-800">⚔️ Create Character</h2>
+          
+          <form id="character-form" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Character Name</label>
+              <input type="text" id="name" name="name" 
+                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                     placeholder="Enter character name" required>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Race</label>
+                <select id="race" name="race" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <!-- Options populated by JavaScript -->
+                </select>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Class</label>
+                <select id="class" name="class" 
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <!-- Options populated by JavaScript -->
+                </select>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Alignment</label>
+              <select id="alignment" name="alignment" 
+                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <!-- Options populated by JavaScript -->
+              </select>
+            </div>
+            
+            <!-- Ability Score Generation -->
+            <div class="border-t pt-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Ability Score Method</label>
+              <div class="flex space-x-4 mb-4">
+                <button type="button" id="standard-btn" 
+                        class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  Standard Array
+                </button>
+                <button type="button" id="dice-btn" 
+                        class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500">
+                  Roll 4d6
+                </button>
+              </div>
+              
+              <!-- Ability Scores Grid -->
+              <div class="grid grid-cols-3 gap-2 text-sm">
+                <div class="text-center">
+                  <label class="block font-medium">STR</label>
+                  <input type="number" id="strength" name="strength" value="10" min="3" max="18"
+                         class="w-full px-2 py-1 border rounded text-center">
+                  <span id="str-mod" class="text-xs text-gray-500">+0</span>
+                </div>
+                <div class="text-center">
+                  <label class="block font-medium">DEX</label>
+                  <input type="number" id="dexterity" name="dexterity" value="10" min="3" max="18"
+                         class="w-full px-2 py-1 border rounded text-center">
+                  <span id="dex-mod" class="text-xs text-gray-500">+0</span>
+                </div>
+                <div class="text-center">
+                  <label class="block font-medium">CON</label>
+                  <input type="number" id="constitution" name="constitution" value="10" min="3" max="18"
+                         class="w-full px-2 py-1 border rounded text-center">
+                  <span id="con-mod" class="text-xs text-gray-500">+0</span>
+                </div>
+                <div class="text-center">
+                  <label class="block font-medium">INT</label>
+                  <input type="number" id="intelligence" name="intelligence" value="10" min="3" max="18"
+                         class="w-full px-2 py-1 border rounded text-center">
+                  <span id="int-mod" class="text-xs text-gray-500">+0</span>
+                </div>
+                <div class="text-center">
+                  <label class="block font-medium">WIS</label>
+                  <input type="number" id="wisdom" name="wisdom" value="10" min="3" max="18"
+                         class="w-full px-2 py-1 border rounded text-center">
+                  <span id="wis-mod" class="text-xs text-gray-500">+0</span>
+                </div>
+                <div class="text-center">
+                  <label class="block font-medium">CHA</label>
+                  <input type="number" id="charisma" name="charisma" value="10" min="3" max="18"
+                         class="w-full px-2 py-1 border rounded text-center">
+                  <span id="cha-mod" class="text-xs text-gray-500">+0</span>
+                </div>
+              </div>
+            </div>
+            
+            <button type="submit" 
+                    class="w-full px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500">
+              🎲 Create Character
+            </button>
+          </form>
+          
+          <div id="create-status" class="mt-4"></div>
+        </div>
+        
+        <!-- Character List & Display Panel -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <h2 class="text-2xl font-semibold mb-4 text-gray-800">👥 Character List</h2>
+          
+          <div id="character-list" class="space-y-3 mb-6">
+            <p class="text-gray-500 italic">No characters created yet</p>
+          </div>
+          
+          <!-- Selected Character Display -->
+          <div id="character-display" class="hidden border-t pt-4">
+            <h3 class="text-lg font-semibold mb-3">Character Sheet</h3>
+            <div id="character-details" class="space-y-2 text-sm">
+              <!-- Character details populated by JavaScript -->
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- System Status -->
+      <div class="mt-8 bg-gray-100 rounded-lg p-4">
+        <h3 class="text-lg font-semibold mb-2">🔧 System Status</h3>
+        <div id="system-status" class="grid md:grid-cols-3 gap-4 text-sm">
+          <!-- Status populated by JavaScript -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Import Phase 1 implementations
+    import { characterActions, useCharacterStore } from '../stores/characterStore';
+    import { dndCalculations } from '../lib/calculations/DnDCalculations';
+    import { races, alignments, baseClasses } from '../data/dndData';
+    import { mockDatabase } from '../lib/mockData/MockDatabase';
+
+    // Global state for demo
+    let characters = [];
+    let selectedCharacter = null;
+
+    // Initialize the demo
+    async function initializeDemo() {
+      try {
+        // Populate form options
+        populateFormOptions();
+        
+        // Load existing characters
+        await loadCharacters();
+        
+        // Setup event listeners
+        setupEventListeners();
+        
+        // Update ability modifiers
+        updateAbilityModifiers();
+        
+        // Update system status
+        updateSystemStatus();
+        
+        console.log('🎲 DICE PWA Demo initialized successfully!');
+      } catch (error) {
+        console.error('Demo initialization failed:', error);
+      }
+    }
+
+    function populateFormOptions() {
+      const raceSelect = document.getElementById('race');
+      const classSelect = document.getElementById('class');
+      const alignmentSelect = document.getElementById('alignment');
+
+      // Populate races
+      races.forEach(race => {
+        const option = document.createElement('option');
+        option.value = race.id;
+        option.textContent = race.name;
+        raceSelect.appendChild(option);
+      });
+
+      // Populate classes
+      baseClasses.forEach(clss => {
+        const option = document.createElement('option');
+        option.value = clss.id;
+        option.textContent = clss.name;
+        classSelect.appendChild(option);
+      });
+
+      // Populate alignments
+      alignments.forEach(alignment => {
+        const option = document.createElement('option');
+        option.value = alignment.id;
+        option.textContent = alignment.name;
+        alignmentSelect.appendChild(option);
+      });
+    }
+
+    async function loadCharacters() {
+      try {
+        characters = await mockDatabase.getCharacters();
+        displayCharacterList();
+      } catch (error) {
+        console.error('Failed to load characters:', error);
+      }
+    }
+
+    function displayCharacterList() {
+      const listEl = document.getElementById('character-list');
+      
+      // Clear existing content
+      listEl.textContent = '';
+      
+      if (characters.length === 0) {
+        const emptyMsg = document.createElement('p');
+        emptyMsg.className = 'text-gray-500 italic';
+        emptyMsg.textContent = 'No characters created yet';
+        listEl.appendChild(emptyMsg);
+        return;
+      }
+
+      characters.forEach(char => {
+        const charDiv = document.createElement('div');
+        charDiv.className = 'character-item p-3 border rounded cursor-pointer hover:bg-gray-50';
+        charDiv.setAttribute('data-character-id', char.id);
+
+        const flexDiv = document.createElement('div');
+        flexDiv.className = 'flex justify-between items-start';
+
+        const infoDiv = document.createElement('div');
+        
+        const nameHeader = document.createElement('h4');
+        nameHeader.className = 'font-semibold';
+        nameHeader.textContent = char.profile.name;
+        
+        const detailsP = document.createElement('p');
+        detailsP.className = 'text-sm text-gray-600';
+        const classNames = char.classes.map(c => c.name).join('/');
+        detailsP.textContent = `${char.profile.race.name} ${classNames} (Level ${char.profile.level})`;
+        
+        infoDiv.appendChild(nameHeader);
+        infoDiv.appendChild(detailsP);
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn text-red-500 hover:text-red-700';
+        deleteBtn.setAttribute('data-character-id', char.id);
+        deleteBtn.textContent = '✕';
+
+        flexDiv.appendChild(infoDiv);
+        flexDiv.appendChild(deleteBtn);
+        charDiv.appendChild(flexDiv);
+        listEl.appendChild(charDiv);
+      });
+
+      // Add click listeners
+      document.querySelectorAll('.character-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          if (e.target.classList.contains('delete-btn')) {
+            e.stopPropagation();
+            deleteCharacter(e.target.dataset.characterId);
+          } else {
+            selectCharacter(item.dataset.characterId);
+          }
+        });
+      });
+    }
+
+    function selectCharacter(characterId) {
+      selectedCharacter = characters.find(c => c.id === characterId);
+      displayCharacterSheet();
+    }
+
+    function displayCharacterSheet() {
+      if (!selectedCharacter) return;
+
+      const displayEl = document.getElementById('character-display');
+      const detailsEl = document.getElementById('character-details');
+      
+      displayEl.classList.remove('hidden');
+
+      // Calculate derived stats
+      const derivedStats = dndCalculations.calculateDerivedStats(selectedCharacter);
+
+      // Clear existing content safely
+      detailsEl.textContent = '';
+
+      // Create main grid container
+      const mainGrid = document.createElement('div');
+      mainGrid.className = 'grid grid-cols-2 gap-4';
+
+      // Create left column (basic info)
+      const leftDiv = document.createElement('div');
+      
+      const nameInfo = document.createElement('div');
+      const nameStrong = document.createElement('strong');
+      nameStrong.textContent = 'Name:';
+      nameInfo.appendChild(nameStrong);
+      nameInfo.appendChild(document.createTextNode(' ' + selectedCharacter.profile.name));
+      nameInfo.appendChild(document.createElement('br'));
+      
+      const raceInfo = document.createElement('div');
+      const raceStrong = document.createElement('strong');
+      raceStrong.textContent = 'Race:';
+      raceInfo.appendChild(raceStrong);
+      raceInfo.appendChild(document.createTextNode(' ' + selectedCharacter.profile.race.name));
+      raceInfo.appendChild(document.createElement('br'));
+      
+      const classInfo = document.createElement('div');
+      const classStrong = document.createElement('strong');
+      classStrong.textContent = 'Class:';
+      classInfo.appendChild(classStrong);
+      const classText = selectedCharacter.classes.map(c => `${c.name} ${c.level}`).join(', ');
+      classInfo.appendChild(document.createTextNode(' ' + classText));
+      classInfo.appendChild(document.createElement('br'));
+      
+      const alignmentInfo = document.createElement('div');
+      const alignmentStrong = document.createElement('strong');
+      alignmentStrong.textContent = 'Alignment:';
+      alignmentInfo.appendChild(alignmentStrong);
+      alignmentInfo.appendChild(document.createTextNode(' ' + selectedCharacter.profile.alignment.name));
+      
+      leftDiv.appendChild(nameInfo);
+      leftDiv.appendChild(raceInfo);
+      leftDiv.appendChild(classInfo);
+      leftDiv.appendChild(alignmentInfo);
+
+      // Create right column (combat stats)
+      const rightDiv = document.createElement('div');
+      
+      const hpInfo = document.createElement('div');
+      const hpStrong = document.createElement('strong');
+      hpStrong.textContent = 'Hit Points:';
+      hpInfo.appendChild(hpStrong);
+      hpInfo.appendChild(document.createTextNode(' ' + derivedStats.hitPoints));
+      hpInfo.appendChild(document.createElement('br'));
+      
+      const acInfo = document.createElement('div');
+      const acStrong = document.createElement('strong');
+      acStrong.textContent = 'Armor Class:';
+      acInfo.appendChild(acStrong);
+      acInfo.appendChild(document.createTextNode(' ' + derivedStats.armorClass));
+      acInfo.appendChild(document.createElement('br'));
+      
+      const initInfo = document.createElement('div');
+      const initStrong = document.createElement('strong');
+      initStrong.textContent = 'Initiative:';
+      initInfo.appendChild(initStrong);
+      const initText = (derivedStats.initiative >= 0 ? '+' : '') + derivedStats.initiative;
+      initInfo.appendChild(document.createTextNode(' ' + initText));
+      initInfo.appendChild(document.createElement('br'));
+      
+      const babInfo = document.createElement('div');
+      const babStrong = document.createElement('strong');
+      babStrong.textContent = 'Base Attack:';
+      babInfo.appendChild(babStrong);
+      babInfo.appendChild(document.createTextNode(' +' + derivedStats.baseAttackBonus));
+      
+      rightDiv.appendChild(hpInfo);
+      rightDiv.appendChild(acInfo);
+      rightDiv.appendChild(initInfo);
+      rightDiv.appendChild(babInfo);
+
+      mainGrid.appendChild(leftDiv);
+      mainGrid.appendChild(rightDiv);
+      detailsEl.appendChild(mainGrid);
+
+      // Create ability scores section
+      const abilitySection = document.createElement('div');
+      abilitySection.className = 'mt-3';
+      
+      const abilityTitle = document.createElement('strong');
+      abilityTitle.textContent = 'Ability Scores:';
+      abilitySection.appendChild(abilityTitle);
+      abilitySection.appendChild(document.createElement('br'));
+      
+      const abilityGrid = document.createElement('div');
+      abilityGrid.className = 'grid grid-cols-6 gap-2 mt-1 text-xs';
+      
+      Object.entries(selectedCharacter.abilities).forEach(([ability, score]) => {
+        const mod = dndCalculations.getAbilityModifier(score);
+        const abilityDiv = document.createElement('div');
+        abilityDiv.className = 'text-center';
+        
+        const abilityName = document.createElement('div');
+        abilityName.className = 'font-semibold';
+        abilityName.textContent = ability.toUpperCase();
+        
+        const abilityValue = document.createElement('div');
+        const modText = (mod >= 0 ? '+' : '') + mod;
+        abilityValue.textContent = `${score} (${modText})`;
+        
+        abilityDiv.appendChild(abilityName);
+        abilityDiv.appendChild(abilityValue);
+        abilityGrid.appendChild(abilityDiv);
+      });
+      
+      abilitySection.appendChild(abilityGrid);
+      detailsEl.appendChild(abilitySection);
+
+      // Create saving throws section
+      const savesSection = document.createElement('div');
+      savesSection.className = 'mt-3';
+      
+      const savesTitle = document.createElement('strong');
+      savesTitle.textContent = 'Saving Throws:';
+      savesSection.appendChild(savesTitle);
+      savesSection.appendChild(document.createTextNode(` Fort +${derivedStats.savingThrows.fortitude}, Ref +${derivedStats.savingThrows.reflex}, Will +${derivedStats.savingThrows.will}`));
+      
+      detailsEl.appendChild(savesSection);
+    }
+
+    async function deleteCharacter(characterId) {
+      if (confirm('Delete this character?')) {
+        try {
+          await mockDatabase.deleteCharacter(characterId);
+          await loadCharacters();
+          if (selectedCharacter && selectedCharacter.id === characterId) {
+            selectedCharacter = null;
+            document.getElementById('character-display').classList.add('hidden');
+          }
+        } catch (error) {
+          console.error('Failed to delete character:', error);
+        }
+      }
+    }
+
+    function setupEventListeners() {
+      // Ability score buttons
+      document.getElementById('standard-btn').addEventListener('click', () => {
+        const scores = dndCalculations.rollAbilityScores('standard');
+        setAbilityScores(scores);
+      });
+
+      document.getElementById('dice-btn').addEventListener('click', () => {
+        const scores = dndCalculations.rollAbilityScores('dice');
+        setAbilityScores(scores);
+      });
+
+      // Ability score inputs
+      ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma']
+        .forEach(ability => {
+          document.getElementById(ability).addEventListener('input', updateAbilityModifiers);
+        });
+
+      // Character form
+      document.getElementById('character-form').addEventListener('submit', handleCreateCharacter);
+    }
+
+    function setAbilityScores(scores) {
+      Object.entries(scores).forEach(([ability, score]) => {
+        document.getElementById(ability).value = score;
+      });
+      updateAbilityModifiers();
+    }
+
+    function updateAbilityModifiers() {
+      ['strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma']
+        .forEach(ability => {
+          const score = parseInt(document.getElementById(ability).value) || 10;
+          const modifier = dndCalculations.getAbilityModifier(score);
+          const modEl = document.getElementById(ability.substring(0, 3) + '-mod');
+          modEl.textContent = (modifier >= 0 ? '+' : '') + modifier;
+        });
+    }
+
+    async function handleCreateCharacter(event) {
+      event.preventDefault();
+      
+      const statusEl = document.getElementById('create-status');
+      statusEl.textContent = '';
+      const loadingMsg = document.createElement('p');
+      loadingMsg.className = 'text-blue-600';
+      loadingMsg.textContent = 'Creating character...';
+      statusEl.appendChild(loadingMsg);
+
+      try {
+        const formData = new FormData(event.target);
+        const characterData = {
+          profile: {
+            name: formData.get('name'),
+            race: races.find(r => r.id === formData.get('race')),
+            alignment: alignments.find(a => a.id === formData.get('alignment')),
+          },
+          abilities: {
+            strength: parseInt(formData.get('strength')),
+            dexterity: parseInt(formData.get('dexterity')),
+            constitution: parseInt(formData.get('constitution')),
+            intelligence: parseInt(formData.get('intelligence')),
+            wisdom: parseInt(formData.get('wisdom')),
+            charisma: parseInt(formData.get('charisma'))
+          },
+          classes: [{
+            ...baseClasses.find(c => c.id === formData.get('class')),
+            level: 1
+          }]
+        };
+
+        const createdCharacter = await mockDatabase.createCharacter(characterData);
+        await loadCharacters();
+        
+        statusEl.textContent = '';
+        const successMsg = document.createElement('p');
+        successMsg.className = 'text-green-600';
+        successMsg.textContent = '✅ Character created successfully!';
+        statusEl.appendChild(successMsg);
+        
+        // Reset form
+        event.target.reset();
+        setAbilityScores({ strength: 10, dexterity: 10, constitution: 10, intelligence: 10, wisdom: 10, charisma: 10 });
+        
+        // Select the new character
+        selectCharacter(createdCharacter.id);
+        
+        setTimeout(() => statusEl.textContent = '', 3000);
+      } catch (error) {
+        statusEl.textContent = '';
+        const errorMsg = document.createElement('p');
+        errorMsg.className = 'text-red-600';
+        errorMsg.textContent = `❌ Error: ${error.message}`;
+        statusEl.appendChild(errorMsg);
+      }
+    }
+
+    async function updateSystemStatus() {
+      const statusEl = document.getElementById('system-status');
+      
+      try {
+        const dbStats = await mockDatabase.getDatabaseStats();
+        
+        statusEl.textContent = '';
+        
+        // Database status
+        const dbDiv = document.createElement('div');
+        dbDiv.className = 'text-center';
+        
+        const dbTitle = document.createElement('div');
+        dbTitle.className = 'font-semibold text-green-600';
+        dbTitle.textContent = 'Database';
+        
+        const dbCount = document.createElement('div');
+        dbCount.textContent = `${dbStats.characterCount} characters`;
+        
+        const dbSize = document.createElement('div');
+        dbSize.className = 'text-xs text-gray-500';
+        dbSize.textContent = dbStats.storageSize;
+        
+        dbDiv.appendChild(dbTitle);
+        dbDiv.appendChild(dbCount);
+        dbDiv.appendChild(dbSize);
+        
+        // State management status
+        const stateDiv = document.createElement('div');
+        stateDiv.className = 'text-center';
+        
+        const stateTitle = document.createElement('div');
+        stateTitle.className = 'font-semibold text-blue-600';
+        stateTitle.textContent = 'State Management';
+        
+        const stateType = document.createElement('div');
+        stateType.textContent = 'JavaScript Proxies';
+        
+        const stateNote = document.createElement('div');
+        stateNote.className = 'text-xs text-gray-500';
+        stateNote.textContent = 'Native reactivity';
+        
+        stateDiv.appendChild(stateTitle);
+        stateDiv.appendChild(stateType);
+        stateDiv.appendChild(stateNote);
+        
+        // D&D Engine status
+        const engineDiv = document.createElement('div');
+        engineDiv.className = 'text-center';
+        
+        const engineTitle = document.createElement('div');
+        engineTitle.className = 'font-semibold text-purple-600';
+        engineTitle.textContent = 'D&D Engine';
+        
+        const engineType = document.createElement('div');
+        engineType.textContent = 'Full calculations';
+        
+        const engineNote = document.createElement('div');
+        engineNote.className = 'text-xs text-gray-500';
+        engineNote.textContent = 'D&D 3.0 compliant';
+        
+        engineDiv.appendChild(engineTitle);
+        engineDiv.appendChild(engineType);
+        engineDiv.appendChild(engineNote);
+        
+        statusEl.appendChild(dbDiv);
+        statusEl.appendChild(stateDiv);
+        statusEl.appendChild(engineDiv);
+        
+      } catch (error) {
+        statusEl.textContent = '';
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'text-red-600';
+        errorDiv.textContent = 'Status update failed';
+        statusEl.appendChild(errorDiv);
+      }
+    }
+
+    // Initialize when DOM is ready
+    document.addEventListener('DOMContentLoaded', initializeDemo);
+  </script>
+</Layout> 

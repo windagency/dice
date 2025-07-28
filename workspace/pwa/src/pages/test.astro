@@ -1,0 +1,266 @@
+---
+// Test page to verify Phase 1 implementation
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="DICE PWA - Phase 1 Test">
+  <main class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+      <h1 class="text-4xl font-bold text-center mb-8 text-blue-600">
+        🎲 DICE PWA - Phase 1 Testing
+      </h1>
+      
+      <!-- Test Component -->
+      <div id="test-results" class="space-y-6">
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <h2 class="text-2xl font-semibold mb-4">🧪 Phase 1 Implementation Tests</h2>
+          <div id="test-status" class="text-gray-600">
+            Loading tests...
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Import our Phase 1 implementations
+    import { ProxyStateManager } from '../lib/state/ProxyStateManager';
+    import { mockDatabase } from '../lib/mockData/MockDatabase';
+    import { dndCalculations } from '../lib/calculations/DnDCalculations';
+    import { characterActions } from '../stores/characterStore';
+    import { races, alignments, baseClasses } from '../data/dndData';
+
+    // Test results container
+    const testResults = [];
+
+    // Test 1: JavaScript Proxy State Management
+    function testProxyStateManager() {
+      try {
+        const initialState = { count: 0, name: 'Test' };
+        const stateManager = new ProxyStateManager(initialState);
+        
+        let updateReceived = false;
+        const unsubscribe = stateManager.subscribe((newState, prevState) => {
+          updateReceived = true;
+        });
+
+        stateManager.setState(state => {
+          state.count = 42;
+          state.name = 'Updated';
+        });
+
+        const currentState = stateManager.getState();
+        
+        unsubscribe();
+
+        if (currentState.count === 42 && currentState.name === 'Updated' && updateReceived) {
+          testResults.push({ name: 'Proxy State Manager', status: '✅ PASS', details: 'State updates and subscriptions working' });
+        } else {
+          testResults.push({ name: 'Proxy State Manager', status: '❌ FAIL', details: 'State not updating correctly' });
+        }
+      } catch (error) {
+        testResults.push({ name: 'Proxy State Manager', status: '❌ ERROR', details: error.message });
+      }
+    }
+
+    // Test 2: D&D Calculations Engine
+    function testDnDCalculations() {
+      try {
+        // Test ability modifier calculation
+        const modifier15 = dndCalculations.getAbilityModifier(15); // Should be +2
+        const modifier8 = dndCalculations.getAbilityModifier(8);   // Should be -1
+        const modifier10 = dndCalculations.getAbilityModifier(10); // Should be +0
+
+        // Test ability score generation
+        const standardScores = dndCalculations.rollAbilityScores('standard');
+        const diceScores = dndCalculations.rollAbilityScores('dice');
+
+        if (modifier15 === 2 && modifier8 === -1 && modifier10 === 0 && 
+            standardScores.strength === 15 && typeof diceScores.strength === 'number') {
+          testResults.push({ name: 'D&D Calculations', status: '✅ PASS', details: 'Ability modifiers and score generation working' });
+        } else {
+          testResults.push({ name: 'D&D Calculations', status: '❌ FAIL', details: 'Calculation errors detected' });
+        }
+      } catch (error) {
+        testResults.push({ name: 'D&D Calculations', status: '❌ ERROR', details: error.message });
+      }
+    }
+
+    // Test 3: Mock Database Operations
+    async function testMockDatabase() {
+      try {
+        // Test database stats
+        const stats = await mockDatabase.getDatabaseStats();
+        
+        // Test character creation
+        const testCharacter = {
+          profile: {
+            name: 'Test Character',
+            race: races[0], // Human
+            alignment: alignments[1], // Neutral Good
+          },
+          abilities: {
+            strength: 15,
+            dexterity: 14,
+            constitution: 13,
+            intelligence: 12,
+            wisdom: 10,
+            charisma: 8
+          },
+          classes: [{
+            name: 'Fighter',
+            level: 1,
+            hitDie: 'd10',
+            primaryAbility: ['Strength'],
+            savingThrowProficiencies: ['Fortitude'],
+            skillProficiencies: 2,
+            armorProficiencies: ['All', 'Shields'],
+            weaponProficiencies: ['Simple', 'Martial']
+          }]
+        };
+
+        const createdCharacter = await mockDatabase.createCharacter(testCharacter);
+        const retrievedCharacter = await mockDatabase.getCharacter(createdCharacter.id);
+        
+        // Clean up
+        await mockDatabase.deleteCharacter(createdCharacter.id);
+
+        if (createdCharacter.id && retrievedCharacter && retrievedCharacter.profile.name === 'Test Character') {
+          testResults.push({ name: 'Mock Database', status: '✅ PASS', details: 'CRUD operations working correctly' });
+        } else {
+          testResults.push({ name: 'Mock Database', status: '❌ FAIL', details: 'Database operations failed' });
+        }
+      } catch (error) {
+        testResults.push({ name: 'Mock Database', status: '❌ ERROR', details: error.message });
+      }
+    }
+
+    // Test 4: Static D&D Data
+    function testDnDData() {
+      try {
+        if (races.length === 7 && alignments.length === 9 && baseClasses.length === 11) {
+          const human = races.find(r => r.id === 'human');
+          const fighter = baseClasses.find(c => c.id === 'fighter');
+          const neutralGood = alignments.find(a => a.id === 'neutral-good');
+
+          if (human && fighter && neutralGood) {
+            testResults.push({ name: 'D&D Static Data', status: '✅ PASS', details: '7 races, 9 alignments, 11 classes loaded' });
+          } else {
+            testResults.push({ name: 'D&D Static Data', status: '❌ FAIL', details: 'Missing expected data entries' });
+          }
+        } else {
+          testResults.push({ name: 'D&D Static Data', status: '❌ FAIL', details: `Expected 7/9/11, got ${races.length}/${alignments.length}/${baseClasses.length}` });
+        }
+      } catch (error) {
+        testResults.push({ name: 'D&D Static Data', status: '❌ ERROR', details: error.message });
+      }
+    }
+
+    // Test 5: LocalStorage Persistence
+    function testLocalStorage() {
+      try {
+        const testKey = 'dice_test_key';
+        const testData = { test: true, timestamp: Date.now() };
+        
+        localStorage.setItem(testKey, JSON.stringify(testData));
+        const retrieved = JSON.parse(localStorage.getItem(testKey) || '{}');
+        localStorage.removeItem(testKey);
+
+        if (retrieved.test === true) {
+          testResults.push({ name: 'LocalStorage', status: '✅ PASS', details: 'Browser storage working correctly' });
+        } else {
+          testResults.push({ name: 'LocalStorage', status: '❌ FAIL', details: 'Storage not persisting data' });
+        }
+      } catch (error) {
+        testResults.push({ name: 'LocalStorage', status: '❌ ERROR', details: error.message });
+      }
+    }
+
+    // Run all tests
+    async function runAllTests() {
+      const statusEl = document.getElementById('test-status');
+      statusEl.textContent = '🔄 Running Phase 1 tests...';
+
+      testProxyStateManager();
+      testDnDCalculations();
+      await testMockDatabase();
+      testDnDData();
+      testLocalStorage();
+
+      // Display results safely using DOM manipulation
+      const passCount = testResults.filter(t => t.status.includes('✅')).length;
+      const totalCount = testResults.length;
+
+      // Clear existing content
+      statusEl.textContent = '';
+
+      // Create header section
+      const headerDiv = document.createElement('div');
+      headerDiv.className = 'mb-6';
+      
+      const headerTitle = document.createElement('h3');
+      headerTitle.className = 'text-xl font-semibold mb-2';
+      headerTitle.textContent = `Test Results: ${passCount}/${totalCount} Tests Passed ${passCount === totalCount ? '🎉' : '⚠️'}`;
+      headerDiv.appendChild(headerTitle);
+      statusEl.appendChild(headerDiv);
+
+      // Create results grid
+      const gridDiv = document.createElement('div');
+      gridDiv.className = 'grid gap-4';
+
+      testResults.forEach(test => {
+        const isSuccess = test.status.includes('✅');
+        const statusColor = isSuccess ? 'text-green-600' : 'text-red-600';
+        const borderClass = isSuccess ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50';
+        
+        const testDiv = document.createElement('div');
+        testDiv.className = `border rounded-lg p-4 ${borderClass}`;
+        
+        const flexDiv = document.createElement('div');
+        flexDiv.className = 'flex justify-between items-start';
+        
+        const nameHeader = document.createElement('h4');
+        nameHeader.className = 'font-semibold';
+        nameHeader.textContent = test.name;
+        
+        const statusSpan = document.createElement('span');
+        statusSpan.className = `${statusColor} font-bold`;
+        statusSpan.textContent = test.status;
+        
+        flexDiv.appendChild(nameHeader);
+        flexDiv.appendChild(statusSpan);
+        
+        const detailsP = document.createElement('p');
+        detailsP.className = 'text-sm text-gray-600 mt-2';
+        detailsP.textContent = test.details;
+        
+        testDiv.appendChild(flexDiv);
+        testDiv.appendChild(detailsP);
+        gridDiv.appendChild(testDiv);
+      });
+
+      statusEl.appendChild(gridDiv);
+
+      // Show success message if all tests pass
+      if (passCount === totalCount) {
+        const successDiv = document.createElement('div');
+        successDiv.className = 'mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg';
+        
+        const successHeader = document.createElement('h4');
+        successHeader.className = 'font-semibold text-blue-800 mb-2';
+        successHeader.textContent = '🚀 Phase 1 Complete!';
+        
+        const successText = document.createElement('p');
+        successText.className = 'text-blue-700';
+        successText.textContent = 'All core functionality is working correctly. Ready for Phase 2: UI Component Library.';
+        
+        successDiv.appendChild(successHeader);
+        successDiv.appendChild(successText);
+        statusEl.appendChild(successDiv);
+      }
+    }
+
+    // Run tests when page loads
+    document.addEventListener('DOMContentLoaded', runAllTests);
+  </script>
+</Layout> 
