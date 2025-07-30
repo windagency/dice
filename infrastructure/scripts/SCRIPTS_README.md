@@ -38,7 +38,7 @@ Our infrastructure scripts follow a **DRY (Don't Repeat Yourself)** architecture
 #### **🧪 Testing & Validation**
 
 - **`test-auth.sh`** - JWT authentication system testing
-- **`validate-phase1.sh`** - Phase 1 implementation validation
+- **`unified-validation.sh`** - Complete infrastructure and stack validation (replaces validate-phase1.sh and comprehensive-stack-validation.sh)
 
 #### **📊 Logging & Monitoring**
 
@@ -340,30 +340,30 @@ logs [SERVICE]     Show logs for specific service
 
 ---
 
-### **validate-phase1.sh** - Infrastructure Validation
+### **unified-validation.sh** - Complete Infrastructure and Stack Validation
 
-**Purpose**: Validates Phase 1 infrastructure setup and readiness for development.
+**Purpose**: Comprehensive validation system that combines Phase 1 infrastructure validation and full stack testing, eliminating duplication.
 
 ```bash
 # Usage
-./validate-phase1.sh
+./unified-validation.sh
 
-# Validation checks
-✅ Configuration files (docker-compose.yml, unified .env)
-✅ Docker daemon status
-✅ Core services (PostgreSQL, Redis, Traefik)
-✅ Database connectivity and seed data
-✅ Host entries for local development
-✅ Service build capability (Dockerfiles)
-✅ Traefik dashboard accessibility
+# Validation phases
+✅ Phase 1: Infrastructure validation (Docker, config files, basic services)
+✅ Phase 2: Full stack validation (Backend API, PostgreSQL, Redis, Temporal, PWA, Storybook, ELK)
+✅ Phase 3: Orchestrator validation (Backend-only, PWA-only, full-stack)
+✅ Phase 4: Security validation (JWT auth, container isolation, dependencies)
+✅ Phase 5: Documentation updates (SECURITY_QUALITY_TRACKER.md)
 ```
 
 **Features**:
 
-- ✅ **Phase-specific validation** - Targeted checks for Phase 1 requirements
-- ✅ **Dependency verification** - All prerequisites confirmed
-- ✅ **Troubleshooting guidance** - Specific fix suggestions for issues
-- ✅ **Ready-state confirmation** - Clear indication when setup is complete
+- ✅ **Unified approach** - Single script replaces validate-phase1.sh and comprehensive-stack-validation.sh
+- ✅ **Comprehensive coverage** - Infrastructure, services, orchestrators, and security
+- ✅ **Health scoring** - Overall, Phase 1, and full stack health scores
+- ✅ **British English** - All output follows British English standards
+- ✅ **Documentation updates** - Automatic updates to tracking files
+- ✅ **Duplication elimination** - No code duplication between validation approaches
 
 ---
 

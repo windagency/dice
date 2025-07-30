@@ -14,7 +14,7 @@ services:
       - discovery.type=single-node
       - xpack.security.enabled=false
       - xpack.ml.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
       - cluster.name=dice-logging-cluster
       - node.name=dice-es-node
       - bootstrap.memory_lock=true
@@ -31,11 +31,10 @@ services:
     networks:
       - dice_logging_network
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      test: ["CMD", "curl", "-f", "http://localhost:9200/_cluster/health"]
       interval: 30s
       timeout: 10s
-      retries: 5
-      start_period: 60s
+      retries: 3
 
   # ============================================================================
   # KIBANA - Log Visualization & Analytics Dashboard
@@ -63,11 +62,10 @@ services:
     networks:
       - dice_logging_network
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      test: ["CMD", "curl", "-f", "http://localhost:5601/api/status"]
       interval: 30s
       timeout: 10s
-      retries: 5
-      start_period: 90s
+      retries: 3
 
   # ============================================================================
   # FLUENT BIT - Lightweight Log Processor & Forwarder
@@ -98,12 +96,12 @@ services:
     ports:
       - "24224:24224"  # Forward input
       - "24225:24225"  # HTTP input
+      - "2020:2020"    # Health check
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:2020/api/v1/health || exit 1"]
+      test: ["CMD", "curl", "-f", "http://localhost:2020/api/v1/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 30s
 
   # ============================================================================
   # LOG ROTATION & CLEANUP SERVICE

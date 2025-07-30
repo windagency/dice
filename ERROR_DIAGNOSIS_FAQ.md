@@ -1,7 +1,7 @@
 # DICE Error Diagnosis FAQ
 
-**Last Updated**: July 29, 2025  
-**Version**: 1.0 - Comprehensive Error Documentation  
+**Last Updated**: July 30, 2025  
+**Version**: 1.1 - Comprehensive Error Documentation with ELK Stack Issues  
 **Purpose**: 📚 **KNOWLEDGE BASE** - Complete error resolution guide and prevention strategies
 
 ---
@@ -19,10 +19,14 @@
 | **E007**     | Environment  | 🟡 **Medium**   | ✅ **Resolved**    | Docker Compose not loading .env automatically   |
 | **E008**     | DevContainer | 🟡 **Medium**   | ✅ **Resolved**    | Network dependencies failure                    |
 | **E009**     | Environment  | 🟡 **Medium**   | ✅ **Resolved**    | Scripts creating duplicate .env files           |
-| **E011**     | Validation   | 🟢 **Low**      | ✅ **Expected**    | validate-phase1.sh failure                      |
+| **E011**     | Validation   | 🟢 **Low**      | ✅ **Expected**    | unified-validation.sh failure                   |
 | **E012**     | Database     | 🔴 **Critical** | ✅ **Resolved**    | docker-orchestrator.sh Temporal failure         |
 | **E013**     | Network      | 🟡 **Medium**   | ⚠️ **Known Issue** | Host access failures for scripts                |
 | **E014**     | Dependencies | 🟢 **Low**      | ✅ **Resolved**    | npm audit lockfile error                        |
+| **E015**     | ELK Stack    | 🔴 **Critical** | ✅ **Resolved**    | Kibana basePath configuration validation error  |
+| **E016**     | ELK Stack    | 🟡 **Medium**   | ✅ **Resolved**    | Elasticsearch memory pressure and heap size     |
+| **E017**     | ELK Stack    | 🟡 **Medium**   | ✅ **Resolved**    | Fluent Bit plugin configuration errors          |
+| **E018**     | Scripts      | 🟡 **Medium**   | ✅ **Resolved**    | Health check script container-internal testing  |
 
 ---
 
@@ -365,7 +369,7 @@ test-auth.sh: 404 Not Found for /auth/register
 
 ## 🟢 **LOW SEVERITY ERRORS (Minor Impact)**
 
-### **E011: validate-phase1.sh Expected Failure**
+### **E011: unified-validation.sh Expected Failure**
 
 **📋 Error Summary:**
 
@@ -426,21 +430,144 @@ This command requires an existing lockfile
 
 ---
 
+### **E015: Kibana basePath Configuration Validation Error**
+
+**📋 Error Summary:**
+
+```
+FATAL Error: [config validation of [server].basePath]: must start with a slash, don't end with one
+```
+
+**🔍 Root Cause:**
+
+- Kibana configuration validation error with `server.basePath` setting
+- Container not picking up configuration file changes due to caching
+- Version compatibility issues between Kibana 7.17.0 and Elasticsearch 8.11.0
+
+**✅ Resolution Steps:**
+
+1. **Remove problematic basePath**: Comment out or remove `server.basePath: "/"` from `kibana.yml`
+2. **Simplify configuration**: Use minimal Kibana configuration without basePath
+3. **Restart container**: Execute `docker restart dice_kibana` to apply changes
+4. **Verify accessibility**: Test `curl -f http://localhost:5601/api/status`
+
+**🛡️ Prevention Tips:**
+
+- Use minimal Kibana configuration for development environments
+- Avoid basePath configuration unless specifically required
+- Test configuration changes with container restart
+- Monitor Kibana logs during startup for validation errors
+
+---
+
+### **E016: Elasticsearch Memory Pressure and Heap Size Issues**
+
+**📋 Error Summary:**
+
+```
+circuit_breaking_exception: [parent] Data too large, data for [<http_request>] would be [1.2gb/1.2gb]
+```
+
+**🔍 Root Cause:**
+
+- Elasticsearch heap size too small (512MB) for log ingestion
+- Memory pressure during bulk operations
+- Circuit breaker preventing data loss
+
+**✅ Resolution Steps:**
+
+1. **Increase heap size**: Update `ES_JAVA_OPTS` from `-Xms512m -Xmx512m` to `-Xms2g -Xmx2g`
+2. **Restart Elasticsearch**: Execute `docker restart dice_elasticsearch`
+3. **Monitor memory usage**: Check `curl localhost:9200/_nodes/stats/jvm`
+4. **Validate cluster health**: Ensure GREEN or YELLOW status
+
+**🛡️ Prevention Tips:**
+
+- Allocate sufficient heap memory for Elasticsearch (minimum 2GB for development)
+- Monitor memory usage during log ingestion
+- Configure circuit breakers appropriately for environment
+- Use proper resource limits in Docker Compose
+
+---
+
+### **E017: Fluent Bit Plugin Configuration Errors**
+
+**📋 Error Summary:**
+
+```
+[ERROR] [config] section 'docker_meta' tried to instance a plugin name that doesn't exist
+[ERROR] [input:systemd:systemd.4] given path /host/var/log/journal is invalid
+```
+
+**🔍 Root Cause:**
+
+- Invalid plugin name `docker_meta` (not a valid Fluent Bit plugin)
+- Systemd input trying to access non-existent host path
+- Empty configuration values causing parsing errors
+
+**✅ Resolution Steps:**
+
+1. **Fix plugin names**: Change `Name docker_meta` to `Name modify`
+2. **Simplify configuration**: Remove systemd input and use dummy input for testing
+3. **Remove empty values**: Delete empty `HTTP_User` and `HTTP_Passwd` lines
+4. **Add health check**: Configure proper HTTP health check endpoint
+
+**🛡️ Prevention Tips:**
+
+- Use only valid Fluent Bit plugin names
+- Test configuration syntax before deployment
+- Use simplified configurations for development environments
+- Validate all configuration values are properly set
+
+---
+
+### **E018: Health Check Script Container-Internal Testing Issues**
+
+**📋 Error Summary:**
+
+```
+./infrastructure/scripts/health-check.sh: line 400: $2: unbound variable
+print_warn: command not found
+```
+
+**🔍 Root Cause:**
+
+- Script calling functions with incorrect number of arguments
+- Missing function definitions in common.sh
+- Container-internal testing approach not properly implemented
+
+**✅ Resolution Steps:**
+
+1. **Fix function calls**: Ensure `show_banner` receives correct number of arguments
+2. **Use correct function names**: Change `print_warn` to `print_warning`
+3. **Implement container-internal testing**: Use `docker exec` for health checks
+4. **Add proper error handling**: Include fallback mechanisms for failed checks
+
+**🛡️ Prevention Tips:**
+
+- Test script functions with proper argument counts
+- Use consistent function naming across scripts
+- Implement container-internal testing for macOS compatibility
+- Add comprehensive error handling and logging
+
+---
+
 ## 📊 **Error Pattern Analysis**
 
 ### **Most Common Error Categories:**
 
-1. **Environment Configuration** (4 errors) - 31%
-2. **Container & Docker Issues** (3 errors) - 23%
-3. **Network & Host Access** (3 errors) - 23%
-4. **Service Startup Failures** (2 errors) - 15%
-5. **Development Dependencies** (1 error) - 8%
+1. **ELK Stack Issues** (4 errors) - 24%
+2. **Environment Configuration** (4 errors) - 24%
+3. **Container & Docker Issues** (3 errors) - 18%
+4. **Network & Host Access** (3 errors) - 18%
+5. **Service Startup Failures** (2 errors) - 12%
+6. **Development Dependencies** (1 error) - 6%
 
 ### **Resolution Success Rate:**
 
-- **✅ Fully Resolved**: 10 errors (77%)
-- **⚠️ Known Issues**: 2 errors (15%)
-- **❌ Expected Behaviour**: 1 error (8%)
+- **✅ Fully Resolved**: 14 errors (82%)
+- **⚠️ Known Issues**: 2 errors (12%)
+- **❌ Expected Behaviour**: 1 error (6%)
 
 ### **Prevention Strategies Implemented:**
 
@@ -448,6 +575,9 @@ This command requires an existing lockfile
 - Container permission standardization
 - Network dependency simplification
 - Package manager consistency
+- ELK stack configuration validation
+- Memory allocation optimization
+- Health check container-internal testing
 
 ---
 
@@ -508,6 +638,6 @@ This command requires an existing lockfile
 
 **🔧 This FAQ is a living document - update it whenever new errors are encountered or resolved! 📚**
 
-*Total Technical Errors Documented: 13*  
-*Last Error Added: E014 (July 29, 2025)*  
-*Next Error ID: E015*
+*Total Technical Errors Documented: 17*  
+*Last Error Added: E018 (July 30, 2025)*  
+*Next Error ID: E019*

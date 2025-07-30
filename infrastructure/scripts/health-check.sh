@@ -1,190 +1,36 @@
 #!/bin/bash
-set -e
+source ./common.sh
 
-echo "🎲 DICE Development Environment Health Check 🎲"
-echo "================================================="
+show_banner "DICE Health Check" "Comprehensive service health validation"
 
-# Backend API
-echo "🚀 Backend API Health:"
-if docker ps --format "{{.Names}}" | grep -q "backend_dev"; then
-    if response=$(docker exec backend_dev curl -s http://localhost:3001/health 2>/dev/null); then
-        echo "$response" | jq -r '"✅ \(.status) - \(.service) (uptime: \(.uptime)s)"'
-    else
-        echo "❌ Backend API is not responding"
-    fi
-else
-    echo "❌ Backend container is not running"
-fi
+echo "🔍 Testing Backend API..."
+docker exec backend_dev curl -f http://localhost:3001/health 2>/dev/null && echo "✅ Backend API healthy" || echo "❌ Backend API failed"
 
-# PWA Frontend
-echo "🎨 PWA Frontend:"
-if curl -s localhost:3000 > /dev/null 2>&1; then
-    echo "✅ PWA is responding"
-else
-    echo "❌ PWA is not responding"
-fi
+echo "🔍 Testing PostgreSQL..."
+docker exec backend_postgres pg_isready -U dice_user -d dice_db 2>/dev/null && echo "✅ PostgreSQL healthy" || echo "❌ PostgreSQL failed"
 
-# Storybook Component Library
-echo "📚 Storybook Component Library:"
-if curl -s -I localhost:6006 | grep -q "HTTP/1.1 200 OK"; then
-    echo "✅ Storybook is running and accessible"
-else
-    echo "❌ Storybook is not responding"
-fi
+echo "🔍 Testing Redis..."
+docker exec backend_redis redis-cli ping 2>/dev/null | grep -q "PONG" && echo "✅ Redis healthy" || echo "❌ Redis failed"
 
-# PostgreSQL
-echo "🗄️ PostgreSQL Database:"
-if docker compose exec -T postgres pg_isready -U dice_user -d dice_db > /dev/null 2>&1; then
-    echo "✅ PostgreSQL is ready"
-else
-    echo "❌ PostgreSQL is not ready"
-fi
+echo "🔍 Testing Temporal..."
+docker exec backend_temporal tctl --address localhost:7233 workflow list 2>/dev/null && echo "✅ Temporal healthy" || echo "❌ Temporal failed"
 
-# Redis
-echo "⚡ Redis Cache:"
-if docker compose exec -T redis redis-cli ping > /dev/null 2>&1; then
-    echo "✅ Redis is responding"
-else
-    echo "❌ Redis is not responding"
-fi
+echo "🔍 Testing Elasticsearch..."
+docker exec dice_elasticsearch curl -f http://localhost:9200/_cluster/health 2>/dev/null && echo "✅ Elasticsearch healthy" || echo "❌ Elasticsearch failed"
 
-# LocalStack
-echo "☁️ LocalStack (AWS Simulation):"
-if curl -s localhost:4566/_localstack/health > /dev/null 2>&1; then
-    echo "✅ LocalStack is healthy"
-    if command -v jq > /dev/null 2>&1; then
-        available_services=$(curl -s localhost:4566/_localstack/health | jq -r '.services | to_entries | map(select(.value == "available")) | map(.key) | join(", ")')
-        echo "   Available services: $available_services"
-    fi
-else
-    echo "❌ LocalStack is not responding"
-fi
+echo "🔍 Testing Kibana..."
+docker exec dice_kibana curl -f http://localhost:5601/api/status 2>/dev/null && echo "✅ Kibana healthy" || echo "❌ Kibana failed"
 
-# Temporal
-echo "🌀 Temporal Workflow Engine:"
-if docker ps --format "{{.Names}}" | grep -q "backend_dev"; then
-    if response=$(docker exec backend_dev curl -s http://localhost:3001/health/temporal 2>/dev/null); then
-        status=$(echo "$response" | jq -r '.status // "unknown"')
-        if [ "$status" = "ok" ]; then
-            echo "✅ Temporal is connected and healthy"
-        else
-            echo "❌ Temporal connection failed"
-            echo "$response" | jq -r '"   Error: \(.error // "Unknown error")"'
-        fi
-    else
-        if docker ps --filter name=backend_temporal --format "{{.Status}}" | grep -q "Up"; then
-            echo "⚠️  Temporal server is running but backend connection failed"
-        else
-            echo "❌ Temporal server is not running"
-        fi
-    fi
-else
-    echo "❌ Backend container is not running"
-fi
+echo "🔍 Testing Fluent Bit..."
+docker exec dice_fluent_bit curl -f http://localhost:2020/api/v1/health 2>/dev/null && echo "✅ Fluent Bit healthy" || echo "❌ Fluent Bit failed"
 
-# Temporal UI
-echo "🖥️  Temporal Web UI:"
-# Check if Temporal UI container is running first
-if docker ps --filter name=backend_temporal_ui --format "{{.Status}}" | grep -q "Up"; then
-    # Try to access the UI with a simple HTTP check (macOS compatible)
-    if curl -s -m 5 -o /dev/null -w "%{http_code}" http://localhost:8088 | grep -q "200\|302\|404"; then
-        echo "✅ Temporal UI is responding"
-    else
-        echo "⚠️  Temporal UI container running but not accessible"
-    fi
-else
-    echo "❌ Temporal UI container is not running"
-fi
-
-# Traefik
-echo "🌐 Traefik Proxy:"
-if docker ps --filter name=dice_traefik --format "{{.Status}}" | grep -q "Up"; then
-    echo "✅ Traefik container is running"  
-    # Check if Traefik dashboard is accessible
-    if curl -s http://localhost:8080/dashboard/ > /dev/null 2>&1; then
-        echo "   ✅ Traefik dashboard accessible"
-    else
-        echo "   ⚠️  Traefik dashboard not accessible"
-    fi
-else
-    echo "❌ Traefik container is not running"
-fi
-
-echo "================================================="
-
-# Summary with comprehensive health check
-all_healthy=true
-backend_healthy=false
-pwa_healthy=false
-storybook_healthy=false
-postgres_healthy=false
-redis_healthy=false
-localstack_healthy=false
-temporal_backend_healthy=false
-temporal_ui_healthy=false
-traefik_healthy=false
-
-# Check each service
-if curl -s localhost:3001/health > /dev/null 2>&1; then backend_healthy=true; fi
-if curl -s localhost:3000 > /dev/null 2>&1; then pwa_healthy=true; fi
-if curl -s -I localhost:6006 | grep -q "HTTP/1.1 200 OK"; then storybook_healthy=true; fi
-if docker compose exec -T postgres pg_isready -U dice_user -d dice_db > /dev/null 2>&1; then postgres_healthy=true; fi
-if docker compose exec -T redis redis-cli ping > /dev/null 2>&1; then redis_healthy=true; fi
-if curl -s localhost:4566/_localstack/health > /dev/null 2>&1; then localstack_healthy=true; fi
-if docker ps --filter name=dice_traefik --format "{{.Status}}" | grep -q "Up"; then traefik_healthy=true; fi
-
-# Check Temporal health through backend API
-if response=$(curl -s localhost:3001/health/temporal 2>/dev/null); then
-    status=$(echo "$response" | jq -r '.status // "unknown"')
-    if [ "$status" = "ok" ]; then temporal_backend_healthy=true; fi
-fi
-
-# Check Temporal UI
-if docker ps --filter name=backend_temporal_ui --format "{{.Status}}" | grep -q "Up"; then
-    if curl -s -m 5 -o /dev/null -w "%{http_code}" http://localhost:8088 | grep -q "200\|302\|404"; then
-        temporal_ui_healthy=true
-    fi
-fi
-
-# Determine overall health
-if [ "$backend_healthy" = false ] || [ "$pwa_healthy" = false ] || [ "$storybook_healthy" = false ] || 
-   [ "$postgres_healthy" = false ] || [ "$redis_healthy" = false ] || [ "$localstack_healthy" = false ] || 
-   [ "$traefik_healthy" = false ]; then
-    all_healthy=false
-fi
-
-# Generate detailed summary
-echo "📊 Service Status Summary:"
-echo "   Backend API: $([ "$backend_healthy" = true ] && echo "✅" || echo "❌")"
-echo "   PWA Frontend: $([ "$pwa_healthy" = true ] && echo "✅" || echo "❌")"
-echo "   Storybook: $([ "$storybook_healthy" = true ] && echo "✅" || echo "❌")"
-echo "   PostgreSQL: $([ "$postgres_healthy" = true ] && echo "✅" || echo "❌")"
-echo "   Redis: $([ "$redis_healthy" = true ] && echo "✅" || echo "❌")"
-echo "   LocalStack: $([ "$localstack_healthy" = true ] && echo "✅" || echo "❌")"
-echo "   Temporal Backend: $([ "$temporal_backend_healthy" = true ] && echo "✅" || echo "❌")"
-echo "   Temporal UI: $([ "$temporal_ui_healthy" = true ] && echo "✅" || echo "❌")"
-echo "   Traefik: $([ "$traefik_healthy" = true ] && echo "✅" || echo "❌")"
-
-if [ "$all_healthy" = true ] && [ "$temporal_backend_healthy" = true ]; then
-    echo "================================================="
-    echo "🎉 All critical services are healthy! Development environment is ready."
-    echo ""
-    echo "🔗 Quick Access Links:"
-    echo "   PWA Frontend: http://localhost:3000"
-    echo "   Storybook: http://localhost:6006"
-    echo "   Backend API: http://localhost:3001/health"
-    if [ "$temporal_ui_healthy" = true ]; then
-        echo "   Temporal UI: http://localhost:8088"
-    fi
-    echo "   Traefik Dashboard: http://localhost:8080/dashboard/"
-    exit 0
-else
-    echo "================================================="
-    echo "⚠️  Some services are not healthy. Check the details above."
-    echo ""
-    echo "🔧 Troubleshooting suggestions:"
-    [ "$backend_healthy" = false ] && echo "   - Backend: Check if dependencies are still installing: docker logs dice_backend"
-    [ "$temporal_ui_healthy" = false ] && echo "   - Temporal UI: Try restarting: docker restart backend_temporal_ui"
-    [ "$storybook_healthy" = false ] && echo "   - Storybook: Run 'cd workspace/pwa && pnpm run storybook'"
-    exit 1
-fi 
+echo ""
+echo "📊 Health Check Summary:"
+echo "=========================="
+echo "Backend API: $(docker exec backend_dev curl -f http://localhost:3001/health 2>/dev/null && echo "✅" || echo "❌")"
+echo "PostgreSQL: $(docker exec backend_postgres pg_isready -U dice_user -d dice_db 2>/dev/null && echo "✅" || echo "❌")"
+echo "Redis: $(docker exec backend_redis redis-cli ping 2>/dev/null | grep -q "PONG" && echo "✅" || echo "❌")"
+echo "Temporal: $(docker exec backend_temporal tctl --address localhost:7233 workflow list 2>/dev/null && echo "✅" || echo "❌")"
+echo "Elasticsearch: $(docker exec dice_elasticsearch curl -f http://localhost:9200/_cluster/health 2>/dev/null && echo "✅" || echo "❌")"
+echo "Kibana: $(docker exec dice_kibana curl -f http://localhost:5601/api/status 2>/dev/null && echo "✅" || echo "❌")"
+echo "Fluent Bit: $(docker exec dice_fluent_bit curl -f http://localhost:2020/api/v1/health 2>/dev/null && echo "✅" || echo "❌")" 

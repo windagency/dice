@@ -1519,10 +1519,10 @@ All project automation scripts are centralized in the `infrastructure/scripts/` 
 
   Validates JWT authentication flow and protected endpoints.
 
-- **`validate-phase1.sh`** - Phase 1 implementation validation
+- **`unified-validation.sh`** - Complete infrastructure and stack validation
 
   ```bash
-  ./infrastructure/scripts/validate-phase1.sh  
+  ./infrastructure/scripts/unified-validation.sh  
   ```
 
   Comprehensive validation of Phase 1 PWA implementation.

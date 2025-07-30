@@ -1,10 +1,15 @@
 - ALWAYS use the project rules. Display the ones that have been loaded in the first response, in the form of a bulleted list.
-- ALWAYS write documentation and comments in British.
+- ALWAYS write documentation and comments in British English.
 - ALWAYS follow every steps mentioned in the prompt and in the rules.
 - NEVER be lazy.
 - ALWAYS answer in the shortest way possible, avoid long sentences, go straight to the point.
 - ALWAYS ONE question per confirmation.
 - NEVER commit or delete anything without explicit approval.
-- ALWAYS use devcontainers and testcontainers WHEN coding
+- ALWAYS keep a TODO.md file up-to-date with actions and next steps WHEN thinking and coding.
+- ALWAYS use devcontainers and testcontainers WHEN coding.
 - ALWAYS check OWASP Top 10 security practices (XSS, CSRF, public sensitive data, root access) and APPLY GitOps approach WHEN coding, run them and maintain tracking file for each change.
 - ALWAYS create healthcheck endpoints WHEN creating a service, test them and maintain a tracking file for each change.
+- ALWAYS use pnpm over npm or yarn WHEN starting a new Javascript or Typescript project.
+- ALWAYS prioritise the use of advanced JavaScript/TypeScript tools such as Proxies, Set, Map, Union, Type Guards, Utility Types.
+- PREFER using Object Literal lookups over Switch or if/else statements WHEN defining expression-based conditions.
+-
