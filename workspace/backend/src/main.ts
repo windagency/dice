@@ -7,7 +7,9 @@ import { TemporalModule } from './temporal/temporal.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { SecurityInterceptor } from './security/security.interceptor';
+import { CorrelationMiddleware } from './middleware/correlation.middleware';
 import { RateLimitMiddleware, authRateLimit, authSlowDown } from './security/rate-limit.middleware';
+import { loggerConfig, createLogContext, logger } from './logging/winston.config';
 import { startTemporalWorker } from './temporal/worker';
 
 @Controller()
@@ -152,10 +154,22 @@ class AppModule {
 }
 
 async function bootstrap() {
-  console.log('🎲 DICE Backend Service Starting...');
+  const bootstrapContext = createLogContext('system', undefined, undefined, 'Bootstrap');
+  logger.info('🎲 DICE Backend Service Starting...', {
+    ...bootstrapContext,
+    action: 'service.startup',
+    metadata: {
+      nodeVersion: process.version,
+      environment: process.env.NODE_ENV || 'development',
+      port: process.env.PORT || 3001
+    },
+    tags: ['startup', 'bootstrap']
+  });
   
   try {
-    const app = await NestFactory.create(AppModule);
+    const app = await NestFactory.create(AppModule, {
+      logger: loggerConfig
+    });
     
     // Security headers
     app.use(helmet({
@@ -189,6 +203,9 @@ async function bootstrap() {
       disableErrorMessages: process.env.NODE_ENV === 'production', // Hide validation details in production
     }));
 
+    // Global correlation middleware (must be first)
+    app.use(new CorrelationMiddleware().use.bind(new CorrelationMiddleware()));
+    
     // Global security interceptor
     app.useGlobalInterceptors(new SecurityInterceptor());
     
@@ -207,25 +224,74 @@ async function bootstrap() {
     const port = process.env.PORT || 3001;
     await app.listen(port);
     
-    console.log(`🚀 NestJS Server running on port ${port}`);
-    console.log(`🏥 Health endpoint: http://localhost:${port}/health`);
-    console.log(`🌀 Temporal endpoint: http://localhost:${port}/health/temporal`);
-    console.log(`🔐 Auth endpoints: http://localhost:${port}/auth/`);
-    console.log(`📡 API endpoint: http://localhost:${port}/`);
+    const serverContext = createLogContext('system', undefined, undefined, 'Bootstrap');
+    logger.info('🚀 NestJS Server running successfully', {
+      ...serverContext,
+      action: 'service.started',
+      metadata: {
+        port,
+        environment: process.env.NODE_ENV || 'development',
+        endpoints: {
+          health: `http://localhost:${port}/health`,
+          temporal: `http://localhost:${port}/health/temporal`,
+          auth: `http://localhost:${port}/auth/`,
+          api: `http://localhost:${port}/`
+        }
+      },
+      tags: ['startup', 'server', 'ready']
+    });
     
     if (process.env.NODE_ENV !== 'production') {
-      console.log(`⚠️  Running in ${process.env.NODE_ENV || 'development'} mode with relaxed security`);
+      logger.warn('⚠️ Running in development mode with relaxed security', {
+        ...serverContext,
+        action: 'service.development_mode',
+        metadata: {
+          environment: process.env.NODE_ENV || 'development',
+          securityLevel: 'relaxed'
+        },
+        tags: ['security', 'development', 'warning']
+      });
     }
     
     // Start Temporal Worker in background
-    console.log('🔄 Starting Temporal Worker...');
+    logger.info('🔄 Starting Temporal Worker...', {
+      ...serverContext,
+      action: 'temporal.worker.starting',
+      tags: ['temporal', 'worker', 'startup']
+    });
+    
     startTemporalWorker().catch(error => {
-      console.error('❌ Failed to start Temporal Worker:', error);
+      logger.error('❌ Failed to start Temporal Worker', {
+        ...serverContext,
+        action: 'temporal.worker.startup_failed',
+        metadata: {
+          temporalAddress: process.env.TEMPORAL_ADDRESS || 'localhost:7233',
+          error: {
+            name: error.name,
+            message: error.message,
+            stack: error.stack
+          }
+        },
+        tags: ['temporal', 'worker', 'error']
+      });
       // Don't exit the process if worker fails, but log the error
     });
     
   } catch (error) {
-    console.error('❌ Failed to start server:', error);
+    logger.error('❌ Failed to start server', {
+      ...bootstrapContext,
+      action: 'service.startup_failed',
+      metadata: {
+        error: {
+          name: error.name,
+          message: error.message,
+          stack: error.stack
+        },
+        nodeVersion: process.version,
+        environment: process.env.NODE_ENV || 'development'
+      },
+      tags: ['startup', 'error', 'critical']
+    });
     process.exit(1);
   }
 }

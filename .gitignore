@@ -319,6 +319,7 @@ traefik.log
 .dev-tmp/
 .temp/
 tmp/
+_DRAFT/
 
 # Service-specific ignores
 workspace/*/dist/

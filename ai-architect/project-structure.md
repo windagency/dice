@@ -57,6 +57,7 @@
 │   ├── 📂 docker/
 │   ├── 📂 k8s/
 │   ├── 📂 localstack/
+│   ├── 📂 logging/
 │   ├── 📂 scripts/
 │   ├── 📂 temporal/
 │   └── 📂 tf/
@@ -70,6 +71,7 @@
 │   └── 📂 shared/
 ├── 📜 .cursorignore
 ├── 📜 .cursorindexingignore
+├── 📜 .cursorrules
 ├── 📜 .env.sample
 ├── 📜 .gitattributes
 ├── 📜 .gitignore
@@ -78,5 +80,6 @@
 ├── 📜 Makefile
 ├── 📜 pnpm-workspace.yaml
 ├── 📜 README.md
-└── 📜 SECURITY_QUALITY_TRACKER.md
+├── 📜 SECURITY_QUALITY_TRACKER.md
+└── 📜 TESTING_TRACKER.md
 ```

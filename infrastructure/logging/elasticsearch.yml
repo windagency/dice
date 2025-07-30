@@ -1,0 +1,170 @@
+# DICE Elasticsearch Configuration
+# Optimized for distributed logging with security and performance focus
+
+# ============================================================================
+# CLUSTER SETTINGS
+# ============================================================================
+cluster.name: dice-logging-cluster
+node.name: dice-logging-node
+node.roles: [master, data, ingest]
+
+# ============================================================================
+# NETWORK SETTINGS
+# ============================================================================
+network.host: 0.0.0.0
+http.port: 9200
+transport.port: 9300
+
+# ============================================================================
+# DISCOVERY SETTINGS
+# ============================================================================
+discovery.type: single-node
+cluster.initial_master_nodes: ["dice-logging-node"]
+
+# ============================================================================
+# SECURITY SETTINGS
+# ============================================================================
+xpack.security.enabled: false
+xpack.security.transport.ssl.enabled: false
+xpack.security.http.ssl.enabled: false
+xpack.ml.enabled: false
+xpack.monitoring.enabled: false
+xpack.watcher.enabled: false
+
+# ============================================================================
+# PERFORMANCE SETTINGS
+# ============================================================================
+
+# Memory Settings
+bootstrap.memory_lock: true
+indices.memory.index_buffer_size: 20%
+indices.memory.min_index_buffer_size: 96mb
+
+# Index Settings
+action.auto_create_index: true
+action.destructive_requires_name: true
+
+# Thread Pool Settings
+thread_pool.write.queue_size: 1000
+thread_pool.search.queue_size: 1000
+
+# ============================================================================
+# INDEX LIFECYCLE MANAGEMENT
+# ============================================================================
+
+# Default ILM Policy for DICE Logs
+cluster.metadata.templates.dice_logs_template:
+  index_patterns: ["dice-logs-*"]
+  template:
+    settings:
+      number_of_shards: 1
+      number_of_replicas: 0
+      index.lifecycle.name: dice_logs_policy
+      index.lifecycle.rollover_alias: dice-logs
+      refresh_interval: 30s
+      max_result_window: 50000
+    mappings:
+      properties:
+        "@timestamp":
+          type: date
+          format: "strict_date_optional_time||epoch_millis"
+        timestamp:
+          type: date
+          format: "strict_date_optional_time||epoch_millis"
+        level:
+          type: keyword
+        service:
+          type: keyword
+        correlationId:
+          type: keyword
+        sessionId:
+          type: keyword
+        userId:
+          type: keyword
+        component:
+          type: keyword
+        action:
+          type: keyword
+        message:
+          type: text
+          analyzer: standard
+        metadata:
+          type: object
+          dynamic: true
+        tags:
+          type: keyword
+        environment:
+          type: keyword
+        cluster:
+          type: keyword
+
+# Security Logs Template
+cluster.metadata.templates.dice_security_template:
+  index_patterns: ["dice-security-*"]
+  template:
+    settings:
+      number_of_shards: 1
+      number_of_replicas: 1  # More replicas for security data
+      refresh_interval: 10s  # Faster refresh for security events
+      max_result_window: 50000
+    mappings:
+      properties:
+        "@timestamp":
+          type: date
+        securityEvent:
+          type: object
+          properties:
+            type:
+              type: keyword
+            severity:
+              type: keyword
+            source:
+              type: keyword
+            action:
+              type: keyword
+            outcome:
+              type: keyword
+            riskScore:
+              type: integer
+        owaspCategory:
+          type: keyword
+        request:
+          type: object
+          properties:
+            method:
+              type: keyword
+            endpoint:
+              type: keyword
+            ip:
+              type: ip
+            userAgent:
+              type: text
+              analyzer: standard
+
+# ============================================================================
+# LOGGING SETTINGS
+# ============================================================================
+logger.root: WARN
+logger.org.elasticsearch.discovery: INFO
+logger.org.elasticsearch.cluster.service: INFO
+
+# ============================================================================
+# DEVELOPMENT SETTINGS
+# ============================================================================
+# Disable slow query logging for development
+index.search.slowlog.threshold.query.warn: 10s
+index.search.slowlog.threshold.query.info: 5s
+index.search.slowlog.threshold.query.debug: 2s
+index.search.slowlog.threshold.query.trace: 500ms
+
+index.indexing.slowlog.threshold.index.warn: 10s
+index.indexing.slowlog.threshold.index.info: 5s
+index.indexing.slowlog.threshold.index.debug: 2s
+index.indexing.slowlog.threshold.index.trace: 500ms
+
+# ============================================================================
+# CIRCUIT BREAKER SETTINGS
+# ============================================================================
+indices.breaker.total.limit: 70%
+indices.breaker.fielddata.limit: 40%
+indices.breaker.request.limit: 40% 

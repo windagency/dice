@@ -1,0 +1,153 @@
+# DICE Centralized Logging Stack - ELK + Fluent Bit
+# Provides enterprise-grade log aggregation, search, and visualization
+# Usage: docker compose -f logging-stack.yml --profile logging up -d
+
+services:
+  # ============================================================================
+  # ELASTICSEARCH - Log Storage & Search Engine
+  # ============================================================================
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: dice_elasticsearch
+    profiles: ["logging", "monitoring"]
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.ml.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - cluster.name=dice-logging-cluster
+      - node.name=dice-es-node
+      - bootstrap.memory_lock=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elk_data:/usr/share/elasticsearch/data
+      - ../data/elk/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - dice_logging_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # ============================================================================
+  # KIBANA - Log Visualization & Analytics Dashboard
+  # ============================================================================
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.0
+    container_name: dice_kibana
+    profiles: ["logging", "monitoring"]
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=
+      - ELASTICSEARCH_PASSWORD=
+      - ELASTICSEARCH_SSL_VERIFY=false
+      - SERVER_NAME=dice-kibana
+      - SERVER_HOST=0.0.0.0
+      - KIBANA_AUTOCOMPLETETIMEOUT=3000
+      - KIBANA_AUTOCOMPLETESELECTIONDELAY=300
+    volumes:
+      - ../data/elk/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+    ports:
+      - "5601:5601"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - dice_logging_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  # ============================================================================
+  # FLUENT BIT - Lightweight Log Processor & Forwarder
+  # ============================================================================
+  fluent-bit:
+    image: fluent/fluent-bit:3.0
+    container_name: dice_fluent_bit
+    profiles: ["logging", "monitoring"]
+    volumes:
+      - ../logging/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf:ro
+      - ../logging/parsers.conf:/fluent-bit/etc/parsers.conf:ro
+      - ../data/elk/logs:/var/log/dice:rw
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/log:/host/var/log:ro
+    environment:
+      - FLUENT_ELASTICSEARCH_HOST=elasticsearch
+      - FLUENT_ELASTICSEARCH_PORT=9200
+      - FLUENT_LOG_LEVEL=info
+      - ENVIRONMENT=${NODE_ENV:-development}
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - dice_logging_network
+      - backend_network
+      - pwa_network
+      - dice_integrated_network
+    ports:
+      - "24224:24224"  # Forward input
+      - "24225:24225"  # HTTP input
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:2020/api/v1/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ============================================================================
+  # LOG ROTATION & CLEANUP SERVICE
+  # ============================================================================
+  log-cleaner:
+    image: alpine:latest
+    container_name: dice_log_cleaner
+    profiles: ["logging", "maintenance"]
+    volumes:
+      - ../data/elk/logs:/var/log/dice:rw
+      - ../logging/cleanup.sh:/cleanup.sh:ro
+    command: |
+      sh -c '
+        echo "🧹 Log cleanup service started"
+        while true; do
+          find /var/log/dice -name "*.log" -type f -mtime +7 -delete
+          find /var/log/dice -name "*.log.*" -type f -mtime +7 -delete
+          echo "🧹 Log cleanup completed at $$(date)"
+          sleep 86400  # Run daily
+        done
+      '
+    networks:
+      - dice_logging_network
+
+# ============================================================================
+# NETWORKS
+# ============================================================================
+networks:
+  dice_logging_network:
+    driver: bridge
+    external: true
+  
+  # External networks from other compose files
+  backend_network:
+    external: true
+  pwa_network:
+    external: true
+  dice_integrated_network:
+    external: true
+
+# ============================================================================
+# VOLUMES
+# ============================================================================
+volumes:
+  elk_data:
+    driver: local
+    name: dice_elk_data 

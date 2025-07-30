@@ -1,0 +1,28 @@
+# DICE Elasticsearch Curator Configuration
+# Automated log retention and cleanup for DICE logging infrastructure
+
+# ============================================================================
+# CLIENT CONFIGURATION
+# ============================================================================
+client:
+  hosts:
+    - elasticsearch
+  port: 9200
+  url_prefix:
+  use_ssl: False
+  certificate:
+  client_cert:
+  client_key:
+  ssl_no_validate: False
+  http_auth:
+  timeout: 30
+  master_only: False
+
+# ============================================================================
+# LOGGING CONFIGURATION
+# ============================================================================
+logging:
+  loglevel: INFO
+  logfile: /var/log/curator.log
+  logformat: default
+  blacklist: ['elasticsearch', 'urllib3'] 

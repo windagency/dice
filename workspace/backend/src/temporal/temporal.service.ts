@@ -8,9 +8,9 @@ export class TemporalService implements OnModuleInit, OnModuleDestroy {
   private client: Client;
 
   async onModuleInit() {
+    const temporalAddress = process.env.TEMPORAL_ADDRESS || 'localhost:7233';
+    
     try {
-      const temporalAddress = process.env.TEMPORAL_ADDRESS || 'localhost:7233';
-      
       this.logger.log(`🌀 Connecting to Temporal at ${temporalAddress}...`);
       
       this.connection = await Connection.connect({

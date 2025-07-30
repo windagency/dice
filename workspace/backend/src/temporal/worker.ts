@@ -1,14 +1,19 @@
 import { NativeConnection, Worker } from '@temporalio/worker';
 import * as activities from './activities/example.activities';
+import { logger, createLogContext } from '../logging/winston.config';
 
 /**
  * Start a Temporal Worker
  * Workers poll task queues and execute workflows and activities
  */
 export async function startTemporalWorker() {
+  const workerContext = createLogContext('system', undefined, undefined, 'TemporalWorker');
   const temporalAddress = process.env.TEMPORAL_ADDRESS || 'localhost:7233';
   
-  console.log(`🔄 Starting Temporal Worker connecting to ${temporalAddress}...`);
+  logger.info(`🔄 Starting Temporal Worker connecting to ${temporalAddress}...`, 'worker.starting', {
+    temporalAddress,
+    taskQueue: 'dice-task-queue'
+  });
   
   try {
     // Create connection to Temporal server
@@ -27,25 +32,25 @@ export async function startTemporalWorker() {
       maxConcurrentWorkflowTaskExecutions: 5,
     });
 
-    console.log('✅ Temporal Worker started successfully');
-    console.log('📋 Task Queue: dice-task-queue');
-    console.log('🔄 Worker polling for tasks...');
+      logger.info('✅ Temporal Worker started successfully', 'worker.started', {
+    taskQueue: 'dice-task-queue',
+    temporalAddress,
+    workflowsPath: require.resolve('./workflows'),
+    status: 'polling'
+  });
 
     // Start worker
     await worker.run();
   } catch (error) {
-    console.error('❌ Failed to start Temporal Worker:', error);
+    logger.error('❌ Failed to start Temporal Worker', 'worker.startup_failed', error as Error, {
+      temporalAddress,
+      taskQueue: 'dice-task-queue'
+    });
     throw error;
   }
 }
 
 // Handle graceful shutdown
-process.on('SIGINT', () => {
-  console.log('🛑 Received SIGINT, shutting down Temporal Worker...');
-  process.exit(0);
-});
-
-process.on('SIGTERM', () => {
-  console.log('🛑 Received SIGTERM, shutting down Temporal Worker...');
-  process.exit(0);
-}); 
+// Note: These handlers are global and should ideally be managed by the main application
+// For now, we'll keep them for completeness but in a production setup, 
+// the main application should handle shutdown coordination 

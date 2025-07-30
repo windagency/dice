@@ -26,6 +26,8 @@ export async function sendNotification(userId: string, message: string): Promise
   // Simulate sending a notification
   await sleep(50);
   
+  // Note: In a real implementation, this should use the logger from dependency injection
+  // For now, we'll use a simple console log as activities should be lightweight
   console.log(`📧 Sending notification to user ${userId}: ${message}`);
   return true;
 }

@@ -16,7 +16,7 @@ help: ## Show this help message
 
 setup: ## Initial setup of development environment
 	@echo "Setting up DICE development environment..."
-	@./infrastructure/scripts/setup-dev-environment.sh
+	@./infrastructure/scripts/setup-environment.sh --type development
 	@echo "✅ Setup complete!"
 
 start-all: ## Start all services

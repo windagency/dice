@@ -1,32 +1,9 @@
 #!/bin/bash
-# DICE Docker Orchestrator Script
+# DICE Docker Orchestrator Script (Simplified)
 # Manages the distributed Docker Compose architecture
 
-set -e
-
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
-# Print colored output
-print_status() {
-    echo -e "${BLUE}[DICE]${NC} $1"
-}
-
-print_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
-}
-
-print_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
-}
-
-print_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
+# Load common functions
+source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
 # Show usage
 show_usage() {
@@ -47,6 +24,7 @@ show_usage() {
     echo "  --proxy              Enable Traefik reverse proxy"
     echo "  --monitoring         Enable Prometheus + Grafana"
     echo "  --aws                Enable LocalStack AWS services"
+    echo "  --logging            Enable ELK logging stack"
     echo ""
     echo "Examples:"
     echo "  $0 backend-only                    # Backend development"
@@ -56,38 +34,16 @@ show_usage() {
     echo "  $0 logs backend                    # Show backend logs"
 }
 
-# Get project root directory
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-cd "$PROJECT_ROOT"
-
 # Compose file paths
 BACKEND_COMPOSE="workspace/backend/docker-compose.yml"
 PWA_COMPOSE="workspace/pwa/docker-compose.yml"
 ORCHESTRATOR_COMPOSE="infrastructure/docker/docker-compose.orchestrator.yml"
 
-# Check if compose files exist
-check_compose_files() {
-    if [[ ! -f "$BACKEND_COMPOSE" ]]; then
-        print_error "Backend compose file not found: $BACKEND_COMPOSE"
-        exit 1
-    fi
-    
-    if [[ ! -f "$PWA_COMPOSE" ]]; then
-        print_error "PWA compose file not found: $PWA_COMPOSE"
-        exit 1
-    fi
-    
-    if [[ ! -f "$ORCHESTRATOR_COMPOSE" ]]; then
-        print_error "Orchestrator compose file not found: $ORCHESTRATOR_COMPOSE"
-        exit 1
-    fi
-}
-
 # Backend only
 start_backend_only() {
     print_status "Starting backend workspace only..."
     cd workspace/backend
-    docker compose up -d
+    docker compose --env-file ../../.env up -d
     cd ../..
     print_success "Backend workspace started"
     
@@ -99,11 +55,11 @@ start_backend_only() {
     echo "  • Redis: localhost:6379"
 }
 
-# PWA only  
+# PWA only
 start_pwa_only() {
     print_status "Starting PWA workspace only..."
     cd workspace/pwa
-    docker compose up -d
+    docker compose --env-file ../../.env up -d
     cd ../..
     print_success "PWA workspace started"
     
@@ -129,6 +85,9 @@ start_full_stack() {
             --aws)
                 profiles="$profiles,aws"
                 ;;
+            --logging)
+                profiles="$profiles,logging"
+                ;;
         esac
     done
     
@@ -140,28 +99,36 @@ start_full_stack() {
     # Step 1: Start backend workspace
     print_status "Starting backend workspace..."
     cd workspace/backend
-    docker compose up -d
+    docker compose --env-file ../../.env up -d
     cd ../..
     
     # Step 2: Start PWA workspace  
     print_status "Starting PWA workspace..."
     cd workspace/pwa
-    docker compose up -d
+    docker compose --env-file ../../.env up -d
     cd ../..
     
-    # Step 3: Wait for backend to be healthy
-    print_status "Waiting for backend to be ready..."
+    # Step 3: Wait for backend to be healthy (container-internal check)
+    print_step "Waiting for Backend API to be healthy..."
     local count=0
-    while [ $count -lt 30 ]; do
-        if curl -f http://localhost:3001/health >/dev/null 2>&1; then
+    local max_attempts=30
+    
+    while [ $count -lt $max_attempts ]; do
+        if docker exec backend_dev curl -f http://localhost:3001/health >/dev/null 2>&1; then
+            print_check "Backend API is healthy"
             break
         fi
         sleep 2
         count=$((count + 1))
+        
+        # Show progress every 10 attempts
+        if (( count % 10 == 0 )); then
+            print_info "Still waiting for Backend API... (${count}/${max_attempts})"
+        fi
     done
     
-    if [ $count -eq 30 ]; then
-        print_error "Backend failed to start within 60 seconds"
+    if [ $count -eq $max_attempts ]; then
+        print_error "Backend API failed to become healthy within 60 seconds"
         return 1
     fi
     
@@ -169,9 +136,9 @@ start_full_stack() {
     print_status "Connecting services and starting optional components..."
     if [[ -n "$profiles" ]]; then
         print_status "Enabling profiles: $profiles"
-        docker compose -f "$ORCHESTRATOR_COMPOSE" --profile "$profiles" up -d
+        docker compose --env-file .env -f "$ORCHESTRATOR_COMPOSE" --profile "$profiles" up -d
     else
-        docker compose -f "$ORCHESTRATOR_COMPOSE" up -d
+        docker compose --env-file .env -f "$ORCHESTRATOR_COMPOSE" up -d
     fi
     
     print_success "Full stack started"
@@ -200,6 +167,13 @@ start_full_stack() {
     if [[ "$profiles" == *"aws"* ]]; then
         echo "  • LocalStack: http://localhost:4566"
     fi
+    
+    if [[ "$profiles" == *"logging"* ]]; then
+        echo "  • Elasticsearch: http://localhost:9200"
+        echo "  • Kibana Dashboard: http://localhost:5601"
+        echo "  • Fluent Bit Metrics: http://localhost:2020"
+        echo "  • Logging Monitor: ./infrastructure/scripts/logging-monitor.sh"
+    fi
 }
 
 # Stop all services
@@ -207,13 +181,13 @@ stop_all() {
     print_status "Stopping all DICE services..."
     
     # Stop orchestrator services first
-    docker compose -f "$ORCHESTRATOR_COMPOSE" down 2>/dev/null || true
+    docker compose --env-file .env -f "$ORCHESTRATOR_COMPOSE" down 2>/dev/null || true
     
     # Stop backend workspace
-    cd workspace/backend 2>/dev/null && docker compose down 2>/dev/null; cd ../.. 2>/dev/null || true
+    cd workspace/backend 2>/dev/null && docker compose --env-file ../../.env down 2>/dev/null; cd ../.. 2>/dev/null || true
     
     # Stop PWA workspace
-    cd workspace/pwa 2>/dev/null && docker compose down 2>/dev/null; cd ../.. 2>/dev/null || true
+    cd workspace/pwa 2>/dev/null && docker compose --env-file ../../.env down 2>/dev/null; cd ../.. 2>/dev/null || true
     
     print_success "All services stopped"
 }
@@ -228,9 +202,9 @@ clean_all() {
         print_status "Cleaning all DICE resources..."
         
         # Stop and remove with volumes
-        docker compose -f "$ORCHESTRATOR_COMPOSE" down -v 2>/dev/null || true
-        cd workspace/backend 2>/dev/null && docker compose down -v 2>/dev/null; cd ../.. 2>/dev/null || true
-        cd workspace/pwa 2>/dev/null && docker compose down -v 2>/dev/null; cd ../.. 2>/dev/null || true
+        docker compose --env-file .env -f "$ORCHESTRATOR_COMPOSE" down -v 2>/dev/null || true
+        cd workspace/backend 2>/dev/null && docker compose --env-file ../../.env down -v 2>/dev/null; cd ../.. 2>/dev/null || true
+        cd workspace/pwa 2>/dev/null && docker compose --env-file ../../.env down -v 2>/dev/null; cd ../.. 2>/dev/null || true
         
         # Remove any remaining DICE containers
         docker ps -a --filter "name=dice_" --filter "name=backend_" --filter "name=pwa_" -q | xargs -r docker rm -f
@@ -250,20 +224,20 @@ show_status() {
     echo ""
     
     # Check orchestrator services
-    if docker compose -f "$ORCHESTRATOR_COMPOSE" ps -q >/dev/null 2>&1; then
+    if docker compose --env-file .env -f "$ORCHESTRATOR_COMPOSE" ps -q >/dev/null 2>&1; then
         echo "🔗 Orchestrator Services:"
-        docker compose -f "$ORCHESTRATOR_COMPOSE" ps
+        docker compose --env-file .env -f "$ORCHESTRATOR_COMPOSE" ps
         echo ""
     fi
     
     # Check backend workspace
     echo "🖥️  Backend Workspace:"
-    cd workspace/backend 2>/dev/null && docker compose ps 2>/dev/null; cd ../.. 2>/dev/null || echo "  No services running"
+    cd workspace/backend 2>/dev/null && docker compose --env-file ../../.env ps 2>/dev/null; cd ../.. 2>/dev/null || echo "  No services running"
     echo ""
     
     # Check PWA workspace
     echo "🎨 PWA Workspace:"
-    cd workspace/pwa 2>/dev/null && docker compose ps 2>/dev/null; cd ../.. 2>/dev/null || echo "  No services running"
+    cd workspace/pwa 2>/dev/null && docker compose --env-file ../../.env ps 2>/dev/null; cd ../.. 2>/dev/null || echo "  No services running"
 }
 
 # Show logs
@@ -278,11 +252,11 @@ show_logs() {
     print_status "Showing logs for service: $service"
     
     # Try to find the service in different contexts
-    if docker compose -f "$ORCHESTRATOR_COMPOSE" logs "$service" 2>/dev/null; then
+    if docker compose --env-file .env -f "$ORCHESTRATOR_COMPOSE" logs "$service" 2>/dev/null; then
         return
-    elif (cd workspace/backend && docker compose logs "$service" 2>/dev/null); then
+    elif (cd workspace/backend && docker compose --env-file ../../.env logs "$service" 2>/dev/null); then
         return
-    elif (cd workspace/pwa && docker compose logs "$service" 2>/dev/null); then
+    elif (cd workspace/pwa && docker compose --env-file ../../.env logs "$service" 2>/dev/null); then
         return
     else
         print_error "Service '$service' not found"
@@ -292,7 +266,14 @@ show_logs() {
 
 # Main script logic
 main() {
-    check_compose_files
+    # Ensure we're in project root
+    ensure_project_root
+    
+    # Check compose files
+    check_dice_compose_files || {
+        print_error "Required compose files are missing or invalid"
+        exit 1
+    }
     
     case "${1:-}" in
         "backend-only")

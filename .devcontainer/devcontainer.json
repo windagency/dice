@@ -1,9 +1,7 @@
 {
   "name": "DICE Development Environment",
   "dockerComposeFile": [
-    "../workspace/backend/docker-compose.yml",
-    "../workspace/pwa/docker-compose.yml",
-    "../infrastructure/docker/docker-compose.orchestrator.yml"
+    "../workspace/backend/docker-compose.yml"
   ],
   "service": "backend",
   "workspaceFolder": "/app",
@@ -15,7 +13,7 @@
   "initializeCommand": [
     "bash",
     "-c",
-    "infrastructure/scripts/setup-devcontainer.sh"
+    "infrastructure/scripts/setup-devcontainer.sh && echo 'DevContainer initialization complete'"
   ],
   "postCreateCommand": [
     "bash",
@@ -31,7 +29,10 @@
     7233, // Temporal gRPC
     8080, // Traefik Dashboard
     8088, // Temporal Web UI
-    4566 // LocalStack AWS Services
+    4566, // LocalStack AWS Services
+    9200, // Elasticsearch API
+    5601, // Kibana Dashboard
+    2020 // Fluent Bit Metrics
   ],
   "portsAttributes": {
     "3001": {
@@ -75,6 +76,20 @@
       "label": "LocalStack AWS Services",
       "onAutoForward": "notify",
       "elevateIfNeeded": false
+    },
+    "9200": {
+      "label": "Elasticsearch API",
+      "onAutoForward": "notify",
+      "elevateIfNeeded": false
+    },
+    "5601": {
+      "label": "Kibana Dashboard",
+      "onAutoForward": "openPreview",
+      "elevateIfNeeded": false
+    },
+    "2020": {
+      "label": "Fluent Bit Metrics",
+      "onAutoForward": "ignore"
     }
   },
   "customizations": {
@@ -126,6 +141,14 @@
   "remoteEnv": {
     "NODE_ENV": "development",
     "ASTRO_TELEMETRY_DISABLED": "1",
-    "COMPOSE_PROFILES": "devcontainer"
-  }
+    "COMPOSE_PROFILES": "devcontainer",
+    "FLUENT_ELASTICSEARCH_HOST": "localhost",
+    "FLUENT_ELASTICSEARCH_PORT": "9200",
+    "DICE_LOGGING_ENABLED": "true"
+  },
+  "postStartCommand": [
+    "bash",
+    "-c",
+    "echo '🔧 DevContainer ready - ELK logging available via: ./infrastructure/scripts/logging-setup.sh start'"
+  ]
 }

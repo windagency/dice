@@ -32,9 +32,12 @@
     "express-slow-down": "^2.1.0",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
+    "nest-winston": "^1.9.4",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0",
-    "uuid": "^11.0.3"
+    "uuid": "^11.0.3",
+    "winston": "^3.11.0",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",

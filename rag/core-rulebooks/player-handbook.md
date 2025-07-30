@@ -76,9 +76,9 @@ Alignment is a rule in Dungeons & Dragons which describes a character or creatur
 
 The rules for alignment vary considerably between editions of the game's rules. The roleplaying game community has long debated the exact definition of various alignments, and the concept of the alignment chart has entered the wider internet community.
 
-In the original Dungeons & Dragons (1974), all characters and monsters are either **Lawful**, **Neutral**, or **Chaotic**. Advanced Dungeons & Dragons (1979) introduced a second axis, allowing characters and creatures to additionally be described as **Good**, **Neutral**, or **Evil**. These two axes have nine independent combinations. 
+In the original Dungeons & Dragons (1974), all characters and monsters are either **Lawful**, **Neutral**, or **Chaotic**. Advanced Dungeons & Dragons (1979) introduced a second axis, allowing characters and creatures to additionally be described as **Good**, **Neutral**, or **Evil**. These two axes have nine independent combinations.
 
-- **Lawful Good**: A lawful good character is a protector. The iconic example of lawful good is a paladin, a holy knight who protects the weak and destroys evil. The D&D 3.5 Player's Handbook, p.104-106, which provides nicknames for each of the nine alignments, refers to this alignment as "Crusader". 
+- **Lawful Good**: A lawful good character is a protector. The iconic example of lawful good is a paladin, a holy knight who protects the weak and destroys evil. The D&D 3.5 Player's Handbook, p.104-106, which provides nicknames for each of the nine alignments, refers to this alignment as "Crusader".
 - **Neutral Good**: A neutral good character believes in altruism over all else. The D&D 3.5 Player's Handbook nicknames this alignment "Benefactor".
 - **Chaotic Good**: A chaotic good character believes in freedom as the highest virtue. The iconic example of chaotic good is Robin Hood, who rebels against authority as a way to protect the poor from poverty and suffering. The D&D 3.5 Player's Handbook nicknames this alignment "Rebel".
 - **Lawful Neutral**: A lawful neutral character obeys principle as the highest virtue. For example, a judge who treats all fairly and equally would be considered lawful neutral. The D&D 3.5 Player's Handbook nicknames this alignment "Judge".
@@ -109,4 +109,3 @@ Certain planes of existence have an innate alignment, and visitors of an opposin
 ## Magic
 
 ## Spells
-
