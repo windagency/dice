@@ -1,0 +1,166 @@
+---
+// Character Wizard - Main Astro Component
+// Orchestrates the multi-step character creation process
+
+import { ProfileStep } from './components/ProfileStep';
+import { WizardNavigation } from './components/WizardNavigation';
+import { useProxyState } from 'src/lib/state/useProxyState';
+import { characterWizardStore } from 'src/lib/state/characterWizardStore';
+import { apiClient } from 'src/lib/api/client';
+import type { Character } from 'src/types/character';
+
+interface Props {
+  onComplete?: (character: Character) => void;
+  onCancel?: () => void;
+  className?: string;
+}
+
+const { onComplete, onCancel, className = '' } = Astro.props;
+---
+
+<div class={`character-wizard ${className}`}>
+  <div class="max-w-4xl mx-auto p-6">
+    <!-- Wizard Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Create New Character</h1>
+      <p class="text-gray-600">Follow the steps below to create your D&D 3.0 character</p>
+    </div>
+
+    <!-- Wizard Content -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Main Content Area -->
+      <div class="lg:col-span-2">
+        <div id="wizard-content">
+          <!-- Step content will be rendered here by React -->
+        </div>
+      </div>
+
+      <!-- Navigation Sidebar -->
+      <div class="lg:col-span-1">
+        <div id="wizard-navigation">
+          <!-- Navigation will be rendered here by React -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Cancel Button -->
+    {onCancel && (
+      <div class="mt-8 text-center">
+        <button
+          type="button"
+          class="text-gray-500 hover:text-gray-700 text-sm"
+          onclick="window.history.back()"
+        >
+          Cancel Creation
+        </button>
+      </div>
+    )}
+  </div>
+</div>
+
+<script>
+  import { ProfileStep } from './components/ProfileStep';
+  import { WizardNavigation } from './components/WizardNavigation';
+  import { useProxyState } from 'src/lib/state/useProxyState';
+  import { characterWizardStore, wizardActions } from 'src/lib/state/characterWizardStore';
+  import { apiClient } from 'src/lib/api/client';
+  import { createRoot } from 'react-dom/client';
+
+  // Wizard Component
+  const WizardComponent = () => {
+    const [wizardState] = useProxyState(characterWizardStore);
+    const { currentStep } = wizardState;
+
+    const handleComplete = async () => {
+      try {
+        // Create character using API client
+        const character = await apiClient.createCharacter({
+          profile: wizardState.character.profile,
+          abilities: wizardState.character.abilities,
+          classes: wizardState.character.classes,
+          notes: wizardState.character.notes || ''
+        });
+
+        // Reset wizard
+        wizardActions.resetWizard();
+
+        // Navigate to character sheet or dashboard
+        window.location.href = `/characters/${character.id}`;
+      } catch (error) {
+        console.error('Failed to create character:', error);
+        alert('Failed to create character. Please try again.');
+      }
+    };
+
+    const handleSave = async () => {
+      try {
+        // Save as draft (implement draft saving logic)
+        console.log('Saving draft...', wizardState.character);
+        // TODO: Implement draft saving
+      } catch (error) {
+        console.error('Failed to save draft:', error);
+        alert('Failed to save draft. Please try again.');
+      }
+    };
+
+    const renderCurrentStep = () => {
+      switch (currentStep) {
+        case 0:
+          return React.createElement(ProfileStep);
+        case 1:
+          return React.createElement('div', null, 'Class & Abilities Step (Coming Soon)');
+        case 2:
+          return React.createElement('div', null, 'Combat Stats Step (Coming Soon)');
+        case 3:
+          return React.createElement('div', null, 'Traits & Abilities Step (Coming Soon)');
+        default:
+          return React.createElement('div', null, 'Unknown Step');
+      }
+    };
+
+    return (
+      <div className="wizard-container">
+        <div id="wizard-content">
+          {renderCurrentStep()}
+        </div>
+        <div id="wizard-navigation">
+          {React.createElement(WizardNavigation, {
+            onComplete: handleComplete,
+            onSave: handleSave
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  // Mount React components
+  const contentRoot = createRoot(document.getElementById('wizard-content'));
+  const navigationRoot = createRoot(document.getElementById('wizard-navigation'));
+
+  contentRoot.render(<WizardComponent />);
+  navigationRoot.render(<WizardNavigation />);
+</script>
+
+<style>
+  .character-wizard {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  .wizard-container {
+    @apply bg-white rounded-lg shadow-xl;
+  }
+
+  /* Responsive design for foldables */
+  @media (min-width: 768px) {
+    .character-wizard {
+      @apply p-8;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .character-wizard {
+      @apply p-12;
+    }
+  }
+</style> 

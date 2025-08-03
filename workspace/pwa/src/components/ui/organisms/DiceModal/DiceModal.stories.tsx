@@ -1,8 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
 import { DiceModal, DiceModalHeader, DiceModalBody, DiceModalFooter } from './DiceModal';
-import { DiceButton } from '../DiceButton';
-import { DiceInput } from '../DiceInput';
+import { DiceButton } from 'ui/atoms/DiceButton';
+import { DiceInput } from 'ui/atoms/DiceInput';
+
+// Atomic Design: Organisms - Full UI sections composed of molecules and atoms
+// This component organizes internal layout and state handling
 
 const meta = {
   title: 'UI Components/Modal',

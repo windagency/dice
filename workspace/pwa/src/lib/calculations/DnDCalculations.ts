@@ -9,7 +9,7 @@ import type {
   CombatStats, 
   DerivedStats,
   ValidationResult 
-} from '../../types/character';
+} from 'src/types/character';
 
 export class DnDCalculations {
   // Core D&D 3.0 ability modifier calculation: (score - 10) / 2, rounded down

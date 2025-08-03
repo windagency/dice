@@ -1,8 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { DiceErrorBoundary } from './DiceErrorBoundary';
-import { DiceButton } from '../DiceButton';
-import { DiceCard, DiceCardBody } from '../DiceCard';
+import { DiceButton } from 'ui/atoms/DiceButton';
+import { DiceCard, DiceCardBody } from 'ui/molecules/DiceCard';
 import React from 'react'; // Added missing import for React
+
+// Atomic Design: Organisms - Full UI sections composed of molecules and atoms
+// This component organizes internal layout and state handling
 
 const meta = {
   title: 'UI Components/ErrorBoundary',

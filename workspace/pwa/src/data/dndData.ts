@@ -2,7 +2,7 @@
 // Based on DICE seed data and D&D 3.0 System Reference Document
 // Provides races, classes, alignments, and other game references
 
-import type { Race, Alignment } from '../types/character';
+import type { Race, Alignment } from 'src/types/character';
 
 // D&D 3.0 Races
 export const races: Race[] = [

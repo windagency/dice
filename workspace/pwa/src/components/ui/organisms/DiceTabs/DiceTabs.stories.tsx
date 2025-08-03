@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { DiceTabs } from './DiceTabs';
-import { DiceCard, DiceCardBody } from '../DiceCard';
-import { DiceButton } from '../DiceButton';
+import { DiceCard, DiceCardBody } from 'ui/molecules/DiceCard';
+import { DiceButton } from 'ui/atoms/DiceButton';
+
+// Atomic Design: Organisms - Full UI sections composed of molecules and atoms
+// This component organizes internal layout and state handling
 
 const meta = {
   title: 'UI Components/Tabs',

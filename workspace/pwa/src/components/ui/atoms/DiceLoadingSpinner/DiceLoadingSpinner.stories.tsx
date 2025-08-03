@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { DiceLoadingSpinner } from './DiceLoadingSpinner';
-import { DiceButton } from '../DiceButton';
-import { DiceCard, DiceCardBody } from '../DiceCard';
+import { DiceButton } from 'ui/atoms/DiceButton';
+import { DiceCard, DiceCardBody } from 'ui/molecules/DiceCard';
 
 const meta = {
   title: 'UI Components/LoadingSpinner',

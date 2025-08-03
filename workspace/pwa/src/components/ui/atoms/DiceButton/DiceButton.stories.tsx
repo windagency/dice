@@ -1,6 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { DiceButton } from './DiceButton';
 
+// Atomic Design: Atoms - Foundational building blocks
+// This component is a simple, stateless atom that supports customization through props only
+
 const meta = {
   title: 'UI Components/DiceButton',
   component: DiceButton,

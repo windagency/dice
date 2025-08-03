@@ -235,7 +235,6 @@ curl -X GET "localhost:9200/_cat/indices?v" | grep dice-logs
 # Stop ELK stack
 docker-compose -f infrastructure/docker/logging-stack.yml --profile logging down
 ```
-```
 
 ### LocalStack AWS Services
 

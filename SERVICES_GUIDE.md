@@ -564,81 +564,81 @@ To debug workflows in VSCode with the DICE environment:
 
 1. **Configure Launch Configuration** (`.vscode/launch.json`):
 
-```json
-{
-  "version": "0.2.0",
-  "configurations": [
+    ```json
     {
-      "name": "Debug Temporal Worker",
-      "type": "node",
-      "request": "attach",
-      "port": 9229,
-      "restart": true,
-      "localRoot": "${workspaceFolder}/workspace/backend",
-      "remoteRoot": "/app",
-      "skipFiles": ["<node_internals>/**"]
-    },
-    {
-      "name": "Debug Temporal Workflow",
-      "type": "node",
-      "request": "launch",
-      "program": "${workspaceFolder}/workspace/backend/src/temporal/worker.ts",
-      "env": {
-        "NODE_ENV": "development",
-        "TEMPORAL_ADDRESS": "localhost:7233"
-      },
-      "outFiles": ["${workspaceFolder}/workspace/backend/dist/**/*.js"],
-      "console": "integratedTerminal",
-      "restart": true
+      "version": "0.2.0",
+      "configurations": [
+        {
+          "name": "Debug Temporal Worker",
+          "type": "node",
+          "request": "attach",
+          "port": 9229,
+          "restart": true,
+          "localRoot": "${workspaceFolder}/workspace/backend",
+          "remoteRoot": "/app",
+          "skipFiles": ["<node_internals>/**"]
+        },
+        {
+          "name": "Debug Temporal Workflow",
+          "type": "node",
+          "request": "launch",
+          "program": "${workspaceFolder}/workspace/backend/src/temporal/worker.ts",
+          "env": {
+            "NODE_ENV": "development",
+            "TEMPORAL_ADDRESS": "localhost:7233"
+          },
+          "outFiles": ["${workspaceFolder}/workspace/backend/dist/**/*.js"],
+          "console": "integratedTerminal",
+          "restart": true
+        }
+      ]
     }
-  ]
-}
-```
+    ```
 
 2. **Start Debugging Session**:
 
-```bash
-# Ensure Temporal server is running
-docker compose up temporal -d
+    ```bash
+    # Ensure Temporal server is running
+    docker compose up temporal -d
 
-# Start backend in debug mode (already configured in docker-compose.yml)
-docker compose up backend -d
+    # Start backend in debug mode (already configured in docker-compose.yml)
+    docker compose up backend -d
 
-# In VSCode: F5 or Debug > Start Debugging
-# Select "Debug Temporal Worker" configuration
-```
+    # In VSCode: F5 or Debug > Start Debugging
+    # Select "Debug Temporal Worker" configuration
+    ```
 
 ###### Workflow Development Workflow
 
-**1. Create New Workflow**:
+1. **Create New Workflow**:
 
-- Use Command Palette (`Ctrl+Shift+P`)
-- Search for "Temporal: Create Workflow"
-- Follow prompts to generate workflow template
+   - Use Command Palette (`Ctrl+Shift+P`)
+   - Search for "Temporal: Create Workflow"
+   - Follow prompts to generate workflow template
 
-**2. Test Workflow Locally**:
+2. **Test Workflow Locally**:
 
-```typescript
-// In workspace/backend/src/temporal/workflows/your-workflow.ts
-import { proxyActivities } from '@temporalio/workflow';
+    ```typescript
+    // In workspace/backend/src/temporal/workflows/your-workflow.ts
+    import { proxyActivities } from '@temporalio/workflow';
 
-export async function yourWorkflow(input: any): Promise<any> {
-    // Workflow logic here
-    // VSCode provides IntelliSense and validation
-}
-```
+    export async function yourWorkflow(input: any): Promise<any> {
+        // Workflow logic here
+        // VSCode provides IntelliSense and validation
+    }
+    ```
 
-**3. Start Workflow via Code Lens**:
+3. **Start Workflow via Code Lens**:
 
-- Click "▶ Start Workflow" button above workflow function
-- Enter workflow arguments in popup
-- Monitor execution in Temporal panel
+   - Click "▶ Start Workflow" button above workflow function
+   - Enter workflow arguments in popup
+   - Monitor execution in Temporal panel
 
-**4. View Results**:
+4. **View Results**:
 
-- Check Temporal Web UI: `http://localhost:8088`
-- Use extension's workflow history panel
-- Monitor logs in VSCode terminal
+   - Check Temporal Web UI: `http://localhost:8088`
+   - Use extension's workflow history panel
+   - Monitor logs in VSCode terminal
 
 ###### Extension Commands
 

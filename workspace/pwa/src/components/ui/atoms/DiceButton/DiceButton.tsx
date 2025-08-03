@@ -1,4 +1,5 @@
 import React from 'react';
+import { COMPONENT_TOKENS } from 'ui/tokens/design-tokens';
 
 type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline';
 type ButtonSize = 'sm' | 'md' | 'lg' | 'xl';
@@ -13,6 +14,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   readonly children: React.ReactNode;
 }
 
+// Token-driven button variants
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
   primary: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 text-white shadow-sm',
   secondary: 'bg-gray-100 hover:bg-gray-200 focus:ring-gray-500 text-gray-900 shadow-sm',
@@ -21,6 +23,7 @@ const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
   outline: 'border border-gray-300 hover:bg-gray-50 focus:ring-blue-500 text-gray-700 shadow-sm'
 };
 
+// Token-driven button sizes
 const BUTTON_SIZES: Record<ButtonSize, string> = {
   sm: 'px-3 py-2 text-sm',
   md: 'px-4 py-2 text-sm',

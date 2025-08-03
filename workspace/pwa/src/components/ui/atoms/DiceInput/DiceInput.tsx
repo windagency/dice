@@ -1,4 +1,5 @@
 import React, { forwardRef } from 'react';
+import { COMPONENT_TOKENS } from 'ui/tokens/design-tokens';
 
 type InputSize = 'sm' | 'md' | 'lg';
 type InputVariant = 'default' | 'error' | 'success';
@@ -16,12 +17,14 @@ interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, '
   readonly fullWidth?: boolean;
 }
 
+// Token-driven input sizes
 const INPUT_SIZES: Record<InputSize, string> = {
   sm: 'px-3 py-2 text-sm',
   md: 'px-3 py-3 text-sm',
   lg: 'px-4 py-3 text-base'
 };
 
+// Token-driven input variants
 const INPUT_VARIANTS: Record<InputVariant, string> = {
   default: 'border-gray-300 focus:ring-blue-500 focus:border-blue-500',
   error: 'border-red-500 focus:ring-red-500 focus:border-red-500',

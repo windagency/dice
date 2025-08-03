@@ -2,9 +2,9 @@
 // Provides CRUD operations with localStorage persistence
 // Simulates async database operations for realistic development
 
-import type { Character, CreateCharacterRequest, UpdateCharacterRequest } from '../../types/character';
+import type { Character, CreateCharacterRequest, UpdateCharacterRequest } from 'src/types/character';
 import { v4 as uuidv4 } from 'uuid';
-import { secureStorage } from '../storage/SecureStorage';
+import { secureStorage } from 'src/lib/storage/SecureStorage';
 
 export class MockDatabase {
   private characters: Character[] = [];

@@ -2,16 +2,16 @@
 // Provides character CRUD operations and state management
 // Uses native Proxy implementation without external dependencies
 
-import { ProxyStateManager } from '../lib/state/ProxyStateManager';
-import { useProxyState, useProxySelector } from '../lib/state/useProxyState';
-import { mockDatabase } from '../lib/mockData/MockDatabase';
-import { dndCalculations } from '../lib/calculations/DnDCalculations';
+import { ProxyStateManager } from 'src/lib/state/ProxyStateManager';
+import { useProxyState, useProxySelector } from 'src/lib/state/useProxyState';
+import { mockDatabase } from 'src/lib/mockData/MockDatabase';
+import { dndCalculations } from 'src/lib/calculations/DnDCalculations';
 import type { 
   Character, 
   CreateCharacterRequest, 
   UpdateCharacterRequest,
   DerivedStats 
-} from '../types/character';
+} from 'src/types/character';
 
 // Character store state interface
 interface CharacterState {

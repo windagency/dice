@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
-import { DiceButton } from '../DiceButton';
-import { DiceCard, DiceCardBody } from '../DiceCard';
+import { DiceButton } from 'ui/atoms/DiceButton';
+import { DiceCard, DiceCardBody } from 'ui/molecules/DiceCard';
 
 interface ErrorBoundaryState {
   readonly hasError: boolean;

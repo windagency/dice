@@ -1,6 +1,6 @@
 ---
 // Test page to verify Phase 1 implementation
-import Layout from '../layouts/Layout.astro';
+import Layout from 'src/layouts/Layout.astro';
 ---
 
 <Layout title="DICE PWA - Phase 1 Test">
@@ -24,11 +24,11 @@ import Layout from '../layouts/Layout.astro';
 
   <script>
     // Import our Phase 1 implementations
-    import { ProxyStateManager } from '../lib/state/ProxyStateManager';
-    import { mockDatabase } from '../lib/mockData/MockDatabase';
-    import { dndCalculations } from '../lib/calculations/DnDCalculations';
-    import { characterActions } from '../stores/characterStore';
-    import { races, alignments, baseClasses } from '../data/dndData';
+      import { ProxyStateManager } from 'src/lib/state/ProxyStateManager';
+  import { mockDatabase } from 'src/lib/mockData/MockDatabase';
+  import { dndCalculations } from 'src/lib/calculations/DnDCalculations';
+  import { characterActions } from 'src/stores/characterStore';
+  import { races, alignments, baseClasses } from 'src/data/dndData';
 
     // Test results container
     const testResults = [];

@@ -1,6 +1,6 @@
 ---
 // Demo page showcasing Phase 1 functionality
-import Layout from '../layouts/Layout.astro';
+import Layout from 'src/layouts/Layout.astro';
 ---
 
 <Layout title="DICE PWA - Phase 1 Demo">
@@ -145,10 +145,10 @@ import Layout from '../layouts/Layout.astro';
 
   <script>
     // Import Phase 1 implementations
-    import { characterActions, useCharacterStore } from '../stores/characterStore';
-    import { dndCalculations } from '../lib/calculations/DnDCalculations';
-    import { races, alignments, baseClasses } from '../data/dndData';
-    import { mockDatabase } from '../lib/mockData/MockDatabase';
+      import { characterActions, useCharacterStore } from 'src/stores/characterStore';
+  import { dndCalculations } from 'src/lib/calculations/DnDCalculations';
+  import { races, alignments, baseClasses } from 'src/data/dndData';
+  import { mockDatabase } from 'src/lib/mockData/MockDatabase';
 
     // Global state for demo
     let characters = [];

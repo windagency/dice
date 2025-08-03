@@ -96,14 +96,14 @@
 ### COMPLETED - PWA Testing & Validation *(2025-07-27)*
 
 - [x] **PWA Test Suite** *(Status: ✅ Complete)*
-  - [x] Create automated testing page (http://localhost:3002/test)
+  - [x] Create automated testing page (<http://localhost:3002/test>)
   - [x] Test JavaScript Proxy state management functionality
   - [x] Verify D&D calculations engine accuracy
   - [x] Validate mock database operations and localStorage persistence
   - [x] Check static D&D data loading and browser compatibility
 
 - [x] **Interactive Demo Application** *(Status: ✅ Complete)*
-  - [x] Build complete character creation interface (http://localhost:3002/demo)
+  - [x] Build complete character creation interface (<http://localhost:3002/demo>)
   - [x] Implement live D&D calculations with real-time updates
   - [x] Create character list with CRUD operations
   - [x] Add character sheet display with derived statistics
@@ -309,13 +309,14 @@
 
 ### Access Points
 
-- **Main PWA**: http://localhost:3002/
-- **Interactive Demo**: http://localhost:3002/demo (fully functional character creation)
-- **Test Suite**: http://localhost:3002/test (automated validation of all features)
+- **Main PWA**: <http://localhost:3002/>
+- **Interactive Demo**: <http://localhost:3002/demo> (fully functional character creation)
+- **Test Suite**: <http://localhost:3002/test> (automated validation of all features)
 
 ### Ready for Phase 2
 
 All Phase 1 foundation work is complete. The PWA has:
+
 - Working state management with JavaScript Proxies
 - Complete mock database with localStorage persistence
 - Full D&D 3.0 calculations engine
@@ -327,6 +328,7 @@ All Phase 1 foundation work is complete. The PWA has:
 ## 📊 Implementation Statistics
 
 ### Code Metrics (Phase 1)
+
 - **Files Created**: 8 TypeScript files
 - **Total Lines**: ~1,500+ lines of TypeScript code
 - **Dependencies**: 8 runtime, 15 development (zero state management libraries)
@@ -334,6 +336,7 @@ All Phase 1 foundation work is complete. The PWA has:
 - **TypeScript Errors**: 0 (strict mode enabled)
 
 ### Performance Metrics
+
 - **State Management**: Native Proxy performance with optimised re-renders
 - **Data Persistence**: localStorage with versioning and migration support
 - **D&D Calculations**: Real-time updates with comprehensive validation

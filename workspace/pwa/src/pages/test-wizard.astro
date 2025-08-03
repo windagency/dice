@@ -1,0 +1,126 @@
+---
+// Test Wizard Page
+// Simple test page to verify wizard functionality
+
+import Layout from 'src/layouts/Layout.astro';
+---
+
+<Layout title="Test Wizard - DICE">
+  <div class="min-h-screen bg-gray-100 py-8">
+    <div class="max-w-4xl mx-auto px-4">
+      <div class="bg-white rounded-lg shadow-lg p-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-6">Wizard Test Page</h1>
+        
+        <div class="space-y-6">
+          <div class="p-4 bg-blue-50 rounded-lg">
+            <h2 class="text-lg font-semibold text-blue-900 mb-2">API Client Test</h2>
+            <p class="text-blue-800 mb-4">Testing API client functionality...</p>
+            <button 
+              id="test-api-btn"
+              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Test API Client
+            </button>
+            <div id="api-test-result" class="mt-2 text-sm"></div>
+          </div>
+
+          <div class="p-4 bg-green-50 rounded-lg">
+            <h2 class="text-lg font-semibold text-green-900 mb-2">Wizard State Test</h2>
+            <p class="text-green-800 mb-4">Testing wizard state management...</p>
+            <button 
+              id="test-wizard-btn"
+              class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            >
+              Test Wizard State
+            </button>
+            <div id="wizard-test-result" class="mt-2 text-sm"></div>
+          </div>
+
+          <div class="p-4 bg-purple-50 rounded-lg">
+            <h2 class="text-lg font-semibold text-purple-900 mb-2">Navigation</h2>
+            <div class="space-x-4">
+              <a 
+                href="/create-character"
+                class="inline-block px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+              >
+                Go to Character Wizard
+              </a>
+              <a 
+                href="/components"
+                class="inline-block px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+              >
+                View Components
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { apiClient } from 'src/lib/api/client';
+  import { characterWizardStore, wizardActions } from 'src/lib/state/characterWizardStore';
+
+  // Test API Client
+  document.getElementById('test-api-btn')?.addEventListener('click', async () => {
+    const resultDiv = document.getElementById('api-test-result');
+    if (!resultDiv) return;
+
+    try {
+      resultDiv.textContent = 'Testing...';
+      
+      // Test health check
+      const isHealthy = await apiClient.healthCheck();
+      
+      // Test getting characters
+      const characters = await apiClient.getCharacters();
+      
+      resultDiv.innerHTML = `
+        <div class="text-green-600">
+          ✅ API Client Test Passed<br>
+          Health Check: ${isHealthy ? 'OK' : 'Failed'}<br>
+          Characters Loaded: ${characters.length}<br>
+          Using Mock: ${apiClient.isUsingMock()}
+        </div>
+      `;
+    } catch (error) {
+      resultDiv.innerHTML = `
+        <div class="text-red-600">
+          ❌ API Client Test Failed<br>
+          Error: ${error instanceof Error ? error.message : 'Unknown error'}
+        </div>
+      `;
+    }
+  });
+
+  // Test Wizard State
+  document.getElementById('test-wizard-btn')?.addEventListener('click', () => {
+    const resultDiv = document.getElementById('wizard-test-result');
+    if (!resultDiv) return;
+
+    try {
+      const state = characterWizardStore.getState();
+      const progress = wizardActions.getProgressPercentage();
+      const completedSteps = wizardActions.getCompletedStepsCount();
+      
+      resultDiv.innerHTML = `
+        <div class="text-green-600">
+          ✅ Wizard State Test Passed<br>
+          Current Step: ${state.currentStep + 1}<br>
+          Progress: ${Math.round(progress)}%<br>
+          Completed Steps: ${completedSteps}<br>
+          Total Steps: ${state.steps.length}
+        </div>
+      `;
+    } catch (error) {
+      resultDiv.innerHTML = `
+        <div class="text-red-600">
+          ❌ Wizard State Test Failed<br>
+          Error: ${error instanceof Error ? error.message : 'Unknown error'}
+        </div>
+      `;
+    }
+  });
+</script> 

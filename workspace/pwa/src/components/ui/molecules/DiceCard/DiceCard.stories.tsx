@@ -1,6 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { DiceCard, DiceCardHeader, DiceCardBody, DiceCardFooter } from './DiceCard';
-import { DiceButton } from '../DiceButton';
+import { DiceButton } from 'ui/atoms/DiceButton';
+
+// Atomic Design: Molecules - Combinations of atoms into meaningful UI elements
+// This component combines multiple atoms and encapsulates related logic
 
 const meta = {
   title: 'UI Components/Card',

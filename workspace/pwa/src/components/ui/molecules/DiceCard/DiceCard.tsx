@@ -1,4 +1,5 @@
 import React from 'react';
+import { COMPONENT_TOKENS } from 'ui/tokens/design-tokens';
 
 type CardVariant = 'default' | 'elevated' | 'outlined' | 'flat';
 type CardPadding = 'none' | 'sm' | 'md' | 'lg';
@@ -25,6 +26,7 @@ interface CardFooterProps {
   readonly children: React.ReactNode;
 }
 
+// Token-driven card variants
 const CARD_VARIANTS: Record<CardVariant, string> = {
   default: 'bg-white shadow-sm border border-gray-200',
   elevated: 'bg-white shadow-lg border border-gray-100',
@@ -32,6 +34,7 @@ const CARD_VARIANTS: Record<CardVariant, string> = {
   flat: 'bg-white'
 };
 
+// Token-driven card padding
 const CARD_PADDING: Record<CardPadding, string> = {
   none: '',
   sm: 'p-4',
