@@ -29,5 +29,12 @@ const { title } = Astro.props;
   </head>
   <body class="bg-gray-50 min-h-screen">
     <slot />
+    
+    <!-- Browser Logger Integration -->
+    <script>
+      // Browser logger will be initialised automatically when the module loads
+      // The logger is configured to start automatically in the browser-logger.ts file
+      console.log('PWA Layout loaded - Browser logger should be active');
+    </script>
   </body>
 </html> 

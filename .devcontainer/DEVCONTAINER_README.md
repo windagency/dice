@@ -70,6 +70,14 @@ Once the container is running, all services should be available:
 | **Elasticsearch**     | [http://localhost:9200](http://localhost:9200) | Log storage and search engine                      |
 | **Kibana**            | [http://localhost:5601](http://localhost:5601) | Log visualization and analytics dashboard          |
 
+### Debug Ports
+
+| Service      | Debug Port | Protocol          | Description            |
+| ------------ | ---------- | ----------------- | ---------------------- |
+| **Backend**  | 9229       | Node.js Inspector | NestJS debugging       |
+| **Frontend** | 9222       | Chrome DevTools   | React/Astro debugging  |
+| **Frontend** | N/A        | Browser DevTools  | Manual debugging (F12) |
+
 ### 4. Validate Security & Health
 
 ```bash

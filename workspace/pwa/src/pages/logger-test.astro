@@ -1,0 +1,35 @@
+---
+// Test page for browser logger
+---
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Browser Logger Test</title>
+</head>
+<body>
+  <h1>Browser Logger Test</h1>
+  <p>Check the browser console for logger messages</p>
+  
+  <button id="testButton">Test Logger</button>
+  <button id="errorButton">Test Error</button>
+  
+  <script>
+    // Simple test of browser logger functionality
+    console.log('Logger test page loaded');
+    
+    // Test button click
+    document.getElementById('testButton').addEventListener('click', () => {
+      console.log('Test button clicked');
+      // This would normally call the browser logger
+    });
+    
+    // Test error
+    document.getElementById('errorButton').addEventListener('click', () => {
+      console.error('Test error triggered');
+      throw new Error('Test error from logger test page');
+    });
+  </script>
+</body>
+</html>

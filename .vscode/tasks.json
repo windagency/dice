@@ -1,0 +1,171 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "start-backend-debug",
+            "type": "shell",
+            "command": "make",
+            "args": ["dev-backend"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "start-frontend-debug",
+            "type": "shell",
+            "command": "make",
+            "args": ["dev-frontend"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "start-full-stack-debug",
+            "type": "shell",
+            "command": "make",
+            "args": ["dev-full"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "open-frontend-debug",
+            "type": "shell",
+            "command": "open",
+            "args": ["http://localhost:3000"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "start-chrome-debug",
+            "type": "shell",
+            "command": "/Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome",
+            "args": [
+                "--remote-debugging-port=9222",
+                "--user-data-dir=${workspaceFolder}/.vscode/chrome-debug-profile",
+                "--disable-web-security",
+                "--disable-features=VizDisplayCompositor",
+                "http://localhost:3000"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "start-storybook-debug",
+            "type": "shell",
+            "command": "make",
+            "args": ["dev-frontend"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "test-backend",
+            "type": "shell",
+            "command": "make",
+            "args": ["test-auth"],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "validate-infrastructure",
+            "type": "shell",
+            "command": "make",
+            "args": ["validate"],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "health-check",
+            "type": "shell",
+            "command": "make",
+            "args": ["health"],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "logs-all",
+            "type": "shell",
+            "command": "make",
+            "args": ["logs-all"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        }
+    ]
+}

@@ -1,6 +1,6 @@
 # DICE Error Diagnosis FAQ
 
-**Last Updated**: August 3, 2025 03:09:00 UTC
+**Last Updated**: August 4, 2025 20:15:00 UTC
 **Version**: 1.1  
 **Purpose**: 📚 **KNOWLEDGE BASE** - Complete error resolution guide and prevention strategies
 
@@ -8,52 +8,53 @@
 
 ## 📊 **Issue Statistics**
 
-- **Total Issues**: 32
-- **Critical**: 8 (25%)
-- **Medium**: 19 (59%)
-- **Low**: 5 (16%)
-- **Resolved**: 25 (78%)
+- **Total Issues**: 33
+- **Critical**: 9 (27%)
+- **Medium**: 19 (58%)
+- **Low**: 5 (15%)
+- **Resolved**: 25 (76%)
 - **Partially Resolved**: 3 (9%)
-- **Identified**: 4 (13%)
+- **Identified**: 5 (15%)
 
 ---
 
 ## 📋 **Error Index - Quick Reference**
 
-| **Error ID** | **Category**   | **Severity**   | **Status**               | **Quick Description**                           |
-| ------------ | -------------- | -------------- | ------------------------ | ----------------------------------------------- |
-| **E0001**    | Infrastructure | 🔴 **Critical** | ✅ **Resolved**           | Kibana configuration basePath error             |
-| **E0002**    | Infrastructure | 🔴 **Critical** | ✅ **Resolved**           | Docker network conflicts preventing ELK startup |
-| **E0003**    | Infrastructure | 🟡 **Medium**   | ✅ **Resolved**           | Container caching issues with configuration     |
-| **E0004**    | Scripts        | 🟡 **Medium**   | ⚠️ **Partially Resolved** | Health check script dependencies missing        |
-| **E0005**    | Infrastructure | 🟢 **Low**      | ✅ **Resolved**           | ELK stack version mismatch warnings             |
-| **E0006**    | Process        | 🟡 **Medium**   | ⚠️ **Identified**         | Repetitive verification cycles                  |
-| **E0007**    | Process        | 🔴 **Critical** | ⚠️ **Identified**         | File deletion without user approval             |
-| **E0008**    | Scripts        | 🟡 **Medium**   | ⚠️ **Identified**         | Incomplete health check implementation          |
-| **E0009**    | Infrastructure | 🟡 **Medium**   | ✅ **Resolved**           | Network configuration complexity                |
-| **E0010**    | Process        | 🟡 **Medium**   | ⚠️ **Identified**         | Verification plan execution issues              |
-| **E0011**    | Backend        | 🔴 **Critical** | ✅ **Resolved**           | TypeScript compilation errors during startup    |
-| **E0012**    | Scripts        | 🟡 **Medium**   | ✅ **Resolved**           | sed "multiple occurrences" error                |
-| **E0013**    | Database       | 🔴 **Critical** | ✅ **Resolved**           | Temporal service password authentication failed |
-| **E0014**    | Backend        | 🔴 **Critical** | ✅ **Resolved**           | Backend EACCES permission denied                |
-| **E0015**    | Network        | 🟡 **Medium**   | ⚠️ **Known Issue**        | Backend health check 404 from host              |
-| **E0016**    | DevContainer   | 🟡 **Medium**   | ✅ **Resolved**           | Container name conflict                         |
-| **E0017**    | Environment    | 🟡 **Medium**   | ✅ **Resolved**           | Docker Compose not loading .env automatically   |
-| **E0018**    | DevContainer   | 🟡 **Medium**   | ✅ **Resolved**           | Network dependencies failure                    |
-| **E0019**    | Environment    | 🟡 **Medium**   | ✅ **Resolved**           | Scripts creating duplicate .env files           |
-| **E0020**    | Validation     | 🟢 **Low**      | ✅ **Expected**           | unified-validation.sh failure                   |
-| **E0021**    | Database       | 🔴 **Critical** | ✅ **Resolved**           | docker-orchestrator.sh Temporal failure         |
-| **E0022**    | Network        | 🟡 **Medium**   | ⚠️ **Known Issue**        | Host access failures for scripts                |
-| **E0023**    | Dependencies   | 🟢 **Low**      | ✅ **Resolved**           | npm audit lockfile error                        |
-| **E0024**    | ELK Stack      | 🔴 **Critical** | ✅ **Resolved**           | Kibana basePath configuration validation error  |
-| **E0025**    | ELK Stack      | 🟡 **Medium**   | ✅ **Resolved**           | Elasticsearch memory pressure and heap size     |
-| **E0026**    | ELK Stack      | 🟡 **Medium**   | ✅ **Resolved**           | Fluent Bit plugin configuration errors          |
-| **E0027**    | Scripts        | 🟡 **Medium**   | ✅ **Resolved**           | Health check script container-internal testing  |
-| **E0028**    | Frontend       | 🔴 **Critical** | ⚠️ **Identified**         | TypeScript compilation errors (170 errors)      |
-| **E0029**    | Frontend       | 🔴 **Critical** | ⚠️ **Identified**         | Storybook component library not accessible      |
-| **E0030**    | Frontend       | 🟡 **Medium**   | ⚠️ **Identified**         | Missing type exports in UI components           |
-| **E0031**    | Frontend       | 🟡 **Medium**   | ⚠️ **Identified**         | Astro/React integration JSX syntax errors       |
-| **E0032**    | Frontend       | 🟢 **Low**      | ✅ **Resolved**           | Missing @types/node and @types/crypto-js        |
+| **Error ID** | **Category**   | **Severity**   | **Status**               | **Quick Description**                              |
+| ------------ | -------------- | -------------- | ------------------------ | -------------------------------------------------- |
+| **E0001**    | Infrastructure | 🔴 **Critical** | ✅ **Resolved**           | Kibana configuration basePath error                |
+| **E0002**    | Infrastructure | 🔴 **Critical** | ✅ **Resolved**           | Docker network conflicts preventing ELK startup    |
+| **E0003**    | Infrastructure | 🟡 **Medium**   | ✅ **Resolved**           | Container caching issues with configuration        |
+| **E0004**    | Scripts        | 🟡 **Medium**   | ⚠️ **Partially Resolved** | Health check script dependencies missing           |
+| **E0005**    | Infrastructure | 🟢 **Low**      | ✅ **Resolved**           | ELK stack version mismatch warnings                |
+| **E0006**    | Process        | 🟡 **Medium**   | ⚠️ **Identified**         | Repetitive verification cycles                     |
+| **E0007**    | Process        | 🔴 **Critical** | ⚠️ **Identified**         | File deletion without user approval                |
+| **E0008**    | Scripts        | 🟡 **Medium**   | ⚠️ **Identified**         | Incomplete health check implementation             |
+| **E0009**    | Infrastructure | 🟡 **Medium**   | ✅ **Resolved**           | Network configuration complexity                   |
+| **E0010**    | Process        | 🟡 **Medium**   | ⚠️ **Identified**         | Verification plan execution issues                 |
+| **E0011**    | Backend        | 🔴 **Critical** | ✅ **Resolved**           | TypeScript compilation errors during startup       |
+| **E0012**    | Scripts        | 🟡 **Medium**   | ✅ **Resolved**           | sed "multiple occurrences" error                   |
+| **E0013**    | Database       | 🔴 **Critical** | ✅ **Resolved**           | Temporal service password authentication failed    |
+| **E0014**    | Backend        | 🔴 **Critical** | ✅ **Resolved**           | Backend EACCES permission denied                   |
+| **E0015**    | Network        | 🟡 **Medium**   | ⚠️ **Known Issue**        | Backend health check 404 from host                 |
+| **E0016**    | DevContainer   | 🟡 **Medium**   | ✅ **Resolved**           | Container name conflict                            |
+| **E0017**    | Environment    | 🟡 **Medium**   | ✅ **Resolved**           | Docker Compose not loading .env automatically      |
+| **E0018**    | DevContainer   | 🟡 **Medium**   | ✅ **Resolved**           | Network dependencies failure                       |
+| **E0019**    | Environment    | 🟡 **Medium**   | ✅ **Resolved**           | Scripts creating duplicate .env files              |
+| **E0020**    | Validation     | 🟢 **Low**      | ✅ **Expected**           | unified-validation.sh failure                      |
+| **E0021**    | Database       | 🔴 **Critical** | ✅ **Resolved**           | docker-orchestrator.sh Temporal failure            |
+| **E0022**    | Network        | 🟡 **Medium**   | ⚠️ **Known Issue**        | Host access failures for scripts                   |
+| **E0023**    | Dependencies   | 🟢 **Low**      | ✅ **Resolved**           | npm audit lockfile error                           |
+| **E0024**    | ELK Stack      | 🔴 **Critical** | ✅ **Resolved**           | Kibana basePath configuration validation error     |
+| **E0025**    | ELK Stack      | 🟡 **Medium**   | ✅ **Resolved**           | Elasticsearch memory pressure and heap size        |
+| **E0026**    | ELK Stack      | 🟡 **Medium**   | ✅ **Resolved**           | Fluent Bit plugin configuration errors             |
+| **E0027**    | Scripts        | 🟡 **Medium**   | ✅ **Resolved**           | Health check script container-internal testing     |
+| **E0028**    | Frontend       | 🔴 **Critical** | ⚠️ **Identified**         | TypeScript compilation errors (170 errors)         |
+| **E0029**    | Frontend       | 🔴 **Critical** | ⚠️ **Identified**         | Storybook component library not accessible         |
+| **E0030**    | Frontend       | 🟡 **Medium**   | ⚠️ **Identified**         | Missing type exports in UI components              |
+| **E0031**    | Frontend       | 🟡 **Medium**   | ⚠️ **Identified**         | Astro/React integration JSX syntax errors          |
+| **E0032**    | Frontend       | 🟢 **Low**      | ✅ **Resolved**           | Missing @types/node and @types/crypto-js           |
+| **E0034**    | ELK Stack      | 🔴 **Critical** | ⚠️ **Identified**         | Elasticsearch memory constraint causing exit (137) |
 
 ---
 
@@ -242,6 +243,8 @@ src/auth/auth.service.ts:105:16 - error TS2769: No overload matches this call.
 
 ### **E0013: Temporal Service Password Authentication Failed**
 
+**Timestamp**: August 4, 2025 20:15:00 UTC 
+
 **📋 Error Summary:**
 Temporal service failed to authenticate with database due to password authentication issues.
 
@@ -416,6 +419,49 @@ FATAL Error: [config validation of [server].basePath]: must start with a slash, 
 - Monitor Kibana logs during startup for validation errors
 
 **📚 Documentation Reference:** ELK Stack Configuration Guide
+
+---
+
+### **E0034: Elasticsearch Memory Constraint (IDENTIFIED)**
+
+**Timestamp**: August 4, 2025 20:15:00 UTC 
+
+**📋 Error Summary**:
+Elasticsearch container exited unexpectedly due to memory constraints, preventing the ELK stack from starting.
+
+**Error message**:
+
+```plaintext
+ERROR: Elasticsearch exited unexpectedly, with exit code 137
+```
+
+**Stack trace**:
+
+```plaintext
+... (Elasticsearch startup logs, followed by memory warnings like vm.max_map_count too low) ...
+ERROR: Elasticsearch exited unexpectedly, with exit code 137
+```
+
+**🔍 Root Cause (confidence level 95%)**:
+
+- Insufficient memory allocated to the Elasticsearch container.
+- Host system's `vm.max_map_count` setting is too low for Elasticsearch requirements.
+- Default Elasticsearch JVM heap size might be insufficient for the workload.
+
+**⚠️ Resolution Steps**:
+
+1. **Increase Docker memory allocation** for the `dice_elasticsearch` service in `infrastructure/docker/logging-stack.yml`.
+2. **Increase `vm.max_map_count`** on the host system (e.g., `sudo sysctl -w vm.max_map_count=262144`).
+3. **Consider optimizing Elasticsearch JVM settings** (`ES_JAVA_OPTS`) if default allocation is not the issue.
+
+**🛡️ Prevention Tips**:
+
+- Allocate sufficient RAM to Docker Desktop or the Docker daemon on the host.
+- Configure `vm.max_map_count` on the host as per Elasticsearch documentation (typically `262144`).
+- Monitor Elasticsearch resource usage (memory, CPU) to prevent OOM errors.
+- Ensure `ES_JAVA_OPTS` environment variable sets appropriate heap size for Elasticsearch.
+
+**📚 Documentation Reference**: Elasticsearch Configuration Guide - Memory settings, `vm.max_map_count` documentation.
 
 ---
 

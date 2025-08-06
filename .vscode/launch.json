@@ -1,0 +1,238 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "🔧 Backend Debug (Node.js)",
+            "type": "node",
+            "request": "attach",
+            "port": 9229,
+            "address": "localhost",
+            "localRoot": "${workspaceFolder}/workspace/backend",
+            "remoteRoot": "/app",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "restart": true,
+            "protocol": "inspector",
+            "sourceMaps": true,
+            "outFiles": [
+                "${workspaceFolder}/workspace/backend/dist/**/*.js"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "env": {
+                "NODE_ENV": "development"
+            }
+        },
+        {
+            "name": "🎨 Frontend Debug (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:3000",
+            "webRoot": "${workspaceFolder}/workspace/pwa",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "webpack:///./src/*": "${webRoot}/src/*",
+                "webpack:///src/*": "${webRoot}/src/*",
+                "webpack:///*": "*",
+                "webpack:///./~/*": "${webRoot}/node_modules/*"
+            },
+            "userDataDir": "${workspaceFolder}/.vscode/chrome-debug-profile",
+            "runtimeArgs": [
+                "--disable-web-security",
+                "--disable-features=VizDisplayCompositor"
+            ],
+            "env": {
+                "NODE_ENV": "development"
+            }
+        },
+        {
+            "name": "🎨 Frontend Debug (Attach Chrome)",
+            "type": "chrome",
+            "request": "attach",
+            "port": 9222,
+            "url": "http://localhost:3000",
+            "webRoot": "${workspaceFolder}/workspace/pwa",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "webpack:///./src/*": "${webRoot}/src/*",
+                "webpack:///src/*": "${webRoot}/src/*",
+                "webpack:///*": "*",
+                "webpack:///./~/*": "${webRoot}/node_modules/*"
+            }
+        },
+        {
+            "name": "📚 Storybook Debug (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:6006",
+            "webRoot": "${workspaceFolder}/workspace/pwa",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "webpack:///./src/*": "${webRoot}/src/*",
+                "webpack:///src/*": "${webRoot}/src/*",
+                "webpack:///*": "*",
+                "webpack:///./~/*": "${webRoot}/node_modules/*"
+            },
+            "userDataDir": "${workspaceFolder}/.vscode/storybook-debug-profile",
+            "runtimeArgs": [
+                "--disable-web-security",
+                "--disable-features=VizDisplayCompositor"
+            ]
+        },
+        {
+            "name": "🔧 Backend Debug (Docker)",
+            "type": "node",
+            "request": "attach",
+            "port": 9229,
+            "address": "localhost",
+            "localRoot": "${workspaceFolder}/workspace/backend",
+            "remoteRoot": "/app",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "restart": true,
+            "protocol": "inspector",
+            "sourceMaps": true,
+            "outFiles": [
+                "${workspaceFolder}/workspace/backend/dist/**/*.js"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "env": {
+                "NODE_ENV": "development"
+            },
+            "preLaunchTask": "start-backend-debug"
+        },
+        {
+            "name": "🎨 Frontend Debug (Docker)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:3000",
+            "webRoot": "${workspaceFolder}/workspace/pwa",
+            "sourceMaps": true,
+            "sourceMapPathOverrides": {
+                "webpack:///./src/*": "${webRoot}/src/*",
+                "webpack:///src/*": "${webRoot}/src/*",
+                "webpack:///*": "*",
+                "webpack:///./~/*": "${webRoot}/node_modules/*"
+            },
+            "userDataDir": "${workspaceFolder}/.vscode/chrome-debug-profile",
+            "runtimeArgs": [
+                "--disable-web-security",
+                "--disable-features=VizDisplayCompositor"
+            ],
+            "env": {
+                "NODE_ENV": "development"
+            },
+            "preLaunchTask": "start-frontend-debug"
+        },
+        {
+            "name": "🚀 Full Stack Debug (Backend + Frontend)",
+            "type": "node",
+            "request": "attach",
+            "port": 9229,
+            "address": "localhost",
+            "localRoot": "${workspaceFolder}/workspace/backend",
+            "remoteRoot": "/app",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "restart": true,
+            "protocol": "inspector",
+            "sourceMaps": true,
+            "outFiles": [
+                "${workspaceFolder}/workspace/backend/dist/**/*.js"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "env": {
+                "NODE_ENV": "development"
+            },
+            "preLaunchTask": "start-full-stack-debug",
+            "postDebugTask": "open-frontend-debug"
+        },
+        {
+            "name": "🧪 Test Debug (Jest)",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/workspace/backend/node_modules/.bin/jest",
+            "args": [
+                "--runInBand",
+                "--no-cache",
+                "--detectOpenHandles"
+            ],
+            "cwd": "${workspaceFolder}/workspace/backend",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "env": {
+                "NODE_ENV": "test"
+            },
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
+        },
+        {
+            "name": "🔍 API Debug (REST Client)",
+            "type": "node",
+            "request": "launch",
+            "program": "${workspaceFolder}/workspace/backend/src/main.ts",
+            "cwd": "${workspaceFolder}/workspace/backend",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "env": {
+                "NODE_ENV": "development",
+                "PORT": "3001"
+            },
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "sourceMaps": true,
+            "outFiles": [
+                "${workspaceFolder}/workspace/backend/dist/**/*.js"
+            ]
+        }
+    ],
+    "compounds": [
+        {
+            "name": "🚀 Full Stack Debug (Backend + Frontend + Storybook)",
+            "configurations": [
+                "🔧 Backend Debug (Node.js)",
+                "🎨 Frontend Debug (Chrome)",
+                "📚 Storybook Debug (Chrome)"
+            ],
+            "stopAll": true,
+            "presentation": {
+                "hidden": false,
+                "group": "full-stack",
+                "order": 1
+            }
+        },
+        {
+            "name": "🔧 Backend + API Debug",
+            "configurations": [
+                "🔧 Backend Debug (Node.js)",
+                "🔍 API Debug (REST Client)"
+            ],
+            "stopAll": true,
+            "presentation": {
+                "hidden": false,
+                "group": "backend",
+                "order": 2
+            }
+        },
+        {
+            "name": "🎨 Frontend + Storybook Debug",
+            "configurations": [
+                "🎨 Frontend Debug (Chrome)",
+                "📚 Storybook Debug (Chrome)"
+            ],
+            "stopAll": true,
+            "presentation": {
+                "hidden": false,
+                "group": "frontend",
+                "order": 3
+            }
+        }
+    ]
+}

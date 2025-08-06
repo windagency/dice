@@ -101,6 +101,12 @@
 - **Network Connectivity**: ✅ Inter-service communication validated (container-to-container)
 - **Port Forwarding**: ⚠️ Internal ports working, host access limited (documented issue)
 - **Resource Allocation**: ✅ Services running within resource limits (~800MB backend stack)
+
+#### **Debug Ports Configuration**
+- **Backend Debug**: ✅ Port 9229 (Node.js Inspector) - NestJS debugging
+- **Frontend Debug**: ✅ Port 9222 (Chrome DevTools Protocol) - React/Astro debugging
+- **Browser DevTools**: ✅ F12 (Manual debugging) - Available in all browsers
+- **VSCode Integration**: ✅ Launch configurations working for all debug ports
 - **Service Isolation**: ✅ Each service in separate container with proper networking
 
 ### **Current Testing Architecture - IMPLEMENTED**

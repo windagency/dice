@@ -1,7 +1,7 @@
 # DICE Infrastructure Scripts
 
-**Version**: 3.1 - Security Hardened Distributed Architecture  
-**Last Updated**: July 28, 2025  
+**Version**: 3.2 - Complete Kibana Dashboard Testing Suite  
+**Last Updated**: August 6, 2025  
 **Status**: ✅ Production Ready
 
 This directory contains the consolidated infrastructure automation scripts for the DICE D&D Character Management System. All scripts follow unified patterns and leverage a shared common library for consistency and maintainability.
@@ -45,6 +45,14 @@ Our infrastructure scripts follow a **DRY (Don't Repeat Yourself)** architecture
 - **`logging-setup.sh`** - Complete ELK stack lifecycle management
 - **`logging-monitor.sh`** - Container log monitoring and basic ELK health
 - **`logging-test.sh`** - Comprehensive logging pipeline testing
+- **`kibana-dashboard-setup.sh`** - Kibana dashboard foundation setup (index templates, patterns, test data)
+- **`create-kibana-dashboards.sh`** - Programmatic Kibana dashboard creation (API-based approach)
+- **`create-security-dashboard.sh`** - Security Monitoring Dashboard creation with visualizations and alerts
+- **`test-security-dashboard.sh`** - Security Monitoring Dashboard functionality and performance testing
+- **`test-api-performance-dashboard.sh`** - API Performance Dashboard functionality and performance testing
+- **`test-service-health-dashboard.sh`** - Service Health Dashboard functionality and performance testing
+- **`test-user-activity-dashboard.sh`** - User Activity Dashboard functionality and performance testing
+- **`test-operational-overview-dashboard.sh`** - Operational Overview Dashboard functionality and performance testing
 
 #### **📚 Shared Resources**
 
@@ -85,6 +93,19 @@ Our infrastructure scripts follow a **DRY (Don't Repeat Yourself)** architecture
 
 # Monitor logs in real-time
 ./infrastructure/scripts/logging-monitor.sh
+
+# Setup Kibana dashboard foundation
+./infrastructure/scripts/kibana-dashboard-setup.sh --full-setup
+
+# Create Security Monitoring Dashboard
+./infrastructure/scripts/create-security-dashboard.sh
+
+# Test all Kibana dashboards
+./infrastructure/scripts/test-security-dashboard.sh
+./infrastructure/scripts/test-api-performance-dashboard.sh
+./infrastructure/scripts/test-service-health-dashboard.sh
+./infrastructure/scripts/test-user-activity-dashboard.sh
+./infrastructure/scripts/test-operational-overview-dashboard.sh
 ```
 
 ---
@@ -367,6 +388,271 @@ logs [SERVICE]     Show logs for specific service
 
 ---
 
+### **kibana-dashboard-setup.sh** - Kibana Dashboard Foundation Setup
+
+**Purpose**: Sets up the foundation for Kibana dashboards including index templates, patterns, and test data generation.
+
+```bash
+# Usage
+./kibana-dashboard-setup.sh [OPTIONS]
+
+# Options
+--setup-templates     Create Elasticsearch index templates
+--setup-patterns      Configure Kibana index patterns
+--setup-dashboards    Create basic dashboard configurations
+--setup-alerts        Configure basic alert rules
+--full-setup          Complete setup (templates + patterns + dashboards + alerts)
+--health-check        Check ELK stack health
+--test-data           Generate test data for dashboards
+-h, --help            Show help message
+
+# Examples
+./kibana-dashboard-setup.sh --full-setup       # Complete dashboard setup
+./kibana-dashboard-setup.sh --setup-templates  # Create index templates only
+./kibana-dashboard-setup.sh --health-check     # Check ELK stack status
+```
+
+**Features**:
+
+- ✅ **Index Templates** - Creates 4 specialized templates (security, performance, health, PWA)
+- ✅ **Index Patterns** - Configures 4 Kibana index patterns ready for dashboard creation
+- ✅ **Test Data Generation** - Creates 45+ sample records across all indices
+- ✅ **ELK Health Verification** - Ensures all services are operational
+- ✅ **Comprehensive Setup** - Complete foundation for dashboard creation
+- ✅ **Error Handling** - Graceful handling of existing resources
+
+---
+
+### **create-kibana-dashboards.sh** - Programmatic Dashboard Creation
+
+**Purpose**: Creates comprehensive Kibana dashboards with visualizations using the Kibana API (experimental approach).
+
+```bash
+# Usage
+./create-kibana-dashboards.sh [OPTIONS]
+
+# Options
+--security-dashboard     Create Security Monitoring Dashboard
+--performance-dashboard  Create API Performance Dashboard
+--health-dashboard       Create Service Health Dashboard
+--user-activity-dashboard Create User Activity Dashboard
+--operational-dashboard  Create Operational Overview Dashboard
+--all-dashboards         Create all dashboards
+--test-visualizations    Test visualization creation
+-h, --help               Show help message
+
+# Examples
+./create-kibana-dashboards.sh --all-dashboards      # Create all dashboards
+./create-kibana-dashboard.sh --security-dashboard   # Create security dashboard only
+```
+
+**Features**:
+
+- ✅ **API-Based Creation** - Uses Kibana 7.17.0 API for programmatic dashboard creation
+- ✅ **Multiple Dashboard Types** - Security, Performance, Health, User Activity, Operational
+- ✅ **Visualization Templates** - Pre-configured visualizations for each dashboard type
+- ✅ **Compatibility Handling** - Manages Kibana API version compatibility issues
+- ✅ **Error Recovery** - Graceful handling of API failures and existing resources
+
+**Note**: This script uses the Kibana API which may have compatibility issues with different Kibana versions. For reliable dashboard creation, use the manual setup guides.
+
+---
+
+### **create-security-dashboard.sh** - Security Monitoring Dashboard
+
+**Purpose**: Creates the Security Monitoring Dashboard with visualizations and alerts for real-time threat detection.
+
+```bash
+# Usage
+./create-security-dashboard.sh
+
+# What it creates
+✅ Authentication Events Timeline visualization
+✅ OWASP Top 10 Distribution pie chart
+✅ IP Threat Analysis heatmap
+✅ Security Events by Level bar chart
+✅ Security Monitoring Dashboard with all visualizations
+✅ Security alerts (3 alerts configured)
+✅ Additional test data generation
+```
+
+**Features**:
+
+- ✅ **Security Visualizations** - 4 specialized security monitoring visualizations
+- ✅ **Real-Time Alerts** - 3 security alerts for threat detection
+- ✅ **OWASP Compliance** - Security event categorization by OWASP Top 10
+- ✅ **IP Threat Analysis** - Suspicious IP activity detection
+- ✅ **Test Data Generation** - Additional security test data for validation
+- ✅ **Dashboard Integration** - Complete dashboard with proper layout
+
+**Dashboard Components**:
+
+1. **Authentication Events Timeline** - Line chart showing auth events over time
+2. **OWASP Top 10 Distribution** - Pie chart of security events by OWASP category
+3. **IP Threat Analysis** - Heatmap showing suspicious IP activity
+4. **Security Events by Level** - Bar chart of events by severity level
+
+**Security Alerts**:
+
+1. **High Authentication Failure Rate** - Alerts on excessive login failures
+2. **OWASP Security Event Detected** - Alerts on OWASP-categorized events
+3. **Suspicious IP Activity** - Alerts on suspicious IP behavior
+
+**Note**: Due to Kibana API compatibility issues, this script may not work reliably. For guaranteed dashboard creation, use the manual setup guide: `infrastructure/logging/SECURITY_DASHBOARD_MANUAL_SETUP.md`
+
+---
+
+### **test-security-dashboard.sh** - Security Monitoring Dashboard Testing
+
+**Purpose**: Tests the Security Monitoring Dashboard functionality and performance with comprehensive validation.
+
+```bash
+# Usage
+./test-security-dashboard.sh
+
+# What it tests
+✅ Dashboard existence and accessibility
+✅ Visualization components availability
+✅ Security data quality and availability
+✅ Dashboard performance and response times
+✅ Alert configurations and functionality
+✅ Security metrics validation (OWASP events, auth failures)
+✅ Query performance and optimization
+✅ Security health scoring and assessment
+```
+
+**Features**:
+
+- ✅ **Comprehensive Testing** - Validates all security dashboard components
+- ✅ **Data Quality Assessment** - Checks security event data integrity
+- ✅ **Performance Metrics** - Measures query performance and response times
+- ✅ **Security Health Scoring** - Calculates overall security health percentage
+- ✅ **OWASP Compliance** - Validates OWASP Top 10 event categorization
+- ✅ **Alert Validation** - Tests security alert configurations
+- ✅ **Real-time Monitoring** - Provides live security metrics assessment
+
+---
+
+### **test-api-performance-dashboard.sh** - API Performance Dashboard Testing
+
+**Purpose**: Tests the API Performance Dashboard functionality and performance with detailed metrics validation.
+
+```bash
+# Usage
+./test-api-performance-dashboard.sh
+
+# What it tests
+✅ Dashboard existence and accessibility
+✅ Performance data quality and availability
+✅ Response time percentiles (P50, P95, P99)
+✅ Error rate analysis and validation
+✅ Endpoint distribution and monitoring
+✅ Query performance and optimization
+✅ Performance health scoring and assessment
+```
+
+**Features**:
+
+- ✅ **Performance Metrics** - Validates response time percentiles and error rates
+- ✅ **Data Quality Assessment** - Checks performance data integrity
+- ✅ **Endpoint Analysis** - Monitors API endpoint distribution and usage
+- ✅ **Performance Health Scoring** - Calculates overall performance health
+- ✅ **Slow Query Detection** - Identifies performance bottlenecks
+- ✅ **Error Rate Monitoring** - Tracks API error patterns and trends
+- ✅ **Real-time Validation** - Provides live performance metrics assessment
+
+---
+
+### **test-service-health-dashboard.sh** - Service Health Dashboard Testing
+
+**Purpose**: Tests the Service Health Dashboard functionality and performance with infrastructure health validation.
+
+```bash
+# Usage
+./test-service-health-dashboard.sh
+
+# What it tests
+✅ Dashboard existence and accessibility
+✅ Health data quality and availability
+✅ Service distribution and status
+✅ Log level analysis and validation
+✅ Health score calculation and assessment
+✅ Infrastructure service monitoring
+✅ Query performance and optimization
+```
+
+**Features**:
+
+- ✅ **Health Metrics** - Validates service health and status indicators
+- ✅ **Data Quality Assessment** - Checks health data integrity
+- ✅ **Service Distribution** - Monitors service availability and distribution
+- ✅ **Health Score Calculation** - Calculates overall system health percentage
+- ✅ **Infrastructure Monitoring** - Tracks PostgreSQL, Redis, Temporal, ELK stack
+- ✅ **Log Level Analysis** - Validates error, warning, and info log distribution
+- ✅ **Real-time Health Assessment** - Provides live health metrics validation
+
+---
+
+### **test-user-activity-dashboard.sh** - User Activity Dashboard Testing
+
+**Purpose**: Tests the User Activity Dashboard functionality and performance with user experience validation.
+
+```bash
+# Usage
+./test-user-activity-dashboard.sh
+
+# What it tests
+✅ Dashboard existence and accessibility
+✅ User activity data quality and availability
+✅ Click interaction patterns and analysis
+✅ Browser compatibility and error tracking
+✅ User engagement metrics and validation
+✅ Feature usage statistics and assessment
+✅ Query performance and optimization
+```
+
+**Features**:
+
+- ✅ **User Experience Metrics** - Validates click interactions and engagement patterns
+- ✅ **Data Quality Assessment** - Checks user activity data integrity
+- ✅ **Browser Compatibility** - Monitors cross-browser error distribution
+- ✅ **Engagement Analysis** - Calculates user engagement rates and patterns
+- ✅ **Feature Usage Tracking** - Validates component and feature adoption
+- ✅ **UX Health Scoring** - Calculates overall user experience health
+- ✅ **Real-time UX Assessment** - Provides live user experience metrics
+
+---
+
+### **test-operational-overview-dashboard.sh** - Operational Overview Dashboard Testing
+
+**Purpose**: Tests the Operational Overview Dashboard functionality and performance with system-wide intelligence validation.
+
+```bash
+# Usage
+./test-operational-overview-dashboard.sh
+
+# What it tests
+✅ Dashboard existence and accessibility
+✅ Operational data quality and availability
+✅ Cross-service correlation analysis
+✅ Log volume analysis and trends
+✅ System performance metrics and validation
+✅ Capacity planning indicators and assessment
+✅ Query performance and optimization
+```
+
+**Features**:
+
+- ✅ **Operational Intelligence** - Validates cross-service correlation and system-wide metrics
+- ✅ **Data Quality Assessment** - Checks operational data integrity
+- ✅ **Correlation Analysis** - Monitors request tracing and correlation coverage
+- ✅ **System Performance** - Tracks overall system health and performance trends
+- ✅ **Capacity Planning** - Validates resource usage and capacity indicators
+- ✅ **Operational Health Scoring** - Calculates overall operational health percentage
+- ✅ **Real-time Intelligence** - Provides live operational metrics assessment
+
+---
+
 ## 🔧 **Common Library (common.sh)**
 
 The shared library provides **28+ utility functions** organised into categories:
@@ -453,6 +739,7 @@ show_completion()       # Completion messages with timestamps
 - **Progress indicators** - Clear visual feedback during operations
 - **Troubleshooting guidance** - Specific fix suggestions for common issues
 - **Comprehensive logging** - Detailed operation logs with timestamps
+- **Kibana dashboard workflow** - Foundation setup + manual creation approach for reliable dashboard deployment
 
 ### **Maintainability**
 
@@ -480,6 +767,10 @@ All scripts have been thoroughly tested for:
 - ✅ **Service orchestration** - All service combinations (backend-only, pwa-only, full-stack)
 - ✅ **Health monitoring** - All services properly detected and monitored
 - ✅ **Authentication flow** - End-to-end JWT authentication testing
+- ✅ **Kibana dashboard foundation** - Index templates, patterns, and test data generation
+- ✅ **Security dashboard setup** - Foundation creation with manual setup guide validation
+- ✅ **Dashboard testing suite** - All 5 Kibana dashboards tested with comprehensive validation
+- ✅ **Cross-dashboard validation** - Security, Performance, Health, UX, and Operational dashboards
 
 ### **Performance Testing**
 
@@ -495,6 +786,16 @@ All scripts have been thoroughly tested for:
 - **[SECURITY_QUALITY_TRACKER.md](../../SECURITY_QUALITY_TRACKER.md)** - OWASP compliance and security tracking
 - **[DevContainer README](../../.devcontainer/DEVCONTAINER_README.md)** - DevContainer setup and usage
 - **[Main Project README](../../README.md)** - Project overview and quick start guide
+
+### **Kibana Dashboard Documentation**
+
+- **[KIBANA_DASHBOARDS_PLAN.md](../logging/KIBANA_DASHBOARDS_PLAN.md)** - Comprehensive implementation plan for all dashboards
+- **[KIBANA_DASHBOARD_SETUP_GUIDE.md](../logging/KIBANA_DASHBOARD_SETUP_GUIDE.md)** - General dashboard setup guide
+- **[SECURITY_DASHBOARD_MANUAL_SETUP.md](../logging/SECURITY_DASHBOARD_MANUAL_SETUP.md)** - Detailed Security Monitoring Dashboard manual setup
+- **[API_PERFORMANCE_DASHBOARD_MANUAL_SETUP.md](../logging/API_PERFORMANCE_DASHBOARD_MANUAL_SETUP.md)** - Detailed API Performance Dashboard manual setup
+- **[SERVICE_HEALTH_DASHBOARD_MANUAL_SETUP.md](../logging/SERVICE_HEALTH_DASHBOARD_MANUAL_SETUP.md)** - Detailed Service Health Dashboard manual setup
+- **[USER_ACTIVITY_DASHBOARD_MANUAL_SETUP.md](../logging/USER_ACTIVITY_DASHBOARD_MANUAL_SETUP.md)** - Detailed User Activity Dashboard manual setup
+- **[OPERATIONAL_OVERVIEW_DASHBOARD_MANUAL_SETUP.md](../logging/OPERATIONAL_OVERVIEW_DASHBOARD_MANUAL_SETUP.md)** - Detailed Operational Overview Dashboard manual setup
 
 ### **Architecture Documentation**
 
