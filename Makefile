@@ -5,7 +5,9 @@
 .DEFAULT_GOAL := help
 
 # Variables
-ORCHESTRATOR_SCRIPT := ./infrastructure/scripts/docker-orchestrator.sh
+SERVICE_MANAGER := ./infrastructure/scripts/unified-service-manager.sh
+VALIDATION_FRAMEWORK := ./infrastructure/scripts/unified-validation-framework.sh
+DASHBOARD_TESTER := ./infrastructure/scripts/dashboard-test-framework.sh
 BACKUP_DIR := ./infrastructure/data/backups
 TIMESTAMP := $(shell date +%Y%m%d_%H%M%S)
 
@@ -28,13 +30,18 @@ setup-devcontainer: ## Setup DevContainer environment
 	@./infrastructure/scripts/setup-devcontainer.sh
 	@echo "✅ DevContainer setup complete!"
 
+setup-localstack: ## Setup LocalStack AWS services emulator
+	@echo "Setting up LocalStack AWS services emulator..."
+	@./infrastructure/scripts/setup-localstack.sh
+	@echo "✅ LocalStack AWS services emulator setup complete!"
+
 # =============================================================================
 # SERVICE STARTUP (Production Mode)
 # =============================================================================
 
 start-all: ## Start full integrated stack with all services
 	@echo "Starting full DICE integrated stack..."
-	@$(ORCHESTRATOR_SCRIPT) full-stack
+	@$(SERVICE_MANAGER) start orchestrator
 	@echo "✅ Full stack started!"
 	@echo "🌐 Access your services:"
 	@echo "   Backend API: http://localhost:3001"
@@ -46,13 +53,89 @@ start-all: ## Start full integrated stack with all services
 
 start-backend: ## Start backend services only (DB + Redis + Backend + Temporal)
 	@echo "Starting backend services..."
-	@$(ORCHESTRATOR_SCRIPT) backend-only
+	@$(SERVICE_MANAGER) start backend
 	@echo "✅ Backend services started!"
 
 start-frontend: ## Start PWA frontend with development mocks
 	@echo "Starting PWA frontend with development mocks..."
-	@$(ORCHESTRATOR_SCRIPT) pwa-only
+	@$(SERVICE_MANAGER) start pwa
 	@echo "✅ PWA frontend started!"
+
+# =============================================================================
+# UNIFIED SERVICE MANAGEMENT
+# =============================================================================
+
+# Unified service management commands
+service-start: ## Start all services using unified service manager
+	@$(SERVICE_MANAGER) start all
+
+service-stop: ## Stop all services using unified service manager
+	@$(SERVICE_MANAGER) stop all
+
+service-restart: ## Restart all services using unified service manager
+	@$(SERVICE_MANAGER) restart all
+
+service-status: ## Show status of all services using unified service manager
+	@$(SERVICE_MANAGER) status all
+
+service-health: ## Health check all services using unified service manager
+	@$(SERVICE_MANAGER) health all
+
+service-logs: ## Show logs for all services using unified service manager
+	@$(SERVICE_MANAGER) logs all
+
+service-clean: ## Clean all containers and volumes using unified service manager
+	@$(SERVICE_MANAGER) clean
+
+service-backup: ## Create backup using unified service manager
+	@$(SERVICE_MANAGER) backup
+
+# =============================================================================
+# UNIFIED VALIDATION
+# =============================================================================
+
+validate-all: ## Run all validation phases using unified validation framework
+	@$(VALIDATION_FRAMEWORK) --all
+
+validate-infrastructure: ## Validate infrastructure using unified validation framework
+	@$(VALIDATION_FRAMEWORK) --phase infrastructure
+
+validate-services: ## Validate services using unified validation framework
+	@$(VALIDATION_FRAMEWORK) --phase services
+
+validate-security: ## Validate security using unified validation framework
+	@$(VALIDATION_FRAMEWORK) --phase security
+
+validate-logging: ## Validate logging using unified validation framework
+	@$(VALIDATION_FRAMEWORK) --phase logging
+
+validate-performance: ## Validate performance using unified validation framework
+	@$(VALIDATION_FRAMEWORK) --phase performance
+
+validate-integration: ## Validate integration using unified validation framework
+	@$(VALIDATION_FRAMEWORK) --phase integration
+
+# =============================================================================
+# UNIFIED DASHBOARD TESTING
+# =============================================================================
+
+test-dashboards-all: ## Test all dashboards using unified dashboard testing framework
+	@$(DASHBOARD_TESTER) --all
+
+test-dashboard-security: ## Test security dashboard using unified dashboard testing framework
+	@$(DASHBOARD_TESTER) --type security
+
+test-dashboard-performance: ## Test performance dashboard using unified dashboard testing framework
+	@$(DASHBOARD_TESTER) --type performance
+
+test-dashboard-health: ## Test health dashboard using unified dashboard testing framework
+	@$(DASHBOARD_TESTER) --type health
+
+test-dashboard-user-activity: ## Test user activity dashboard using unified dashboard testing framework
+	@$(DASHBOARD_TESTER) --type user-activity
+
+test-dashboard-operational: ## Test operational dashboard using unified dashboard testing framework
+	@$(DASHBOARD_TESTER) --type operational
 
 # =============================================================================
 # SERVICE STARTUP WITH PROFILES
@@ -60,22 +143,22 @@ start-frontend: ## Start PWA frontend with development mocks
 
 start-proxy: ## Start full stack with Traefik reverse proxy
 	@echo "Starting full stack with reverse proxy..."
-	@$(ORCHESTRATOR_SCRIPT) full-stack --proxy
+	@$(SERVICE_MANAGER) start orchestrator --proxy
 	@echo "✅ Full stack with proxy started!"
 
 start-monitoring: ## Start full stack with monitoring (Prometheus + Grafana)
 	@echo "Starting full stack with monitoring..."
-	@$(ORCHESTRATOR_SCRIPT) full-stack --monitoring
+	@$(SERVICE_MANAGER) start orchestrator --monitoring
 	@echo "✅ Full stack with monitoring started!"
 
 start-logging: ## Start full stack with ELK logging stack
 	@echo "Starting full stack with logging..."
-	@$(ORCHESTRATOR_SCRIPT) full-stack --logging
-	@echo "✅ Full stack with logging started!"
+	@$(SERVICE_MANAGER) start elk
+	@echo "✅ ELK logging stack started!"
 
 start-aws: ## Start full stack with LocalStack AWS services
 	@echo "Starting full stack with AWS services..."
-	@$(ORCHESTRATOR_SCRIPT) full-stack --aws
+	@$(SERVICE_MANAGER) start orchestrator --aws
 	@echo "✅ Full stack with AWS services started!"
 
 # =============================================================================
@@ -85,18 +168,18 @@ start-aws: ## Start full stack with LocalStack AWS services
 dev-backend: ## Start backend in debug mode with logs
 	@echo "🔧 Starting backend in DEBUG mode..."
 	@echo "🐛 Debug port: localhost:9229"
-	@$(ORCHESTRATOR_SCRIPT) backend-only
+	@$(SERVICE_MANAGER) start backend
 	@echo "📊 Backend logs (debug mode):"
-	@$(ORCHESTRATOR_SCRIPT) logs backend
+	@$(SERVICE_MANAGER) logs backend
 	@echo "🔧 Backend development mode active"
 
 dev-frontend: ## Start frontend in debug mode with logs
 	@echo "🎨 Starting frontend in DEBUG mode..."
 	@echo "🐛 DevTools: localhost:3000 (F12)"
 	@echo "🐛 Chrome Debug: localhost:9222"
-	@$(ORCHESTRATOR_SCRIPT) pwa-only
+	@$(SERVICE_MANAGER) start pwa
 	@echo "📊 Frontend logs (debug mode):"
-	@$(ORCHESTRATOR_SCRIPT) logs pwa
+	@$(SERVICE_MANAGER) logs pwa
 	@echo "🎨 Frontend development mode active"
 
 dev-full: ## Start full stack in debug mode with logs
@@ -104,9 +187,9 @@ dev-full: ## Start full stack in debug mode with logs
 	@echo "🐛 Backend debug: localhost:9229"
 	@echo "🐛 Frontend debug: localhost:3000 (F12)"
 	@echo "🐛 Chrome Debug: localhost:9222"
-	@$(ORCHESTRATOR_SCRIPT) full-stack
+	@$(SERVICE_MANAGER) start orchestrator
 	@echo "📊 Full stack logs (debug mode):"
-	@$(ORCHESTRATOR_SCRIPT) logs
+	@$(SERVICE_MANAGER) logs all
 	@echo "🚀 Full stack development mode active"
 
 dev-full-debug: ## Start full stack with all debug features
@@ -116,9 +199,9 @@ dev-full-debug: ## Start full stack with all debug features
 	@echo "🐛 Chrome Debug: localhost:9222"
 	@echo "📊 ELK logging: localhost:5601"
 	@echo "🔍 Elasticsearch: localhost:9200"
-	@$(ORCHESTRATOR_SCRIPT) full-stack --logging
+	@$(SERVICE_MANAGER) start orchestrator --logging
 	@echo "📊 Full stack logs with ELK:"
-	@$(ORCHESTRATOR_SCRIPT) logs
+	@$(SERVICE_MANAGER) logs all
 	@echo "🚀 Full stack debug mode with logging active"
 
 # =============================================================================
@@ -142,42 +225,19 @@ status-elk: ## Show ELK stack status
 	@docker-compose -f infrastructure/docker/logging-stack.yml --profile logging ps
 
 # =============================================================================
-# SERVICE MANAGEMENT
+# LOGGING & MONITORING (Unified)
 # =============================================================================
-
-stop: ## Stop all services
-	@echo "Stopping all services..."
-	@$(ORCHESTRATOR_SCRIPT) stop
-	@echo "✅ All services stopped!"
-
-restart: ## Restart all services
-	@echo "Restarting all services..."
-	@$(ORCHESTRATOR_SCRIPT) stop
-	@$(ORCHESTRATOR_SCRIPT) full-stack
-	@echo "✅ All services restarted!"
-
-clean: ## Stop services and remove volumes
-	@echo "⚠️  This will remove all data! Are you sure? [y/N]" && read ans && [ $${ans:-N} = y ]
-	@$(ORCHESTRATOR_SCRIPT) clean
-	@echo "✅ Environment cleaned!"
-
-# =============================================================================
-# LOGGING & MONITORING
-# =============================================================================
-
-logs: ## Show logs for all services
-	@$(ORCHESTRATOR_SCRIPT) logs
 
 logs-backend: ## Show backend logs
-	@$(ORCHESTRATOR_SCRIPT) logs backend
+	@$(SERVICE_MANAGER) logs backend
 
 logs-pwa: ## Show PWA logs
-	@$(ORCHESTRATOR_SCRIPT) logs pwa
+	@$(SERVICE_MANAGER) logs pwa
 
 logs-frontend: ## Show frontend logs (PWA + Storybook)
 	@echo "📱 Frontend logs (PWA + Storybook):"
 	@echo "🔹 PWA logs:"
-	@$(ORCHESTRATOR_SCRIPT) logs pwa
+	@$(SERVICE_MANAGER) logs pwa
 	@echo ""
 	@echo "🔹 Storybook logs:"
 	@docker logs pwa_dev 2>/dev/null | grep -i storybook || echo "Storybook not running"
@@ -215,10 +275,10 @@ logs-proxy: ## Show Traefik proxy logs
 logs-all: ## Show all service logs
 	@echo "📋 All DICE service logs:"
 	@echo "🔹 Backend services:"
-	@$(ORCHESTRATOR_SCRIPT) logs backend
+	@$(SERVICE_MANAGER) logs backend
 	@echo ""
 	@echo "🔹 Frontend services:"
-	@$(ORCHESTRATOR_SCRIPT) logs pwa
+	@$(SERVICE_MANAGER) logs pwa
 	@echo ""
 	@echo "🔹 Database services:"
 	@docker logs backend_postgres_dev 2>/dev/null || echo "PostgreSQL not running"
@@ -257,40 +317,8 @@ export-logs: ## Export recent logs from Elasticsearch
 	@./infrastructure/scripts/logging-setup.sh export
 
 # =============================================================================
-# TESTING & VALIDATION
+# HEALTH & STATUS (Unified)
 # =============================================================================
-
-test: ## Run all tests (when services are implemented)
-	@echo "Running all tests..."
-	@echo "⚠️  Tests will be implemented in service setup phase"
-
-test-auth: ## Test JWT authentication system
-	@echo "🔐 Testing authentication system..."
-	@./infrastructure/scripts/test-auth.sh
-
-test-validation: ## Run comprehensive validation
-	@echo "🧪 Running comprehensive validation..."
-	@./infrastructure/scripts/unified-validation.sh
-
-test-localstack: ## Test LocalStack AWS services
-	@echo "☁️ Testing LocalStack AWS services..."
-	@./infrastructure/scripts/setup-localstack.sh
-
-# =============================================================================
-# HEALTH & STATUS
-# =============================================================================
-
-status: ## Show service status
-	@echo "DICE Services Status:"
-	@$(ORCHESTRATOR_SCRIPT) status
-
-health: ## Check service health
-	@echo "Checking service health..."
-	@docker exec backend_postgres_dev pg_isready -U dice_user -d dice_db || echo "❌ PostgreSQL not ready"
-	@docker exec backend_redis_dev redis-cli ping || echo "❌ Redis not ready"
-	@curl -f http://localhost:3001/health || echo "❌ Backend API not ready"
-	@curl -f http://localhost:3000/ || echo "❌ PWA not ready"
-	@echo "✅ Health checks completed!"
 
 health-backend: ## Check backend service health only
 	@echo "Checking backend service health..."
@@ -322,44 +350,32 @@ backup-db: ## Backup PostgreSQL database
 	@docker exec backend_postgres_dev pg_dump -U dice_user dice_db > $(BACKUP_DIR)/backup_$(TIMESTAMP).sql
 	@echo "✅ Database backed up to $(BACKUP_DIR)/backup_$(TIMESTAMP).sql"
 
-restore-db: ## Restore database from backup (use: make restore-db BACKUP=filename)
-	@echo "Restoring database from $(BACKUP_DIR)/$(BACKUP)..."
-	@docker exec -i backend_postgres_dev psql -U dice_user -d dice_db < $(BACKUP_DIR)/$(BACKUP)
-	@echo "✅ Database restored from $(BACKUP)!"
+restore-db: ## Restore database from backup (use: make restore-db BACKUP=filename or make restore-db for interactive)
+	@if [ -n "$(BACKUP)" ] && [ -f "$(BACKUP_DIR)/$(BACKUP)" ]; then \
+		echo "Restoring database from $(BACKUP_DIR)/$(BACKUP)..."; \
+		docker exec -i backend_postgres_dev psql -U dice_user -d dice_db < "$(BACKUP_DIR)/$(BACKUP)"; \
+		echo "✅ Database restored from $(BACKUP)!"; \
+	else \
+		echo "📋 Available backups:"; \
+		ls -la $(BACKUP_DIR)/*.sql 2>/dev/null || echo "❌ No backup files found in $(BACKUP_DIR)"; \
+		echo ""; \
+		echo "🔍 Interactive mode:"; \
+		echo "Enter backup filename (or press Enter to cancel):"; \
+		read backup_file; \
+		if [ -z "$$backup_file" ]; then \
+			echo "❌ Restore cancelled"; \
+			exit 0; \
+		fi; \
+		if [ ! -f "$(BACKUP_DIR)/$$backup_file" ]; then \
+			echo "❌ Error: Backup file $(BACKUP_DIR)/$$backup_file not found"; \
+			exit 1; \
+		fi; \
+		echo "🔄 Restoring database from $(BACKUP_DIR)/$$backup_file..."; \
+		docker exec -i backend_postgres_dev psql -U dice_user -d dice_db < "$(BACKUP_DIR)/$$backup_file"; \
+		echo "✅ Database restored from $$backup_file!"; \
+	fi
 
-# =============================================================================
-# DEVELOPMENT WORKFLOWS
-# =============================================================================
 
-# Phase-specific targets
-phase1: setup start-backend start-frontend ## Complete Phase 1 setup
-	@echo "🎯 Phase 1 implementation in progress!"
-	@echo "📝 Run 'make health' to verify services"
-
-phase1-full: setup start-all ## Complete Phase 1 setup with full stack
-	@echo "🎯 Phase 1 full stack implementation in progress!"
-	@echo "📝 Run 'make health' to verify all services"
-
-# =============================================================================
-# UTILITY TARGETS
-# =============================================================================
-
-debug-backend: ## Start backend in debug mode (legacy target)
-	@echo "Starting backend in debug mode..."
-	@echo "🐛 Backend debug mode - connect to localhost:9229"
-	@cd workspace/backend && docker compose --env-file ../../.env up -d backend
-
-validate: ## Validate all infrastructure and configuration
-	@echo "🔍 Validating infrastructure..."
-	@./infrastructure/scripts/unified-validation.sh
-
-setup-aws: ## Setup LocalStack with sample D&D data
-	@echo "☁️ Setting up LocalStack with sample data..."
-	@./infrastructure/scripts/setup-localstack.sh
-
-setup-devcontainer: ## Setup DevContainer environment
-	@echo "🔧 Setting up DevContainer environment..."
-	@./infrastructure/scripts/setup-devcontainer.sh
 
 # =============================================================================
 # QUICK ACCESS TARGETS

@@ -82,10 +82,10 @@ Once the container is running, all services should be available:
 
 ```bash
 # Comprehensive health check
-./infrastructure/scripts/health-check.sh
+./infrastructure/scripts/unified-service-manager.sh health all
 
 # Test authentication system
-./infrastructure/scripts/test-auth.sh
+./infrastructure/scripts/unified-validation-framework.sh --phase security
 
 # Start ELK logging stack (optional - for distributed logging)
 docker-compose -f infrastructure/docker/logging-stack.yml --profile logging up -d
@@ -303,7 +303,7 @@ docker logs backend_temporal_dev
 docker logs pwa_pwa_dev
 
 # Comprehensive health check
-./infrastructure/scripts/health-check.sh
+./infrastructure/scripts/unified-service-manager.sh health all
 
 # Check ELK stack status (if running)
 docker-compose -f infrastructure/docker/logging-stack.yml --profile logging ps
@@ -325,7 +325,7 @@ If you need to regenerate environment files:
 
 ```bash
 # Test JWT authentication system
-./infrastructure/scripts/test-auth.sh
+./infrastructure/scripts/unified-validation-framework.sh --phase security
 
 # Check backend health with auth validation
 curl -f http://localhost:3001/health

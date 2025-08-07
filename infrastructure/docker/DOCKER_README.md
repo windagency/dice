@@ -304,11 +304,11 @@ The `./infrastructure/scripts/docker-orchestrator.sh` script provides a unified 
 ./infrastructure/scripts/docker-orchestrator.sh full-stack           # Complete integrated stack
 
 # Management commands
-./infrastructure/scripts/docker-orchestrator.sh stop                 # Stop all DICE services
-./infrastructure/scripts/docker-orchestrator.sh clean                # Clean containers & volumes
-./infrastructure/scripts/docker-orchestrator.sh status               # Show service status
+./infrastructure/scripts/unified-service-manager.sh stop all         # Stop all DICE services
+./infrastructure/scripts/unified-service-manager.sh clean            # Clean containers & volumes
+./infrastructure/scripts/unified-service-manager.sh status all       # Show service status
 
-./infrastructure/scripts/docker-orchestrator.sh logs [SERVICE]       # Show service logs
+./infrastructure/scripts/unified-service-manager.sh logs [SERVICE]   # Show service logs
 
 # ELK Logging Stack (distributed logging)
 docker-compose -f infrastructure/docker/logging-stack.yml --profile logging up -d    # Start ELK stack
@@ -325,23 +325,23 @@ docker-compose -f infrastructure/docker/logging-stack.yml --profile logging ps  
 
 ```bash
 # Start backend development environment
-./infrastructure/scripts/docker-orchestrator.sh backend-only
+./infrastructure/scripts/unified-service-manager.sh start backend
 
 # Start full stack with reverse proxy and monitoring
-./infrastructure/scripts/docker-orchestrator.sh full-stack --proxy --monitoring
+./infrastructure/scripts/unified-service-manager.sh start orchestrator --proxy --monitoring
 
 # Check status of all services
-./infrastructure/scripts/docker-orchestrator.sh status
+./infrastructure/scripts/unified-service-manager.sh status all
 
 # View backend logs
-./infrastructure/scripts/docker-orchestrator.sh logs backend
+./infrastructure/scripts/unified-service-manager.sh logs backend
 
 
 # Stop everything and clean up
-./infrastructure/scripts/docker-orchestrator.sh clean
+./infrastructure/scripts/unified-service-manager.sh clean
 
 # Start with logging enabled
-./infrastructure/scripts/docker-orchestrator.sh full-stack
+./infrastructure/scripts/unified-service-manager.sh start orchestrator
 docker-compose -f infrastructure/docker/logging-stack.yml --profile logging up -d
 ```
 
