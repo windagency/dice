@@ -1,9 +1,10 @@
-#!/bin/bash
+#!/bin/sh
 # DICE Dashboard Testing Framework (Unified)
 # Consolidates all dashboard testing into a single, maintainable framework
 
 # Load common functions
-source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+. "$SCRIPT_DIR/common.sh"
 
 # =============================================================================
 # CONFIGURATION

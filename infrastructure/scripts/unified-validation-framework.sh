@@ -1,9 +1,10 @@
-#!/bin/bash
+#!/bin/sh
 # DICE Unified Validation Framework
 # Consolidates all validation logic into a single, maintainable solution
 
 # Load common functions
-source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+. "$SCRIPT_DIR/common.sh"
 
 # =============================================================================
 # CONFIGURATION

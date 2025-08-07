@@ -1,40 +1,79 @@
-#!/bin/bash
+#!/bin/sh
 # DICE Unified Service Manager
 # Consolidates all service orchestration into a single, maintainable solution
 
 # Load common functions
-source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+. "$SCRIPT_DIR/common.sh"
 
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
 
-# Service configurations
-declare -A SERVICE_CONFIGS=(
-    ["backend"]="workspace/backend/docker-compose.yml|Backend API + Database + Temporal|3001,5432,6379,7233,8088"
-    ["pwa"]="workspace/pwa/docker-compose.yml|PWA Frontend + Storybook|3000,6006"
-    ["elk"]="infrastructure/docker/logging-stack.yml|ELK Stack (Elasticsearch + Kibana + Fluent Bit)|9200,5601,2020"
-    ["orchestrator"]="infrastructure/docker/docker-compose.orchestrator.yml|Full Stack Orchestration|80,443,8080"
-)
+# Service configurations (using POSIX-compliant approach)
+# Format: service_name|compose_file|description|ports
+SERVICE_CONFIGS="
+backend|workspace/backend/docker-compose.yml|Backend API + Database + Temporal|3001,5432,6379,7233,8088
+pwa|workspace/pwa/docker-compose.yml|PWA Frontend + Storybook|3000,6006
+elk|infrastructure/docker/logging-stack.yml|ELK Stack (Elasticsearch + Kibana + Fluent Bit)|9200,5601,2020
+orchestrator|infrastructure/docker/docker-compose.orchestrator.yml|Full Stack Orchestration|80,443,8080
+"
 
 # Profile configurations
-declare -A PROFILE_CONFIGS=(
-    ["proxy"]="Traefik Reverse Proxy|80,443,8080"
-    ["monitoring"]="Prometheus + Grafana|9090,3001"
-    ["aws"]="LocalStack AWS Services|4566"
-    ["logging"]="ELK Logging Stack|9200,5601,2020"
-)
+PROFILE_CONFIGS="
+proxy|Traefik Reverse Proxy|80,443,8080
+monitoring|Prometheus + Grafana|9090,3001
+aws|LocalStack AWS Services|4566
+logging|ELK Logging Stack|9200,5601,2020
+"
 
 # Health check endpoints
-declare -A HEALTH_ENDPOINTS=(
-    ["backend"]="http://localhost:3001/health"
-    ["pwa"]="http://localhost:3000"
-    ["storybook"]="http://localhost:6006"
-    ["temporal"]="http://localhost:8088"
-    ["elasticsearch"]="http://localhost:9200/_cluster/health"
-    ["kibana"]="http://localhost:5601/api/status"
-    ["traefik"]="http://localhost:8080/api/rawdata"
-)
+HEALTH_ENDPOINTS="
+backend|http://localhost:3001/health
+pwa|http://localhost:3000
+storybook|http://localhost:6006
+temporal|http://localhost:8088
+elasticsearch|http://localhost:9200/_cluster/health
+kibana|http://localhost:5601/api/status
+traefik|http://localhost:8080/api/rawdata
+"
+
+# =============================================================================
+# HELPER FUNCTIONS
+# =============================================================================
+
+# Get service config by name
+get_service_config() {
+    local service_name="$1"
+    echo "$SERVICE_CONFIGS" | while IFS='|' read -r name compose_file description ports; do
+        if [ "$name" = "$service_name" ]; then
+            echo "$compose_file|$description|$ports"
+            return 0
+        fi
+    done
+}
+
+# Get profile config by name
+get_profile_config() {
+    local profile_name="$1"
+    echo "$PROFILE_CONFIGS" | while IFS='|' read -r name description ports; do
+        if [ "$name" = "$profile_name" ]; then
+            echo "$description|$ports"
+            return 0
+        fi
+    done
+}
+
+# Get health endpoint by service name
+get_health_endpoint() {
+    local service_name="$1"
+    echo "$HEALTH_ENDPOINTS" | while IFS='|' read -r name endpoint; do
+        if [ "$name" = "$service_name" ]; then
+            echo "$endpoint"
+            return 0
+        fi
+    done
+}
 
 # =============================================================================
 # USAGE FUNCTIONS
@@ -91,7 +130,7 @@ start_service() {
     local service="$1"
     local profiles="$2"
     
-    local config="${SERVICE_CONFIGS[$service]}"
+    local config=$(get_service_config "$service")
     if [[ -z "$config" ]]; then
         print_error "Unknown service: $service"
         return 1
@@ -129,7 +168,7 @@ start_service() {
 stop_service() {
     local service="$1"
     
-    local config="${SERVICE_CONFIGS[$service]}"
+    local config=$(get_service_config "$service")
     if [[ -z "$config" ]]; then
         print_error "Unknown service: $service"
         return 1
@@ -164,7 +203,7 @@ restart_service() {
 get_service_status() {
     local service="$1"
     
-    local config="${SERVICE_CONFIGS[$service]}"
+    local config=$(get_service_config "$service")
     if [[ -z "$config" ]]; then
         print_error "Unknown service: $service"
         return 1
@@ -195,7 +234,7 @@ show_service_logs() {
     local service="$1"
     local follow="${2:-false}"
     
-    local config="${SERVICE_CONFIGS[$service]}"
+    local config=$(get_service_config "$service")
     if [[ -z "$config" ]]; then
         print_error "Unknown service: $service"
         return 1
@@ -216,7 +255,7 @@ show_service_logs() {
 health_check_service() {
     local service="$1"
     
-    local endpoint="${HEALTH_ENDPOINTS[$service]}"
+    local endpoint=$(get_health_endpoint "$service")
     if [[ -z "$endpoint" ]]; then
         print_warning "⚠️  No health endpoint configured for $service"
         return 0
@@ -293,10 +332,10 @@ get_all_service_status() {
     local total_services=0
     local running_services=0
     
-    for service in "${!SERVICE_CONFIGS[@]}"; do
+    for service in "backend" "pwa" "elk" "orchestrator"; do
         ((total_services++))
         
-        local config="${SERVICE_CONFIGS[$service]}"
+        local config=$(get_service_config "$service")
         IFS='|' read -r compose_file description ports <<< "$config"
         
         local running_containers
@@ -321,7 +360,7 @@ health_check_all_services() {
     
     local failures=0
     
-    for service in "${!HEALTH_ENDPOINTS[@]}"; do
+    for service in "backend" "pwa" "elk" "orchestrator"; do
         if ! health_check_service "$service"; then
             ((failures++))
         fi

@@ -41,7 +41,7 @@ setup-localstack: ## Setup LocalStack AWS services emulator
 
 start-all: ## Start full integrated stack with all services
 	@echo "Starting full DICE integrated stack..."
-	@$(SERVICE_MANAGER) start orchestrator
+	@$(SERVICE_MANAGER) start orchestrator --proxy
 	@echo "✅ Full stack started!"
 	@echo "🌐 Access your services:"
 	@echo "   Backend API: http://localhost:3001"
@@ -138,7 +138,7 @@ test-dashboard-operational: ## Test operational dashboard using unified dashboar
 	@$(DASHBOARD_TESTER) --type operational
 
 # =============================================================================
-# SERVICE STARTUP WITH PROFILES
+# SERVICE STARTUP (Legacy Redirects)
 # =============================================================================
 
 start-proxy: ## Start full stack with Traefik reverse proxy
@@ -162,10 +162,10 @@ start-aws: ## Start full stack with LocalStack AWS services
 	@echo "✅ Full stack with AWS services started!"
 
 # =============================================================================
-# DEVELOPMENT MODE (Debug Enabled)
+# DEVELOPMENT MODE
 # =============================================================================
 
-dev-backend: ## Start backend in debug mode with logs
+dev-backend: ## Start backend in development mode with debug logging
 	@echo "🔧 Starting backend in DEBUG mode..."
 	@echo "🐛 Debug port: localhost:9229"
 	@$(SERVICE_MANAGER) start backend
@@ -173,8 +173,8 @@ dev-backend: ## Start backend in debug mode with logs
 	@$(SERVICE_MANAGER) logs backend
 	@echo "🔧 Backend development mode active"
 
-dev-frontend: ## Start frontend in debug mode with logs
-	@echo "🎨 Starting frontend in DEBUG mode..."
+dev-frontend: ## Start PWA frontend in development mode with hot reload
+	@echo "🎨 Starting PWA frontend in DEBUG mode..."
 	@echo "🐛 DevTools: localhost:3000 (F12)"
 	@echo "🐛 Chrome Debug: localhost:9222"
 	@$(SERVICE_MANAGER) start pwa
@@ -182,7 +182,7 @@ dev-frontend: ## Start frontend in debug mode with logs
 	@$(SERVICE_MANAGER) logs pwa
 	@echo "🎨 Frontend development mode active"
 
-dev-full: ## Start full stack in debug mode with logs
+dev-full: ## Start full stack in development mode
 	@echo "🚀 Starting full stack in DEBUG mode..."
 	@echo "🐛 Backend debug: localhost:9229"
 	@echo "🐛 Frontend debug: localhost:3000 (F12)"
@@ -192,8 +192,8 @@ dev-full: ## Start full stack in debug mode with logs
 	@$(SERVICE_MANAGER) logs all
 	@echo "🚀 Full stack development mode active"
 
-dev-full-debug: ## Start full stack with all debug features
-	@echo "🚀 Starting full stack with ALL debug features..."
+dev-full-debug: ## Start full stack in development mode with ELK logging
+	@echo "🚀 Starting full stack in DEBUG mode with logging..."
 	@echo "🐛 Backend debug: localhost:9229"
 	@echo "🐛 Frontend debug: localhost:3000 (F12)"
 	@echo "🐛 Chrome Debug: localhost:9222"
@@ -205,27 +205,32 @@ dev-full-debug: ## Start full stack with all debug features
 	@echo "🚀 Full stack debug mode with logging active"
 
 # =============================================================================
-# ELK LOGGING STACK MANAGEMENT
+# SERVICE MANAGEMENT (Legacy Redirects)
 # =============================================================================
 
-start-elk: ## Start ELK logging stack only
-	@echo "Starting ELK logging stack..."
-	@docker-compose -f infrastructure/docker/logging-stack.yml --profile logging up -d
-	@echo "✅ ELK stack started!"
-	@echo "🌐 Access Kibana: http://localhost:5601"
-	@echo "🔍 Access Elasticsearch: http://localhost:9200"
-
-stop-elk: ## Stop ELK logging stack
-	@echo "Stopping ELK logging stack..."
-	@docker-compose -f infrastructure/docker/logging-stack.yml --profile logging down
-	@echo "✅ ELK stack stopped!"
-
-status-elk: ## Show ELK stack status
-	@echo "ELK Stack Status:"
-	@docker-compose -f infrastructure/docker/logging-stack.yml --profile logging ps
+stop: service-stop ## Stop all services (legacy redirect)
+restart: service-restart ## Restart all services (legacy redirect)
+clean: service-clean ## Clean all containers and volumes (legacy redirect)
+logs: service-logs ## Show logs for all services (legacy redirect)
+status: service-status ## Show status of all services (legacy redirect)
+health: service-health ## Health check all services (legacy redirect)
 
 # =============================================================================
-# LOGGING & MONITORING (Unified)
+# TESTING & VALIDATION (Legacy Redirects)
+# =============================================================================
+
+test-auth: validate-security ## Test authentication system (legacy redirect)
+test-validation: validate-all ## Run all validation tests (legacy redirect)
+validate: validate-all ## Run all validation tests (legacy redirect)
+
+# =============================================================================
+# DATABASE MANAGEMENT (Legacy Redirects)
+# =============================================================================
+
+backup-db: service-backup ## Backup PostgreSQL database (legacy redirect)
+
+# =============================================================================
+# LOGS & MONITORING
 # =============================================================================
 
 logs-backend: ## Show backend logs
@@ -240,37 +245,7 @@ logs-frontend: ## Show frontend logs (PWA + Storybook)
 	@$(SERVICE_MANAGER) logs pwa
 	@echo ""
 	@echo "🔹 Storybook logs:"
-	@docker logs pwa_dev 2>/dev/null | grep -i storybook || echo "Storybook not running"
-
-logs-temporal: ## Show Temporal logs
-	@docker logs backend_temporal_dev -f
-
-logs-elk: ## Show ELK stack logs (Elasticsearch, Kibana, Fluent Bit)
-	@echo "📊 ELK Stack logs:"
-	@echo "🔹 Elasticsearch logs:"
-	@docker logs dice_elasticsearch 2>/dev/null || echo "Elasticsearch not running"
-	@echo ""
-	@echo "🔹 Kibana logs:"
-	@docker logs dice_kibana 2>/dev/null || echo "Kibana not running"
-	@echo ""
-	@echo "🔹 Fluent Bit logs:"
-	@docker logs dice_fluent_bit 2>/dev/null || echo "Fluent Bit not running"
-
-logs-database: ## Show database logs (PostgreSQL + Redis)
-	@echo "🗄️ Database logs:"
-	@echo "🔹 PostgreSQL logs:"
-	@docker logs backend_postgres_dev 2>/dev/null || echo "PostgreSQL not running"
-	@echo ""
-	@echo "🔹 Redis logs:"
-	@docker logs backend_redis_dev 2>/dev/null || echo "Redis not running"
-
-logs-aws: ## Show LocalStack AWS logs
-	@echo "☁️ LocalStack AWS logs:"
-	@docker logs backend_localstack_dev 2>/dev/null || echo "LocalStack not running"
-
-logs-proxy: ## Show Traefik proxy logs
-	@echo "🌐 Traefik proxy logs:"
-	@docker logs dice_traefik_orchestrated 2>/dev/null || echo "Traefik not running"
+	@docker compose -f workspace/pwa/docker-compose.yml logs storybook
 
 logs-all: ## Show all service logs
 	@echo "📋 All DICE service logs:"
@@ -281,74 +256,11 @@ logs-all: ## Show all service logs
 	@$(SERVICE_MANAGER) logs pwa
 	@echo ""
 	@echo "🔹 Database services:"
-	@docker logs backend_postgres_dev 2>/dev/null || echo "PostgreSQL not running"
-	@docker logs backend_redis_dev 2>/dev/null || echo "Redis not running"
-	@echo ""
-	@echo "🔹 ELK Stack (if running):"
-	@docker logs dice_elasticsearch 2>/dev/null || echo "Elasticsearch not running"
-	@docker logs dice_kibana 2>/dev/null || echo "Kibana not running"
-
-# =============================================================================
-# LOGGING MONITORING & TESTING
-# =============================================================================
-
-monitor-logs: ## Monitor logs in real-time using logging scripts
-	@echo "📊 Real-time log monitoring:"
-	@./infrastructure/scripts/logging-monitor.sh
-
-monitor-logs-security: ## Monitor security events only
-	@echo "🔒 Security event monitoring:"
-	@./infrastructure/scripts/logging-monitor.sh --security --follow
-
-monitor-logs-performance: ## Monitor performance metrics only
-	@echo "⚡ Performance monitoring:"
-	@./infrastructure/scripts/logging-monitor.sh --performance --follow
-
-test-logging: ## Test logging pipeline and generate sample logs
-	@echo "🧪 Testing logging pipeline:"
-	@./infrastructure/scripts/logging-test.sh
-
-setup-logging: ## Setup and configure ELK stack
-	@echo "🔧 Setting up ELK logging stack:"
-	@./infrastructure/scripts/logging-setup.sh
-
-export-logs: ## Export recent logs from Elasticsearch
-	@echo "📤 Exporting recent logs:"
-	@./infrastructure/scripts/logging-setup.sh export
-
-# =============================================================================
-# HEALTH & STATUS (Unified)
-# =============================================================================
-
-health-backend: ## Check backend service health only
-	@echo "Checking backend service health..."
-	@docker exec backend_postgres_dev pg_isready -U dice_user -d dice_db || echo "❌ PostgreSQL not ready"
-	@docker exec backend_redis_dev redis-cli ping || echo "❌ Redis not ready"
-	@curl -f http://localhost:3001/health || echo "❌ Backend API not ready"
-	@echo "✅ Backend health checks completed!"
-
-health-frontend: ## Check frontend service health only
-	@echo "Checking frontend service health..."
-	@curl -f http://localhost:3000/ || echo "❌ PWA not ready"
-	@curl -f http://localhost:6006/ || echo "❌ Storybook not ready"
-	@echo "✅ Frontend health checks completed!"
-
-health-elk: ## Check ELK stack health
-	@echo "Checking ELK stack health..."
-	@curl -f http://localhost:9200/_cluster/health || echo "❌ Elasticsearch not ready"
-	@curl -f http://localhost:5601/api/status || echo "❌ Kibana not ready"
-	@curl -f http://localhost:2020/api/v1/health || echo "❌ Fluent Bit not ready"
-	@echo "✅ ELK stack health checks completed!"
+	@docker compose -f workspace/backend/docker-compose.yml logs postgres redis
 
 # =============================================================================
 # DATABASE MANAGEMENT
 # =============================================================================
-
-backup-db: ## Backup PostgreSQL database
-	@echo "Creating database backup..."
-	@mkdir -p $(BACKUP_DIR)
-	@docker exec backend_postgres_dev pg_dump -U dice_user dice_db > $(BACKUP_DIR)/backup_$(TIMESTAMP).sql
-	@echo "✅ Database backed up to $(BACKUP_DIR)/backup_$(TIMESTAMP).sql"
 
 restore-db: ## Restore database from backup (use: make restore-db BACKUP=filename or make restore-db for interactive)
 	@if [ -n "$(BACKUP)" ] && [ -f "$(BACKUP_DIR)/$(BACKUP)" ]; then \
@@ -375,31 +287,238 @@ restore-db: ## Restore database from backup (use: make restore-db BACKUP=filenam
 		echo "✅ Database restored from $$backup_file!"; \
 	fi
 
-
-
 # =============================================================================
 # QUICK ACCESS TARGETS
 # =============================================================================
 
-quick-start: setup start-all health ## Quick start with setup, start, and health check
-	@echo "🚀 Quick start complete!"
+quick-start: setup start-all ## Quick start: setup + start all services
+	@echo "🚀 DICE development environment ready!"
+	@echo "🌐 Access your services:"
+	@echo "   Backend API: http://localhost:3001"
+	@echo "   PWA Frontend: http://localhost:3000"
+	@echo "   Storybook: http://localhost:6006"
+	@echo "   Temporal UI: http://localhost:8088"
 
-quick-dev: setup dev-full health ## Quick development start with debug mode
-	@echo "🔧 Quick development start complete!"
+quick-stop: stop ## Quick stop: stop all services
+	@echo "🛑 All services stopped!"
 
-quick-logging: start-elk setup-logging health-elk ## Quick logging setup
-	@echo "📊 Quick logging setup complete!"
+quick-restart: restart ## Quick restart: restart all services
+	@echo "🔄 All services restarted!"
+
+quick-clean: clean ## Quick clean: clean all containers and volumes
+	@echo "🧹 All containers and volumes cleaned!"
+
+quick-logs: logs ## Quick logs: show all service logs
+	@echo "📋 All service logs displayed!"
+
+quick-status: status ## Quick status: show all service status
+	@echo "📊 All service status displayed!"
+
+quick-health: health ## Quick health: health check all services
+	@echo "🏥 All service health checks completed!"
 
 # =============================================================================
-# CLEANUP TARGETS
+# DEVELOPMENT WORKFLOWS
 # =============================================================================
 
-clean-all: clean ## Clean all including ELK stack
-	@echo "Cleaning ELK stack..."
-	@docker-compose -f infrastructure/docker/logging-stack.yml --profile logging down -v 2>/dev/null || true
-	@echo "✅ All services and data cleaned!"
+dev-start: ## Start development environment
+	@$(SERVICE_MANAGER) start orchestrator --proxy --logging
+	@echo "🚀 Development environment started!"
 
-clean-logs: ## Clean log data only
-	@echo "Cleaning log data..."
-	@docker-compose -f infrastructure/docker/logging-stack.yml --profile logging down -v 2>/dev/null || true
-	@echo "✅ Log data cleaned!" 
+dev-stop: ## Stop development environment
+	@$(SERVICE_MANAGER) stop all
+	@echo "🛑 Development environment stopped!"
+
+dev-monitor: ## Start development environment with monitoring
+	@$(SERVICE_MANAGER) start orchestrator --proxy --monitoring
+	@echo "🚀 Development environment with monitoring started!"
+
+dev-full-stack: ## Start full development stack
+	@$(SERVICE_MANAGER) start orchestrator --proxy --logging --monitoring
+	@echo "🚀 Full development stack started!"
+
+# =============================================================================
+# TESTING & VALIDATION WORKFLOWS
+# =============================================================================
+
+test-all: ## Run all tests and validations
+	@$(VALIDATION_FRAMEWORK) --all
+	@$(DASHBOARD_TESTER) --all
+	@echo "✅ All tests and validations completed!"
+
+test-infrastructure: ## Test infrastructure only
+	@$(VALIDATION_FRAMEWORK) --phase infrastructure
+	@echo "✅ Infrastructure tests completed!"
+
+test-services: ## Test services only
+	@$(VALIDATION_FRAMEWORK) --phase services
+	@echo "✅ Service tests completed!"
+
+test-security: ## Test security only
+	@$(VALIDATION_FRAMEWORK) --phase security
+	@echo "✅ Security tests completed!"
+
+test-logging: ## Test logging only
+	@$(VALIDATION_FRAMEWORK) --phase logging
+	@echo "✅ Logging tests completed!"
+
+test-performance: ## Test performance only
+	@$(VALIDATION_FRAMEWORK) --phase performance
+	@echo "✅ Performance tests completed!"
+
+test-integration: ## Test integration only
+	@$(VALIDATION_FRAMEWORK) --phase integration
+	@echo "✅ Integration tests completed!"
+
+test-dashboards: ## Test all dashboards
+	@$(DASHBOARD_TESTER) --all
+	@echo "✅ Dashboard tests completed!"
+
+# =============================================================================
+# DASHBOARD TESTING WORKFLOWS
+# =============================================================================
+
+test-dashboard-security: ## Test security dashboard
+	@$(DASHBOARD_TESTER) --dashboard security
+	@echo "✅ Security dashboard tests completed!"
+
+test-dashboard-performance: ## Test performance dashboard
+	@$(DASHBOARD_TESTER) --dashboard performance
+	@echo "✅ Performance dashboard tests completed!"
+
+test-dashboard-health: ## Test health dashboard
+	@$(DASHBOARD_TESTER) --dashboard health
+	@echo "✅ Health dashboard tests completed!"
+
+test-dashboard-user-activity: ## Test user activity dashboard
+	@$(DASHBOARD_TESTER) --dashboard user-activity
+	@echo "✅ User activity dashboard tests completed!"
+
+test-dashboard-operational-overview: ## Test operational overview dashboard
+	@$(DASHBOARD_TESTER) --dashboard operational-overview
+	@echo "✅ Operational overview dashboard tests completed!"
+
+# =============================================================================
+# UTILITY TARGETS
+# =============================================================================
+
+debug-backend: ## Start backend in debug mode (legacy)
+	@echo "🔧 Starting backend in DEBUG mode..."
+	@echo "🐛 Debug port: localhost:9229"
+	@$(SERVICE_MANAGER) start backend
+	@echo "📊 Backend logs (debug mode):"
+	@$(SERVICE_MANAGER) logs backend
+	@echo "🔧 Backend development mode active"
+
+# =============================================================================
+# COMMON WORKFLOWS
+# =============================================================================
+
+# Development workflow
+dev-workflow: setup dev-start ## Complete development workflow
+	@echo "🚀 Development workflow completed!"
+	@echo "🌐 Access your services:"
+	@echo "   Backend API: http://localhost:3001"
+	@echo "   PWA Frontend: http://localhost:3000"
+	@echo "   Storybook: http://localhost:6006"
+	@echo "   Temporal UI: http://localhost:8088"
+
+# Testing workflow
+test-workflow: test-all ## Complete testing workflow
+	@echo "✅ Testing workflow completed!"
+
+# Production workflow
+prod-workflow: setup start-all ## Complete production workflow
+	@echo "🚀 Production workflow completed!"
+	@echo "🌐 Access your services:"
+	@echo "   Backend API: http://localhost:3001"
+	@echo "   PWA Frontend: http://localhost:3000"
+	@echo "   Storybook: http://localhost:6006"
+	@echo "   Temporal UI: http://localhost:8088"
+
+# =============================================================================
+# HEALTH CHECK WORKFLOWS
+# =============================================================================
+
+health-check: ## Comprehensive health check
+	@$(SERVICE_MANAGER) health all
+	@echo "🏥 Health check completed!"
+
+health-backend: ## Backend health check
+	@$(SERVICE_MANAGER) health backend
+	@echo "🏥 Backend health check completed!"
+
+health-frontend: ## Frontend health check
+	@$(SERVICE_MANAGER) health pwa
+	@echo "🏥 Frontend health check completed!"
+
+health-all: ## All services health check
+	@$(SERVICE_MANAGER) health all
+	@echo "🏥 All services health check completed!"
+
+# =============================================================================
+# BACKUP & RESTORE WORKFLOWS
+# =============================================================================
+
+backup-all: ## Create comprehensive backup
+	@$(SERVICE_MANAGER) backup
+	@echo "💾 Comprehensive backup completed!"
+
+restore-all: ## Restore from backup
+	@echo "📥 Restoring from backup..."
+	@echo "Enter backup filename:"
+	@read backup_file; \
+	if [ -n "$$backup_file" ]; then \
+		$(SERVICE_MANAGER) restore "$$backup_file"; \
+		echo "✅ Restore completed!"; \
+	else \
+		echo "❌ No backup file specified"; \
+	fi
+
+# =============================================================================
+# CLEANUP WORKFLOWS
+# =============================================================================
+
+cleanup-all: ## Complete cleanup
+	@$(SERVICE_MANAGER) clean
+	@echo "🧹 Complete cleanup completed!"
+
+cleanup-containers: ## Clean containers only
+	@docker container prune -f
+	@echo "🧹 Container cleanup completed!"
+
+cleanup-volumes: ## Clean volumes only
+	@docker volume prune -f
+	@echo "🧹 Volume cleanup completed!"
+
+cleanup-images: ## Clean images only
+	@docker image prune -f
+	@echo "🧹 Image cleanup completed!"
+
+# =============================================================================
+# MONITORING WORKFLOWS
+# =============================================================================
+
+monitor-all: ## Monitor all services
+	@$(SERVICE_MANAGER) status all
+	@$(SERVICE_MANAGER) health all
+	@echo "📊 Monitoring completed!"
+
+monitor-backend: ## Monitor backend services
+	@$(SERVICE_MANAGER) status backend
+	@$(SERVICE_MANAGER) health backend
+	@echo "📊 Backend monitoring completed!"
+
+monitor-frontend: ## Monitor frontend services
+	@$(SERVICE_MANAGER) status pwa
+	@$(SERVICE_MANAGER) health pwa
+	@echo "📊 Frontend monitoring completed!"
+
+# =============================================================================
+# RESULT
+# =============================================================================
+
+# Enhanced database management with interactive restore
+# Unified service management with comprehensive workflows
+# Complete testing and validation framework
+# Enhanced monitoring and health check capabilities 
