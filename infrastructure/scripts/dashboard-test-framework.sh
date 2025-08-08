@@ -10,19 +10,35 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # CONFIGURATION
 # =============================================================================
 
-# Dashboard configurations
-declare -A DASHBOARD_CONFIGS=(
-    ["security"]="dice-security-monitoring-dashboard|dice-security-*|Security Monitoring"
-    ["performance"]="dice-api-performance-dashboard|dice-performance-*|API Performance"
-    ["health"]="dice-service-health-dashboard|dice-health-*|Service Health"
-    ["user-activity"]="dice-user-activity-dashboard|dice-user-*|User Activity"
-    ["operational"]="dice-operational-overview-dashboard|dice-operational-*|Operational Overview"
-)
+# Dashboard configurations (using POSIX-compliant approach)
+# Format: dashboard_type|dashboard_id|index_pattern|description
+DASHBOARD_CONFIGS="
+security|dice-security-monitoring-dashboard|dice-security-*|Security Monitoring
+performance|dice-api-performance-dashboard|dice-performance-*|API Performance
+health|dice-service-health-dashboard|dice-health-*|Service Health
+user-activity|dice-user-activity-dashboard|dice-user-*|User Activity
+operational|dice-operational-overview-dashboard|dice-operational-*|Operational Overview
+"
 
 # Test configurations
 KIBANA_HOST="http://localhost:5601"
 ELASTICSEARCH_HOST="http://localhost:9200"
 TIMEOUT_SECONDS=30
+
+# =============================================================================
+# HELPER FUNCTIONS
+# =============================================================================
+
+# Get dashboard config by type
+get_dashboard_config() {
+    local dashboard_type="$1"
+    echo "$DASHBOARD_CONFIGS" | while IFS='|' read -r type dashboard_id index_pattern description; do
+        if [ "$type" = "$dashboard_type" ]; then
+            echo "$dashboard_id|$index_pattern|$description"
+            return 0
+        fi
+    done
+}
 
 # =============================================================================
 # USAGE FUNCTIONS
@@ -356,7 +372,7 @@ test_dashboard() {
     local test_data_quality="$3"
     
     # Parse dashboard configuration
-    local config="${DASHBOARD_CONFIGS[$dashboard_type]}"
+    local config=$(get_dashboard_config "$dashboard_type")
     if [[ -z "$config" ]]; then
         print_error "Unknown dashboard type: $dashboard_type"
         return 1
@@ -518,14 +534,14 @@ main() {
     if [[ "$test_all" == "true" ]]; then
         print_step "🧪 Testing All Dashboards"
         
-        for type in "${!DASHBOARD_CONFIGS[@]}"; do
+        for type in $(echo "$DASHBOARD_CONFIGS" | cut -d'|' -f1); do
             test_dashboard "$type" "$test_performance" "$test_data_quality"
             total_failures=$((total_failures + $?))
         done
     elif [[ -n "$dashboard_type" ]]; then
-        if [[ -z "${DASHBOARD_CONFIGS[$dashboard_type]}" ]]; then
+        if [[ -z "$(get_dashboard_config "$dashboard_type")" ]]; then
             print_error "Unknown dashboard type: $dashboard_type"
-            print_info "Available types: ${!DASHBOARD_CONFIGS[*]}"
+            print_info "Available types: $(echo "$DASHBOARD_CONFIGS" | cut -d'|' -f1)"
             exit 1
         fi
         

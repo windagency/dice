@@ -1,7 +1,7 @@
 # DICE Makefile Documentation
 
 **Version**: 4.0 - Unified Script Architecture  
-**Last Updated**: August 6, 2025  
+**Last Updated**: August 8, 2025 12:20 UTC  
 **Status**: ✅ Production Ready - 80% Code Reduction Achieved
 
 ## 📋 **Overview**
@@ -38,20 +38,28 @@ The Makefile is organized into logical sections that mirror the distributed arch
 The Makefile now leverages the new unified script architecture:
 
 ### **📉 Code Reduction**
+
 - **80% less code** - Consolidated from 15+ scripts to 3 core unified scripts
 - **Eliminated duplication** - Single source of truth for each domain
 - **Reduced maintenance** - Fewer files to maintain and update
+- **Legacy cleanup** - Removed duplicate target definitions and legacy code
 
 ### **🎯 Unified Scripts**
+
 - **`unified-service-manager.sh`** - Single interface for all service operations
 - **`unified-validation-framework.sh`** - Comprehensive validation with configurable thresholds
 - **`dashboard-test-framework.sh`** - Unified dashboard testing for all types
 
 ### **🔧 Enhanced Features**
+
 - **Configurable thresholds** - Adjustable validation criteria
 - **Comprehensive reporting** - Detailed validation reports
 - **Backup/restore** - Integrated backup functionality
 - **Performance metrics** - Real-time performance monitoring
+- **Verbose progress indicators** - Real-time step-by-step progress tracking
+- **Time estimates** - Estimated and actual execution times
+- **Service component breakdown** - Detailed component descriptions
+- **Container health monitoring** - Real-time container status updates
 
 ---
 
@@ -91,6 +99,62 @@ make dev-full-debug
 
 ---
 
+## 🎯 **Enhanced Verbose Progress Indicators (v4.3)**
+
+### **📊 Progress Tracking Features**
+
+The enhanced startup commands now provide comprehensive progress indicators:
+
+#### **🔄 Step-by-Step Progress**
+```
+🔄 [1/4] Starting Backend API + Database + Temporal
+⏱️  Estimated time: 15-20s
+```
+
+#### **🔧 Service Component Breakdown**
+```
+🔧 Backend Service Components:
+   📦 Backend API (NestJS)
+   🗄️  PostgreSQL Database
+   ⚡ Redis Cache
+   🔄 Temporal Workflow Engine
+   🖥️  Temporal UI
+```
+
+#### **⏳ Real-Time Container Monitoring**
+```
+⏳ Waiting for backend containers to be ready...
+⏳ backend: 3/5 containers ready...
+⏳ backend: 4/5 containers ready...
+✅ backend containers are ready!
+```
+
+#### **📊 Progress Summary**
+```
+📊 Progress Summary:
+✅ Completed: 4/4 steps
+⏳ Remaining: 0 steps
+⏱️  Actual total time: 157s
+```
+
+### **🎯 Enhanced Commands**
+
+| Command          | Enhanced Features                                    | Usage                 |
+| ---------------- | ---------------------------------------------------- | --------------------- |
+| `start-all`      | Full stack with verbose progress + time tracking     | `make start-all`      |
+| `start-backend`  | Backend with component breakdown + health monitoring | `make start-backend`  |
+| `start-frontend` | PWA with Storybook status + container monitoring     | `make start-frontend` |
+
+### **⏱️ Time Estimates**
+
+- **Backend**: 15-20 seconds (API + Database + Temporal + Redis)
+- **PWA**: 5-10 seconds (Frontend + Storybook)
+- **ELK**: 30-45 seconds (Elasticsearch + Kibana + Fluent Bit)
+- **Orchestrator**: 5-10 seconds (Traefik)
+- **Total**: 55-85 seconds for full stack
+
+---
+
 ## 📚 **Command Reference**
 
 ### **🔧 HELP & SETUP**
@@ -115,11 +179,6 @@ make dev-full-debug
 | `service-clean`   | Clean all containers       | `make service-clean`   |
 | `service-backup`  | Create backup              | `make service-backup`  |
 
-**Legacy Compatibility:**
-- `start`, `stop`, `restart`, `clean` → Redirect to unified commands
-- `logs`, `status`, `health` → Redirect to unified commands
-- `backup-db` → Redirect to `service-backup`
-
 ### **🏭 SERVICE STARTUP (Production Mode)**
 
 | Command          | Description                 | Usage                 |
@@ -129,21 +188,20 @@ make dev-full-debug
 | `start-frontend` | Start PWA frontend only     | `make start-frontend` |
 
 **Features:**
+
 - Standard production startup
 - No debug mode enabled
 - Optimised for performance
 - Health checks included
+- **Enhanced verbose progress indicators**
+- **Real-time step tracking**
+- **Time estimates and actual execution times**
+- **Service component breakdown**
 
 ### **🎛️ SERVICE STARTUP WITH PROFILES**
 
-| Command            | Description                        | Usage                   |
-| ------------------ | ---------------------------------- | ----------------------- |
-| `start-proxy`      | Full stack with Traefik proxy      | `make start-proxy`      |
-| `start-monitoring` | Full stack with Prometheus/Grafana | `make start-monitoring` |
-| `start-logging`    | Full stack with ELK logging        | `make start-logging`    |
-| `start-aws`        | Full stack with LocalStack AWS     | `make start-aws`        |
-
 **Available Profiles:**
+
 - `--proxy` - Traefik reverse proxy
 - `--monitoring` - Prometheus + Grafana
 - `--logging` - ELK stack (Elasticsearch, Kibana, Fluent Bit)
@@ -159,6 +217,7 @@ make dev-full-debug
 | `dev-full-debug` | Full stack + ELK + debug | Complete debug setup + logging | `make dev-full-debug` |
 
 **Debug Features:**
+
 - **Backend**: Node.js debugger on port 9229
 - **Frontend**: Browser DevTools (F12) + Chrome Debug (port 9222)
 - **Logging**: Real-time log streaming
@@ -173,6 +232,7 @@ make dev-full-debug
 | `status-elk` | Show ELK stack status        | `make status-elk` |
 
 **ELK Stack Components:**
+
 - **Elasticsearch**: Log storage and search (port 9200)
 - **Kibana**: Log visualization dashboard (port 5601)
 - **Fluent Bit**: Log collection and forwarding (port 2020)
@@ -223,11 +283,6 @@ make dev-full-debug
 | `validate-performance`    | Validate performance      | `make validate-performance`    |
 | `validate-integration`    | Validate integration      | `make validate-integration`    |
 
-**Legacy Compatibility:**
-- `validate` → Redirect to `validate-all`
-- `test-auth` → Redirect to `validate-security`
-- `test-validation` → Redirect to `validate-all`
-
 ### **🏥 HEALTH & STATUS**
 
 | Command           | Description                | Usage                  |
@@ -238,10 +293,6 @@ make dev-full-debug
 | `health-frontend` | Check frontend health only | `make health-frontend` |
 | `health-elk`      | Check ELK stack health     | `make health-elk`      |
 
-**Legacy Compatibility:**
-- `status` → Redirect to `service-status`
-- `health` → Redirect to `service-health`
-
 ### **🗄️ DATABASE MANAGEMENT**
 
 | Command          | Description                  | Usage                                                                  |
@@ -251,6 +302,7 @@ make dev-full-debug
 | `restore-db`     | Restore database from backup | `make restore-db BACKUP=filename` or `make restore-db` for interactive |
 
 **Enhanced Features:**
+
 - **Interactive Mode**: `make restore-db` shows available backups and prompts for selection
 - **Parameter Validation**: Automatically validates backup file existence
 - **Graceful Fallback**: Invalid parameters trigger interactive mode
@@ -266,21 +318,6 @@ make dev-full-debug
 | `test-dashboard-health`        | Test health dashboard        | `make test-dashboard-health`        |
 | `test-dashboard-user-activity` | Test user activity dashboard | `make test-dashboard-user-activity` |
 | `test-dashboard-operational`   | Test operational dashboard   | `make test-dashboard-operational`   |
-
-### **🔄 DEVELOPMENT WORKFLOWS**
-
-| Command       | Description             | Usage              |
-| ------------- | ----------------------- | ------------------ |
-| `phase1`      | Complete Phase 1 setup  | `make phase1`      |
-| `phase1-full` | Phase 1 with full stack | `make phase1-full` |
-
-**Note:** Development workflow targets are currently removed from the Makefile but documented for future implementation.
-
-### **🛠️ UTILITY TARGETS**
-
-| Command         | Description                          | Usage                |
-| --------------- | ------------------------------------ | -------------------- |
-| `debug-backend` | Start backend in debug mode (legacy) | `make debug-backend` |
 
 ### **⚡ QUICK ACCESS TARGETS**
 
@@ -598,4 +635,4 @@ When modifying the Makefile:
 
 ---
 
-**🛡️ Security-First • ⚡ Performance-Optimised • 🏗️ Enterprise-Ready** 
+**🛡️ Security-First • ⚡ Performance-Optimised • 🏗️ Enterprise-Ready**

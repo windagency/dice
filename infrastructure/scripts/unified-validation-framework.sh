@@ -10,35 +10,75 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # CONFIGURATION
 # =============================================================================
 
-# Validation phases
-declare -A VALIDATION_PHASES=(
-    ["infrastructure"]="Docker, config files, basic services"
-    ["services"]="Backend API, PostgreSQL, Redis, Temporal, PWA, Storybook"
-    ["security"]="JWT auth, container isolation, dependencies"
-    ["logging"]="ELK stack, log ingestion, dashboard foundation"
-    ["performance"]="Response times, resource usage, scalability"
-    ["integration"]="Service communication, data flow, end-to-end"
-)
+# Validation phases (using POSIX-compliant approach)
+# Format: phase_name|description
+VALIDATION_PHASES="
+infrastructure|Docker, config files, basic services
+services|Backend API, PostgreSQL, Redis, Temporal, PWA, Storybook
+security|JWT auth, container isolation, dependencies
+logging|ELK stack, log ingestion, dashboard foundation
+performance|Response times, resource usage, scalability
+integration|Service communication, data flow, end-to-end
+"
 
 # Service health endpoints
-declare -A HEALTH_ENDPOINTS=(
-    ["backend"]="http://localhost:3001/health"
-    ["pwa"]="http://localhost:3000"
-    ["storybook"]="http://localhost:6006"
-    ["temporal"]="http://localhost:8088"
-    ["elasticsearch"]="http://localhost:9200/_cluster/health"
-    ["kibana"]="http://localhost:5601/api/status"
-    ["postgresql"]="localhost:5432"
-    ["redis"]="localhost:6379"
-)
+# Format: service_name|endpoint
+HEALTH_ENDPOINTS="
+backend|http://localhost:3001/health
+pwa|http://localhost:3000
+storybook|http://localhost:6006
+temporal|http://localhost:8088
+elasticsearch|http://localhost:9200/_cluster/health
+kibana|http://localhost:5601/api/status
+postgresql|localhost:5432
+redis|localhost:6379
+"
 
 # Validation thresholds
-declare -A VALIDATION_THRESHOLDS=(
-    ["response_time"]="2000"  # 2 seconds
-    ["memory_usage"]="80"     # 80% of available memory
-    ["disk_usage"]="90"       # 90% of available disk
-    ["cpu_usage"]="80"        # 80% of available CPU
-)
+# Format: threshold_name|value
+VALIDATION_THRESHOLDS="
+response_time|2000
+memory_usage|80
+disk_usage|90
+cpu_usage|80
+"
+
+# =============================================================================
+# HELPER FUNCTIONS
+# =============================================================================
+
+# Get validation phase description by name
+get_validation_phase() {
+    local phase_name="$1"
+    echo "$VALIDATION_PHASES" | while IFS='|' read -r name description; do
+        if [ "$name" = "$phase_name" ]; then
+            echo "$description"
+            return 0
+        fi
+    done
+}
+
+# Get health endpoint by service name
+get_health_endpoint() {
+    local service_name="$1"
+    echo "$HEALTH_ENDPOINTS" | while IFS='|' read -r name endpoint; do
+        if [ "$name" = "$service_name" ]; then
+            echo "$endpoint"
+            return 0
+        fi
+    done
+}
+
+# Get validation threshold by name
+get_validation_threshold() {
+    local threshold_name="$1"
+    echo "$VALIDATION_THRESHOLDS" | while IFS='|' read -r name value; do
+        if [ "$name" = "$threshold_name" ]; then
+            echo "$value"
+            return 0
+        fi
+    done
+}
 
 # =============================================================================
 # USAGE FUNCTIONS
@@ -165,7 +205,7 @@ validate_services() {
 
 validate_service_health() {
     local service="$1"
-    local endpoint="${HEALTH_ENDPOINTS[$service]}"
+    local endpoint=$(get_health_endpoint "$service")
     
     case "$service" in
         "backend"|"pwa"|"storybook"|"temporal"|"elasticsearch"|"kibana")
@@ -439,7 +479,7 @@ validate_performance() {
 }
 
 test_response_times() {
-    local threshold="${VALIDATION_THRESHOLDS[response_time]}"
+    local threshold=$(get_validation_threshold "response_time")
     local failures=0
     
     # Test backend response time
@@ -477,8 +517,7 @@ test_response_times() {
 }
 
 test_resource_usage() {
-    local memory_threshold="${VALIDATION_THRESHOLDS[memory_usage]}"
-    local cpu_threshold="${VALIDATION_THRESHOLDS[cpu_usage]}"
+    local threshold=$(get_validation_threshold "memory_usage")
     local failures=0
     
     # Get container resource usage
@@ -665,25 +704,40 @@ EOF
     
     # Add phase results
     local first=true
-    for phase in "${!VALIDATION_PHASES[@]}"; do
-        if [[ "$first" == "true" ]]; then
-            first=false
-        else
-            echo "," >> "$report_file"
+    local phases_array
+    IFS=$'\n' read -d '' -r -a phases_array <<< "$(echo "$VALIDATION_PHASES" | grep -v '^$')"
+    
+    for phase_line in "${phases_array[@]}"; do
+        IFS='|' read -r phase_name description <<< "$phase_line"
+        if [ -n "$phase_name" ]; then
+            if [[ "$first" == "true" ]]; then
+                first=false
+            else
+                echo "," >> "$report_file"
+            fi
+            
+            echo "      \"$phase_name\": {" >> "$report_file"
+            echo "        \"description\": \"$description\"," >> "$report_file"
+            echo "        \"status\": \"pending\"," >> "$report_file"
+            echo "        \"failures\": 0" >> "$report_file"
+            echo "      }" >> "$report_file"
         fi
-        
-        echo "      \"$phase\": {" >> "$report_file"
-        echo "        \"description\": \"${VALIDATION_PHASES[$phase]}\"," >> "$report_file"
-        echo "        \"status\": \"pending\"," >> "$report_file"
-        echo "        \"failures\": 0" >> "$report_file"
-        echo "      }" >> "$report_file"
+    done
+    
+    # Count total phases
+    local total_phases_count=0
+    for phase_line in "${phases_array[@]}"; do
+        IFS='|' read -r phase_name description <<< "$phase_line"
+        if [ -n "$phase_name" ]; then
+            ((total_phases_count++))
+        fi
     done
     
     # Close report structure
     cat >> "$report_file" << EOF
     },
     "summary": {
-      "total_phases": ${#VALIDATION_PHASES[@]},
+      "total_phases": $total_phases_count,
       "passed_phases": 0,
       "failed_phases": 0,
       "overall_status": "pending"
@@ -821,21 +875,34 @@ main() {
     if [[ "$run_all" == "true" ]]; then
         print_step "🧪 Running All Validation Phases"
         
-        for phase_name in "${!VALIDATION_PHASES[@]}"; do
-            ((total_phases++))
-            run_validation_phase "$phase_name" "$threshold"
-            total_failures=$((total_failures + $?))
+        # Convert phases string to array for iteration
+        local phases_array
+        IFS=$'\n' read -d '' -r -a phases_array <<< "$(echo "$VALIDATION_PHASES" | grep -v '^$')"
+        
+        for phase_line in "${phases_array[@]}"; do
+            IFS='|' read -r phase_name description <<< "$phase_line"
+            if [ -n "$phase_name" ]; then
+                ((total_phases++))
+                run_validation_phase "$phase_name" "$threshold"
+                total_failures=$((total_failures + $?))
+            fi
         done
     elif [[ -n "$phase" ]]; then
-        if [[ -z "${VALIDATION_PHASES[$phase]}" ]]; then
+        # Check if phase exists using grep
+        if echo "$VALIDATION_PHASES" | grep -q "^$phase|"; then
+            ((total_phases++))
+            run_validation_phase "$phase" "$threshold"
+            total_failures=$?
+        else
             print_error "Unknown validation phase: $phase"
-            print_info "Available phases: ${!VALIDATION_PHASES[*]}"
+            print_info "Available phases:"
+            echo "$VALIDATION_PHASES" | while IFS='|' read -r phase_name description; do
+                if [ -n "$phase_name" ]; then
+                    print_info "  - $phase_name: $description"
+                fi
+            done
             exit 1
         fi
-        
-        ((total_phases++))
-        run_validation_phase "$phase" "$threshold"
-        total_failures=$?
     elif [[ -n "$service" ]]; then
         print_step "🔧 Service-Specific Validation"
         validate_service_health "$service"

@@ -39,9 +39,13 @@ setup-localstack: ## Setup LocalStack AWS services emulator
 # SERVICE STARTUP (Production Mode)
 # =============================================================================
 
-start-all: ## Start full integrated stack with all services
-	@echo "Starting full DICE integrated stack..."
-	@$(SERVICE_MANAGER) start orchestrator --proxy
+start-all: service-start ## Start full integrated stack with verbose progress
+	@echo "🎯 DICE Development Environment - Full Stack Startup"
+	@echo "📋 This will start all services with detailed progress indicators"
+	@echo "⏱️  Estimated time: 55-85 seconds"
+	@echo ""
+	@$(SERVICE_MANAGER) start all
+	@echo ""
 	@echo "✅ Full stack started!"
 	@echo "🌐 Access your services:"
 	@echo "   Backend API: http://localhost:3001"
@@ -51,15 +55,27 @@ start-all: ## Start full integrated stack with all services
 	@echo "   PostgreSQL: localhost:5432"
 	@echo "   Redis: localhost:6379"
 
-start-backend: ## Start backend services only (DB + Redis + Backend + Temporal)
-	@echo "Starting backend services..."
+start-backend: ## Start backend services with verbose progress
+	@echo "🔧 Starting Backend Services"
+	@echo "📋 Components: API + Database + Temporal + Redis"
+	@echo "⏱️  Estimated time: 15-20 seconds"
+	@echo ""
 	@$(SERVICE_MANAGER) start backend
+	@echo ""
 	@echo "✅ Backend services started!"
+	@echo "🌐 Backend API: http://localhost:3001"
+	@echo "🌐 Temporal UI: http://localhost:8088"
 
-start-frontend: ## Start PWA frontend with development mocks
-	@echo "Starting PWA frontend with development mocks..."
+start-frontend: ## Start PWA frontend with verbose progress
+	@echo "🎨 Starting PWA Frontend"
+	@echo "📋 Components: PWA + Storybook"
+	@echo "⏱️  Estimated time: 5-10 seconds"
+	@echo ""
 	@$(SERVICE_MANAGER) start pwa
+	@echo ""
 	@echo "✅ PWA frontend started!"
+	@echo "🌐 PWA: http://localhost:3000"
+	@echo "📚 Storybook: http://localhost:6006"
 
 # =============================================================================
 # UNIFIED SERVICE MANAGEMENT
@@ -138,30 +154,6 @@ test-dashboard-operational: ## Test operational dashboard using unified dashboar
 	@$(DASHBOARD_TESTER) --type operational
 
 # =============================================================================
-# SERVICE STARTUP (Legacy Redirects)
-# =============================================================================
-
-start-proxy: ## Start full stack with Traefik reverse proxy
-	@echo "Starting full stack with reverse proxy..."
-	@$(SERVICE_MANAGER) start orchestrator --proxy
-	@echo "✅ Full stack with proxy started!"
-
-start-monitoring: ## Start full stack with monitoring (Prometheus + Grafana)
-	@echo "Starting full stack with monitoring..."
-	@$(SERVICE_MANAGER) start orchestrator --monitoring
-	@echo "✅ Full stack with monitoring started!"
-
-start-logging: ## Start full stack with ELK logging stack
-	@echo "Starting full stack with logging..."
-	@$(SERVICE_MANAGER) start elk
-	@echo "✅ ELK logging stack started!"
-
-start-aws: ## Start full stack with LocalStack AWS services
-	@echo "Starting full stack with AWS services..."
-	@$(SERVICE_MANAGER) start orchestrator --aws
-	@echo "✅ Full stack with AWS services started!"
-
-# =============================================================================
 # DEVELOPMENT MODE
 # =============================================================================
 
@@ -203,31 +195,6 @@ dev-full-debug: ## Start full stack in development mode with ELK logging
 	@echo "📊 Full stack logs with ELK:"
 	@$(SERVICE_MANAGER) logs all
 	@echo "🚀 Full stack debug mode with logging active"
-
-# =============================================================================
-# SERVICE MANAGEMENT (Legacy Redirects)
-# =============================================================================
-
-stop: service-stop ## Stop all services (legacy redirect)
-restart: service-restart ## Restart all services (legacy redirect)
-clean: service-clean ## Clean all containers and volumes (legacy redirect)
-logs: service-logs ## Show logs for all services (legacy redirect)
-status: service-status ## Show status of all services (legacy redirect)
-health: service-health ## Health check all services (legacy redirect)
-
-# =============================================================================
-# TESTING & VALIDATION (Legacy Redirects)
-# =============================================================================
-
-test-auth: validate-security ## Test authentication system (legacy redirect)
-test-validation: validate-all ## Run all validation tests (legacy redirect)
-validate: validate-all ## Run all validation tests (legacy redirect)
-
-# =============================================================================
-# DATABASE MANAGEMENT (Legacy Redirects)
-# =============================================================================
-
-backup-db: service-backup ## Backup PostgreSQL database (legacy redirect)
 
 # =============================================================================
 # LOGS & MONITORING
@@ -378,37 +345,7 @@ test-dashboards: ## Test all dashboards
 # DASHBOARD TESTING WORKFLOWS
 # =============================================================================
 
-test-dashboard-security: ## Test security dashboard
-	@$(DASHBOARD_TESTER) --dashboard security
-	@echo "✅ Security dashboard tests completed!"
-
-test-dashboard-performance: ## Test performance dashboard
-	@$(DASHBOARD_TESTER) --dashboard performance
-	@echo "✅ Performance dashboard tests completed!"
-
-test-dashboard-health: ## Test health dashboard
-	@$(DASHBOARD_TESTER) --dashboard health
-	@echo "✅ Health dashboard tests completed!"
-
-test-dashboard-user-activity: ## Test user activity dashboard
-	@$(DASHBOARD_TESTER) --dashboard user-activity
-	@echo "✅ User activity dashboard tests completed!"
-
-test-dashboard-operational-overview: ## Test operational overview dashboard
-	@$(DASHBOARD_TESTER) --dashboard operational-overview
-	@echo "✅ Operational overview dashboard tests completed!"
-
-# =============================================================================
-# UTILITY TARGETS
-# =============================================================================
-
-debug-backend: ## Start backend in debug mode (legacy)
-	@echo "🔧 Starting backend in DEBUG mode..."
-	@echo "🐛 Debug port: localhost:9229"
-	@$(SERVICE_MANAGER) start backend
-	@echo "📊 Backend logs (debug mode):"
-	@$(SERVICE_MANAGER) logs backend
-	@echo "🔧 Backend development mode active"
+# Note: Dashboard testing targets are defined in the UNIFIED DASHBOARD TESTING section above
 
 # =============================================================================
 # COMMON WORKFLOWS
