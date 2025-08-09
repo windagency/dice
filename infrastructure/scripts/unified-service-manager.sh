@@ -488,50 +488,163 @@ health_check_service() {
     fi
 }
 
+# Wait for service to be ready
+wait_for_service() {
+    local service="$1"
+    local max_attempts=60
+    local attempt=1
+    local delay=3
+    
+    print_status "⏳ Waiting for $service to be ready..."
+    
+    while [[ $attempt -le $max_attempts ]]; do
+        case "$service" in
+            "backend")
+                if curl -s -f "http://localhost:3001/health" >/dev/null 2>&1; then
+                    print_success "✅ Backend service is ready"
+                    return 0
+                fi
+                ;;
+            "pwa")
+                if curl -s -f "http://localhost:3000" >/dev/null 2>&1; then
+                    print_success "✅ PWA service is ready"
+                    return 0
+                fi
+                ;;
+            "storybook")
+                if curl -s -f "http://localhost:6006" >/dev/null 2>&1; then
+                    print_success "✅ Storybook service is ready"
+                    return 0
+                fi
+                ;;
+            "postgres")
+                if docker exec backend_postgres pg_isready -U dice_user -d dice_db >/dev/null 2>&1; then
+                    print_success "✅ PostgreSQL service is ready"
+                    return 0
+                fi
+                ;;
+            "redis")
+                if docker exec backend_redis redis-cli ping >/dev/null 2>&1; then
+                    print_success "✅ Redis service is ready"
+                    return 0
+                fi
+                ;;
+            "temporal")
+                if curl -s -f "http://localhost:8088" >/dev/null 2>&1; then
+                    print_success "✅ Temporal service is ready"
+                    return 0
+                fi
+                ;;
+        esac
+        
+        if [[ $attempt -eq $max_attempts ]]; then
+            print_error "❌ $service service failed to start within timeout"
+            return 1
+        fi
+        
+        # Only show warning every 5 attempts to reduce noise
+        if [[ $((attempt % 5)) -eq 0 ]] || [[ $attempt -le 3 ]]; then
+            print_warning "⚠️  $service not ready yet (attempt $attempt/$max_attempts)"
+        fi
+        sleep $delay
+        ((attempt++))
+    done
+}
+
 # Enhanced backend health check function
 enhanced_backend_health_check() {
     local failures=0
     local total_checks=0
+    local max_retries=5
+    local retry_delay=10
     
     print_status "🔍 Checking Backend API..."
     ((total_checks++))
-    local api_response
-    api_response=$(curl -s -w "%{http_code}" "http://localhost:3001/health" -o /dev/null)
-    if [[ "$api_response" == "200" ]]; then
-        print_success "✅ Backend API is healthy"
-    else
-        print_error "❌ Backend API health check failed (HTTP $api_response)"
-        ((failures++))
-    fi
+    local api_response="000"
+    local retry_count=0
+    
+    # Retry logic for API health check
+    while [[ $retry_count -lt $max_retries ]]; do
+        api_response=$(curl -s -w "%{http_code}" "http://localhost:3001/health" -o /dev/null --connect-timeout 15 --max-time 45)
+        if [[ "$api_response" == "200" ]]; then
+            print_success "✅ Backend API is healthy"
+            break
+        else
+            ((retry_count++))
+            if [[ $retry_count -lt $max_retries ]]; then
+                print_warning "⚠️  Backend API health check failed (HTTP $api_response), retrying in ${retry_delay}s... (attempt $retry_count/$max_retries)"
+                sleep $retry_delay
+            else
+                print_error "❌ Backend API health check failed (HTTP $api_response) after $max_retries attempts"
+                ((failures++))
+            fi
+        fi
+    done
     
     print_status "🔍 Checking Temporal Workflow Engine..."
     ((total_checks++))
-    local temporal_response
-    temporal_response=$(curl -s -w "%{http_code}" "http://localhost:8088" -o /dev/null)
-    if [[ "$temporal_response" == "200" ]]; then
-        print_success "✅ Temporal Workflow Engine is healthy"
-    else
-        print_error "❌ Temporal Workflow Engine health check failed (HTTP $temporal_response)"
-        ((failures++))
-    fi
+    local temporal_response="000"
+    retry_count=0
+    
+    # Retry logic for Temporal health check
+    while [[ $retry_count -lt $max_retries ]]; do
+        temporal_response=$(curl -s -w "%{http_code}" "http://localhost:8088" -o /dev/null --connect-timeout 15 --max-time 45)
+        if [[ "$temporal_response" == "200" ]]; then
+            print_success "✅ Temporal Workflow Engine is healthy"
+            break
+        else
+            ((retry_count++))
+            if [[ $retry_count -lt $max_retries ]]; then
+                print_warning "⚠️  Temporal Workflow Engine health check failed (HTTP $temporal_response), retrying in ${retry_delay}s... (attempt $retry_count/$max_retries)"
+                sleep $retry_delay
+            else
+                print_error "❌ Temporal Workflow Engine health check failed (HTTP $temporal_response) after $max_retries attempts"
+                ((failures++))
+            fi
+        fi
+    done
     
     print_status "🔍 Checking PostgreSQL Database..."
     ((total_checks++))
-    if docker exec backend_postgres pg_isready -U dice_user -d dice_db >/dev/null 2>&1; then
-        print_success "✅ PostgreSQL Database is healthy"
-    else
-        print_error "❌ PostgreSQL Database health check failed"
-        ((failures++))
-    fi
+    retry_count=0
+    
+    # Retry logic for PostgreSQL health check
+    while [[ $retry_count -lt $max_retries ]]; do
+        if docker exec backend_postgres pg_isready -U dice_user -d dice_db >/dev/null 2>&1; then
+            print_success "✅ PostgreSQL Database is healthy"
+            break
+        else
+            ((retry_count++))
+            if [[ $retry_count -lt $max_retries ]]; then
+                print_warning "⚠️  PostgreSQL Database health check failed, retrying in ${retry_delay}s... (attempt $retry_count/$max_retries)"
+                sleep $retry_delay
+            else
+                print_error "❌ PostgreSQL Database health check failed after $max_retries attempts"
+                ((failures++))
+            fi
+        fi
+    done
     
     print_status "🔍 Checking Redis Cache..."
     ((total_checks++))
-    if docker exec backend_redis redis-cli ping >/dev/null 2>&1; then
-        print_success "✅ Redis Cache is healthy"
-    else
-        print_error "❌ Redis Cache health check failed"
-        ((failures++))
-    fi
+    retry_count=0
+    
+    # Retry logic for Redis health check
+    while [[ $retry_count -lt $max_retries ]]; do
+        if docker exec backend_redis redis-cli ping >/dev/null 2>&1; then
+            print_success "✅ Redis Cache is healthy"
+            break
+        else
+            ((retry_count++))
+            if [[ $retry_count -lt $max_retries ]]; then
+                print_warning "⚠️  Redis Cache health check failed, retrying in ${retry_delay}s... (attempt $retry_count/$max_retries)"
+                sleep $retry_delay
+            else
+                print_error "❌ Redis Cache health check failed after $max_retries attempts"
+                ((failures++))
+            fi
+        fi
+    done
     
     # Summary
     if [[ $failures -eq 0 ]]; then
@@ -547,28 +660,54 @@ enhanced_backend_health_check() {
 enhanced_pwa_health_check() {
     local failures=0
     local total_checks=0
+    local max_retries=5
+    local retry_delay=10
     
     print_status "🔍 Checking PWA Frontend..."
     ((total_checks++))
-    local pwa_response
-    pwa_response=$(curl -s -w "%{http_code}" "http://localhost:3000" -o /dev/null)
-    if [[ "$pwa_response" == "200" ]]; then
-        print_success "✅ PWA Frontend is healthy"
-    else
-        print_error "❌ PWA Frontend health check failed (HTTP $pwa_response)"
-        ((failures++))
-    fi
+    local pwa_response="000"
+    local retry_count=0
+    
+    # Retry logic for PWA health check
+    while [[ $retry_count -lt $max_retries ]]; do
+        pwa_response=$(curl -s -w "%{http_code}" "http://localhost:3000" -o /dev/null --connect-timeout 15 --max-time 45)
+        if [[ "$pwa_response" == "200" ]]; then
+            print_success "✅ PWA Frontend is healthy"
+            break
+        else
+            ((retry_count++))
+            if [[ $retry_count -lt $max_retries ]]; then
+                print_warning "⚠️  PWA Frontend health check failed (HTTP $pwa_response), retrying in ${retry_delay}s... (attempt $retry_count/$max_retries)"
+                sleep $retry_delay
+            else
+                print_error "❌ PWA Frontend health check failed (HTTP $pwa_response) after $max_retries attempts"
+                ((failures++))
+            fi
+        fi
+    done
     
     print_status "🔍 Checking Storybook Component Library..."
     ((total_checks++))
-    local storybook_response
-    storybook_response=$(curl -s -w "%{http_code}" "http://localhost:6006" -o /dev/null)
-    if [[ "$storybook_response" == "200" ]]; then
-        print_success "✅ Storybook Component Library is healthy"
-    else
-        print_error "❌ Storybook Component Library health check failed (HTTP $storybook_response)"
-        ((failures++))
-    fi
+    local storybook_response="000"
+    retry_count=0
+    
+    # Retry logic for Storybook health check
+    while [[ $retry_count -lt $max_retries ]]; do
+        storybook_response=$(curl -s -w "%{http_code}" "http://localhost:6006" -o /dev/null --connect-timeout 15 --max-time 45)
+        if [[ "$storybook_response" == "200" ]]; then
+            print_success "✅ Storybook Component Library is healthy"
+            break
+        else
+            ((retry_count++))
+            if [[ $retry_count -lt $max_retries ]]; then
+                print_warning "⚠️  Storybook Component Library health check failed (HTTP $storybook_response), retrying in ${retry_delay}s... (attempt $retry_count/$max_retries)"
+                sleep $retry_delay
+            else
+                print_error "❌ Storybook Component Library health check failed (HTTP $storybook_response) after $max_retries attempts"
+                ((failures++))
+            fi
+        fi
+    done
     
     # Summary
     if [[ $failures -eq 0 ]]; then
@@ -752,6 +891,44 @@ health_check_all_services() {
     print_step "🏥 Comprehensive Health Check"
     
     local failures=0
+    
+    # Wait for services to be ready before health checks
+    print_status "⏳ Waiting for services to be ready..."
+    
+    # Wait for backend dependencies first
+    if ! wait_for_service "postgres"; then
+        print_error "❌ PostgreSQL failed to start"
+        ((failures++))
+    fi
+    
+    if ! wait_for_service "redis"; then
+        print_error "❌ Redis failed to start"
+        ((failures++))
+    fi
+    
+    # Wait for main services
+    if ! wait_for_service "backend"; then
+        print_error "❌ Backend failed to start"
+        ((failures++))
+    fi
+    
+    if ! wait_for_service "pwa"; then
+        print_error "❌ PWA failed to start"
+        ((failures++))
+    fi
+    
+    if ! wait_for_service "storybook"; then
+        print_error "❌ Storybook failed to start"
+        ((failures++))
+    fi
+    
+    if ! wait_for_service "temporal"; then
+        print_error "❌ Temporal failed to start"
+        ((failures++))
+    fi
+    
+    # Now perform detailed health checks
+    print_status "🔍 Performing detailed health checks..."
     
     for service in "backend" "pwa" "elk" "orchestrator"; do
         if ! health_check_service "$service"; then

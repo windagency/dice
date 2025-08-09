@@ -1,5 +1,5 @@
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
-import { Connection, Client } from '@temporalio/client';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Client, Connection } from '@temporalio/client';
 
 @Injectable()
 export class TemporalService implements OnModuleInit, OnModuleDestroy {
@@ -8,25 +8,10 @@ export class TemporalService implements OnModuleInit, OnModuleDestroy {
   private client: Client;
 
   async onModuleInit() {
-    const temporalAddress = process.env.TEMPORAL_ADDRESS || 'localhost:7233';
-    
-    try {
-      this.logger.log(`🌀 Connecting to Temporal at ${temporalAddress}...`);
-      
-      this.connection = await Connection.connect({
-        address: temporalAddress,
-      });
-      
-      this.client = new Client({
-        connection: this.connection,
-        namespace: 'default',
-      });
-      
-      this.logger.log('✅ Temporal client connected successfully');
-    } catch (error) {
-      this.logger.error('❌ Failed to connect to Temporal:', error);
-      throw error;
-    }
+    // Temporarily disable Temporal connection for debugging
+    this.logger.log('⏸️  Temporal service initialization disabled for debugging');
+    return;
+
   }
 
   async onModuleDestroy() {

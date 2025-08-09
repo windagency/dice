@@ -1,6 +1,7 @@
-import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
+import { defineConfig } from 'astro/config';
+import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
   integrations: [react(), tailwind()],
@@ -10,5 +11,21 @@ export default defineConfig({
   },
   build: {
     assets: 'assets'
+  },
+  vite: {
+    plugins: [
+      tsconfigPaths({
+        loose: true,
+        root: process.cwd()
+      })
+    ],
+    server: {
+      fs: {
+        allow: ['..']
+      }
+    },
+    optimizeDeps: {
+      noDiscovery: true
+    }
   }
 }); 

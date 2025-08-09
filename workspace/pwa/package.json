@@ -18,8 +18,9 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write .",
     "type-check": "astro check && tsc --noEmit",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "storybook": "storybook dev -p 6006 --no-open --host 0.0.0.0",
+    "build-storybook": "storybook build",
+    "dev:all": "concurrently \"pnpm run dev\" \"pnpm run storybook\""
   },
   "dependencies": {
     "@astrojs/react": "^4.0.0",
@@ -54,6 +55,7 @@
     "@typescript-eslint/eslint-plugin": "^8.19.1",
     "@typescript-eslint/parser": "^8.19.1",
     "@vitest/ui": "^2.1.8",
+    "concurrently": "^9.1.0",
     "eslint": "^9.18.0",
     "eslint-plugin-astro": "^1.3.1",
     "eslint-plugin-react": "^7.37.2",
@@ -63,6 +65,7 @@
     "prettier-plugin-astro": "^0.14.1",
     "storybook": "^8.6.14",
     "typescript": "^5.8.3",
+    "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^2.1.8"
   },
   "eslintConfig": {

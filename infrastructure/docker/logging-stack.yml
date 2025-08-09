@@ -14,17 +14,16 @@ services:
       - discovery.type=single-node
       - xpack.security.enabled=false
       - xpack.ml.enabled=false
-      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
       - cluster.name=dice-logging-cluster
       - node.name=dice-es-node
-      - bootstrap.memory_lock=true
+      - bootstrap.memory_lock=false
     ulimits:
       memlock:
         soft: -1
         hard: -1
     volumes:
       - elk_data:/usr/share/elasticsearch/data
-      - ../data/elk/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
     ports:
       - "9200:9200"
       - "9300:9300"

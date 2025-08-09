@@ -1,28 +1,42 @@
-import type { StorybookConfig } from '@storybook/react-vite';
+import type { StorybookConfig } from "@storybook/react-vite";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 const config: StorybookConfig = {
-  stories: ['../src/**/*.stories.@(js|jsx|ts|tsx|mdx)'],
-  addons: [
-    '@storybook/addon-links',
-    '@storybook/addon-essentials',
-    '@storybook/addon-interactions',
-    '@storybook/addon-docs',
-  ],
+  core: {
+    disableTelemetry: true, // 👈 Disables telemetry
+  },
   framework: {
-    name: '@storybook/react-vite',
+    name: "@storybook/react-vite",
     options: {},
   },
-  viteFinal: async (config, { configType }) => {
-    // Customize the Vite config here
-    return config;
+  stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
+  addons: [
+    "@storybook/addon-links",
+    "@storybook/addon-essentials",
+    "@storybook/addon-interactions",
+  ],
+  docs: {
+    autodocs: "tag",
   },
-  typescript: {
-    check: false,
-    reactDocgen: 'react-docgen-typescript',
-    reactDocgenTypescriptOptions: {
-      shouldExtractLiteralValuesFromEnum: true,
-      propFilter: (prop) => (prop.parent ? !/node_modules/.test(prop.parent.fileName) : true),
-    },
+  viteFinal: async (config) => {
+    config.plugins = [
+      ...(config.plugins || []),
+      tsconfigPaths({
+        loose: true,
+        root: process.cwd(),
+      }),
+    ];
+
+    // Use polling instead of file watching for Docker environments
+    if (config.server) {
+      config.server.watch = {
+        ...config.server.watch,
+        usePolling: true,
+        interval: 1000,
+        ignored: ["**/node_modules/**", "**/.pnpm-store/**", "**/dist/**"],
+      };
+    }
+    return config;
   },
 };
 
