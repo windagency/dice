@@ -39,7 +39,7 @@ setup-localstack: ## Setup LocalStack AWS services emulator
 # SERVICE STARTUP (Production Mode)
 # =============================================================================
 
-start-all: service-start ## Start full integrated stack with verbose progress
+start-all: service-start ## Start full integrated stack
 	@echo "🎯 DICE Development Environment - Full Stack Startup"
 	@echo "📋 This will start all services with detailed progress indicators"
 	@echo "⏱️  Estimated time: 55-85 seconds"
@@ -54,6 +54,8 @@ start-all: service-start ## Start full integrated stack with verbose progress
 	@echo "   Temporal UI: http://localhost:8088"
 	@echo "   PostgreSQL: localhost:5432"
 	@echo "   Redis: localhost:6379"
+	@echo "   LocalStack AWS: https://app.localstack.cloud/inst/default/status"
+	@echo "🔑 AWS Credentials: test/test"
 
 start-backend: ## Start backend services with verbose progress
 	@echo "🔧 Starting Backend Services"
@@ -65,6 +67,8 @@ start-backend: ## Start backend services with verbose progress
 	@echo "✅ Backend services started!"
 	@echo "🌐 Backend API: http://localhost:3001"
 	@echo "🌐 Temporal UI: http://localhost:8088"
+	@echo "☁️  LocalStack: https://app.localstack.cloud/inst/default/status"
+	@echo "🔑 AWS Credentials: test/test"
 
 start-frontend: ## Start PWA frontend with verbose progress
 	@echo "🎨 Starting PWA Frontend"
@@ -76,6 +80,17 @@ start-frontend: ## Start PWA frontend with verbose progress
 	@echo "✅ PWA frontend started!"
 	@echo "🌐 PWA: http://localhost:3000"
 	@echo "📚 Storybook: http://localhost:6006"
+
+start-localstack: ## Start LocalStack AWS services emulator
+	@echo "☁️  Starting LocalStack AWS Services Emulator"
+	@echo "📋 Components: S3, DynamoDB, Kinesis, SQS, SNS"
+	@echo "⏱️  Estimated time: 10-15 seconds"
+	@echo ""
+	@$(SERVICE_MANAGER) start localstack
+	@echo ""
+	@echo "✅ LocalStack AWS services started!"
+	@echo "🌐 LocalStack: http://localhost.localstack.cloud:4566"
+	@echo "🔑 AWS Credentials: test/test"
 
 # =============================================================================
 # UNIFIED SERVICE MANAGEMENT
@@ -265,6 +280,8 @@ quick-start: setup start-all ## Quick start: setup + start all services
 	@echo "   PWA Frontend: http://localhost:3000"
 	@echo "   Storybook: http://localhost:6006"
 	@echo "   Temporal UI: http://localhost:8088"
+	@echo "   LocalStack: https://app.localstack.cloud/inst/default/status"
+	@echo "🔑 AWS Credentials: test/test"
 
 quick-stop: stop ## Quick stop: stop all services
 	@echo "🛑 All services stopped!"
@@ -283,6 +300,9 @@ quick-status: status ## Quick status: show all service status
 
 quick-health: health ## Quick health: health check all services
 	@echo "🏥 All service health checks completed!"
+
+quick-health-aws: health-localstack ## Quick health: LocalStack AWS services health check
+	@echo "🏥 LocalStack AWS services health check completed!"
 
 # =============================================================================
 # DEVELOPMENT WORKFLOWS
@@ -372,6 +392,8 @@ prod-workflow: setup start-all ## Complete production workflow
 	@echo "   PWA Frontend: http://localhost:3000"
 	@echo "   Storybook: http://localhost:6006"
 	@echo "   Temporal UI: http://localhost:8088"
+	@echo "   LocalStack: https://app.localstack.cloud/inst/default/status"
+	@echo "🔑 AWS Credentials: test/test"
 
 # =============================================================================
 # HEALTH CHECK WORKFLOWS

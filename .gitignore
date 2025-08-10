@@ -288,6 +288,7 @@ infrastructure/data/
 docker-compose.override.yml
 docker-compose.*.yml
 !docker-compose.yml
+!docker-compose.orchestrator.yml
 
 # Database backups and exports
 *.sql

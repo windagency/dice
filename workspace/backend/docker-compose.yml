@@ -8,13 +8,17 @@
 # 
 # Run with: docker compose up -d
 
+name: dice-backend
+
 services:
   # Backend API Service
-  backend:
+  api:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: backend_dev
+      tags:
+        - dice/backend/api:1.0.0
+    container_name: dice_backend_api
     environment:
       - NODE_ENV=development
       - PORT=3001
@@ -22,7 +26,7 @@ services:
       - REDIS_URL=redis://redis:6379
     volumes:
       - .:/app
-      - backend_node_modules:/app/node_modules
+      - dice_api_node_modules:/app/node_modules
     ports:
       - "3001:3001"
       - "9229:9229"  # Debug port
@@ -34,24 +38,26 @@ services:
       retries: 5
       start_period: 60s
     networks:
-      - backend_network
+      - dice_backend_network
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+      localstack:
+        condition: service_healthy
 
   # PostgreSQL Database
   postgres:
     image: postgres:17-bullseye
-    container_name: backend_postgres
+    container_name: dice_backend_postgres
     environment:
       - POSTGRES_DB=dice_db
       - POSTGRES_USER=dice_user
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-dice_password}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - dice_postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
@@ -61,16 +67,16 @@ services:
       retries: 5
       start_period: 30s
     networks:
-      - backend_network
+      - dice_backend_network
     restart: unless-stopped
 
   # Redis Cache
   redis:
     image: redis:7-bullseye
-    container_name: backend_redis
+    container_name: dice_backend_redis
     command: redis-server --appendonly yes
     volumes:
-      - redis_data:/data
+      - dice_redis_data:/data
     ports:
       - "6379:6379"
     healthcheck:
@@ -80,13 +86,13 @@ services:
       retries: 5
       start_period: 30s
     networks:
-      - backend_network
+      - dice_backend_network
     restart: unless-stopped
 
   # Temporal Workflow Engine
   temporal:
     image: temporalio/auto-setup:1.24.2
-    container_name: backend_temporal
+    container_name: dice_backend_temporal
     environment:
       - DB=postgres12
       - DB_PORT=5432
@@ -98,7 +104,7 @@ services:
       - "7233-7235:7233-7235"
       - "7239:7239"
     networks:
-      - backend_network
+      - dice_backend_network
     restart: unless-stopped
     depends_on:
       postgres:
@@ -107,26 +113,59 @@ services:
   # Temporal UI
   temporal-ui:
     image: temporalio/ui:2.31.0
-    container_name: backend_temporal_ui
+    container_name: dice_backend_temporal_ui
     environment:
       - TEMPORAL_ADDRESS=temporal:7233
     ports:
       - "8088:8080"
     networks:
-      - backend_network
+      - dice_backend_network
     restart: unless-stopped
     depends_on:
       - temporal
 
+  # LocalStack for AWS development
+  localstack:
+    image: localstack/localstack:4.0
+    container_name: dice_backend_localstack
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - DEBUG=${LOCALSTACK_DEBUG:-0}
+      - REGION=${AWS_DEFAULT_REGION:-eu-west-3}
+      - LOCALSTACK_PERSISTENCE=${LOCALSTACK_PERSISTENCE:-0}
+      - LOCALSTACK_SERVICES=s3,dynamodb,kinesis,sqs,sns
+      - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_AUTH_TOKEN:-test}
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - dice_localstack_data:/var/lib/localstack
+    ports:
+      - "0.0.0.0:4566:4566"           # LocalStack Gateway
+      - "0.0.0.0:4510-4559:4510-4559" # external services port range
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost.localstack.cloud:4566/_localstack/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - dice_backend_network
+    restart: unless-stopped
+
 volumes:
-  postgres_data:
+  dice_postgres_data:
     driver: local
-  redis_data:
+    name: dice_postgres_data
+  dice_redis_data:
     driver: local
-  backend_node_modules:
+    name: dice_redis_data
+  dice_localstack_data:
     driver: local
+    name: dice_localstack_data
+  dice_api_node_modules:
+    driver: local
+    name: dice_api_node_modules
 
 networks:
-  backend_network:
+  dice_backend_network:
     driver: bridge
-    name: backend_network 
+    name: dice_backend_network 

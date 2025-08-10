@@ -2,13 +2,15 @@
 # Provides enterprise-grade log aggregation, search, and visualization
 # Usage: docker compose -f logging-stack.yml --profile logging up -d
 
+name: dice-logging
+
 services:
   # ============================================================================
   # ELASTICSEARCH - Log Storage & Search Engine
   # ============================================================================
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
-    container_name: dice_elasticsearch
+    container_name: dice_logging_elasticsearch
     profiles: ["logging", "monitoring"]
     environment:
       - discovery.type=single-node
@@ -23,7 +25,7 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - elk_data:/usr/share/elasticsearch/data
+      - dice_elk_data:/usr/share/elasticsearch/data
     ports:
       - "9200:9200"
       - "9300:9300"
@@ -40,7 +42,7 @@ services:
   # ============================================================================
   kibana:
     image: docker.elastic.co/kibana/kibana:7.17.0
-    container_name: dice_kibana
+    container_name: dice_logging_kibana
     profiles: ["logging", "monitoring"]
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
@@ -71,7 +73,7 @@ services:
   # ============================================================================
   fluent-bit:
     image: fluent/fluent-bit:3.0
-    container_name: dice_fluent_bit
+    container_name: dice_logging_fluent_bit
     profiles: ["logging", "monitoring"]
     volumes:
       - ../logging/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf:ro
@@ -89,9 +91,9 @@ services:
         condition: service_healthy
     networks:
       - dice_logging_network
-      - backend_network
-      - pwa_network
-      - dice_integrated_network
+      - dice_backend_network
+      - dice_frontend_network
+      - dice_orchestrator_network
     ports:
       - "24224:24224"  # Forward input
       - "24225:24225"  # HTTP input
@@ -105,9 +107,9 @@ services:
   # ============================================================================
   # LOG ROTATION & CLEANUP SERVICE
   # ============================================================================
-  log-cleaner:
+  cleaner:
     image: alpine:latest
-    container_name: dice_log_cleaner
+    container_name: dice_logging_cleaner
     profiles: ["logging", "maintenance"]
     volumes:
       - ../data/elk/logs:/var/log/dice:rw
@@ -131,20 +133,20 @@ services:
 networks:
   dice_logging_network:
     driver: bridge
-    external: true
+    name: dice_logging_network 
   
   # External networks from other compose files
-  backend_network:
+  dice_backend_network:
     external: true
-  pwa_network:
+  dice_frontend_network:
     external: true
-  dice_integrated_network:
+  dice_orchestrator_network:
     external: true
 
 # ============================================================================
 # VOLUMES
 # ============================================================================
 volumes:
-  elk_data:
+  dice_elk_data:
     driver: local
     name: dice_elk_data 

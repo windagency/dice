@@ -13,9 +13,10 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # Service configurations (using POSIX-compliant approach)
 # Format: service_name|compose_file|description|ports
 SERVICE_CONFIGS="
-backend|workspace/backend/docker-compose.yml|Backend API + Database + Temporal|3001,5432,6379,7233,8088
+backend|workspace/backend/docker-compose.yml|Backend API + Database + Temporal + LocalStack|3001,5432,6379,7233,8088,4566
 pwa|workspace/pwa/docker-compose.yml|PWA Frontend + Storybook|3000,6006
 elk|infrastructure/docker/logging-stack.yml|ELK Stack (Elasticsearch + Kibana + Fluent Bit)|9200,5601,2020
+cleaner|infrastructure/docker/logging-stack.yml|Log Cleaner Service|
 orchestrator|infrastructure/docker/docker-compose.orchestrator.yml|Full Stack Orchestration|80,443,8080
 "
 
@@ -23,7 +24,6 @@ orchestrator|infrastructure/docker/docker-compose.orchestrator.yml|Full Stack Or
 PROFILE_CONFIGS="
 proxy|Traefik Reverse Proxy|80,443,8080
 monitoring|Prometheus + Grafana|9090,3001
-aws|LocalStack AWS Services|4566
 logging|ELK Logging Stack|9200,5601,2020
 "
 
@@ -36,6 +36,7 @@ temporal|http://localhost:8088
 kibana|http://localhost:5601/api/status
 elk|http://localhost:9200/_cluster/health
 orchestrator|
+localstack|http://localhost.localstack.cloud:4566/_localstack/health
 "
 
 # =============================================================================
@@ -285,6 +286,7 @@ start_service() {
             echo "   ⚡ Redis Cache"
             echo "   🔄 Temporal Workflow Engine"
             echo "   🖥️  Temporal UI"
+            echo "   🔑 LocalStack AWS Services"
             echo ""
             echo "⏳ Starting components in dependency order..."
             ;;
@@ -308,6 +310,12 @@ start_service() {
             echo "   🌐 Traefik Reverse Proxy"
             echo "   🔒 SSL/TLS Termination"
             echo "   📊 API Dashboard"
+            if [[ "$profiles" == *"logging"* ]]; then
+                echo "   📊 ELK Logging Stack"
+            fi
+            if [[ "$profiles" == *"monitoring"* ]]; then
+                echo "   📈 Prometheus + Grafana"
+            fi
             echo ""
             echo "⏳ Starting components..."
             ;;
@@ -317,33 +325,40 @@ start_service() {
     echo "🚀 Starting containers..."
     local start_time=$(date +%s)
     
+    # Standard service startup
     if [ -n "$profiles" ]; then
-        docker compose -f "$compose_file" --profile "$profiles" --env-file .env up -d
+        if docker compose -f "$compose_file" --profile "$profiles" up -d; then
+            local end_time=$(date +%s)
+            local duration=$((end_time - start_time))
+            print_success "✅ $service service started successfully in ${duration}s"
+            return 0
+        else
+            local end_time=$(date +%s)
+            local duration=$((end_time - start_time))
+            print_error "❌ Failed to start $service service (${duration}s)"
+            report_service_failure "$service" "$compose_file"
+            return 1
+        fi
     else
-        docker compose -f "$compose_file" --env-file .env up -d
-    fi
-    
-    local result=$?
-    local end_time=$(date +%s)
-    local duration=$((end_time - start_time))
-    
-    if [ $result -eq 0 ]; then
-        print_success "✅ $service service started (${duration}s)"
-        print_info "🌐 Ports: $ports"
-        
-        # Monitor container startup
-        monitor_container_startup "$service" "$compose_file"
-        return 0
-    else
-        print_error "❌ Failed to start $service service (${duration}s)"
-        report_service_failure "$service" "$compose_file"
-        return 1
+        if docker compose -f "$compose_file" up -d; then
+            local end_time=$(date +%s)
+            local duration=$((end_time - start_time))
+            print_success "✅ $service service started successfully in ${duration}s"
+            return 0
+        else
+            local end_time=$(date +%s)
+            local duration=$((end_time - start_time))
+            print_error "❌ Failed to start $service service (${duration}s)"
+            report_service_failure "$service" "$compose_file"
+            return 1
+        fi
     fi
 }
 
 # Stop a specific service
 stop_service() {
     local service="$1"
+    local profiles="$2" # Add profiles argument
     
     local config=$(get_service_config "$service")
     if [[ -z "$config" ]]; then
@@ -355,7 +370,11 @@ stop_service() {
     
     print_step "🛑 Stopping $service service: $description"
     
-    docker compose -f "$compose_file" down
+    if [ -n "$profiles" ]; then
+        docker compose -f "$compose_file" --profile "$profiles" down
+    else
+        docker compose -f "$compose_file" down
+    fi
     
     if [[ $? -eq 0 ]]; then
         print_success "✅ $service service stopped"
@@ -439,13 +458,20 @@ health_check_service() {
         print_status "🏥 Health checking $service service..."
         
         # Check if Traefik container is running
-        if docker ps --format "table {{.Names}}" | grep -q "dice_traefik_integrated"; then
+        if docker ps --format "table {{.Names}}" | grep -q "dice_orchestrator_traefik"; then
             print_success "✅ $service service is healthy (container running)"
             return 0
         else
             print_error "❌ $service service health check failed (container not running)"
             return 1
         fi
+    fi
+    
+    # Enhanced LocalStack health check
+    if [[ "$service" == "localstack" ]]; then
+        print_status "🏥 Health checking $service service (enhanced)..."
+        enhanced_localstack_health_check
+        return $?
     fi
     
     # Enhanced backend health check
@@ -518,13 +544,13 @@ wait_for_service() {
                 fi
                 ;;
             "postgres")
-                if docker exec backend_postgres pg_isready -U dice_user -d dice_db >/dev/null 2>&1; then
+                if docker exec dice_backend_postgres pg_isready -U dice_user -d dice_db >/dev/null 2>&1; then
                     print_success "✅ PostgreSQL service is ready"
                     return 0
                 fi
                 ;;
             "redis")
-                if docker exec backend_redis redis-cli ping >/dev/null 2>&1; then
+                if docker exec dice_backend_redis redis-cli ping >/dev/null 2>&1; then
                     print_success "✅ Redis service is ready"
                     return 0
                 fi
@@ -532,6 +558,12 @@ wait_for_service() {
             "temporal")
                 if curl -s -f "http://localhost:8088" >/dev/null 2>&1; then
                     print_success "✅ Temporal service is ready"
+                    return 0
+                fi
+                ;;
+            "localstack")
+                if curl -s -f "http://localhost.localstack.cloud:4566/_localstack/health" >/dev/null 2>&1; then
+                    print_success "✅ LocalStack service is ready"
                     return 0
                 fi
                 ;;
@@ -610,7 +642,7 @@ enhanced_backend_health_check() {
     
     # Retry logic for PostgreSQL health check
     while [[ $retry_count -lt $max_retries ]]; do
-        if docker exec backend_postgres pg_isready -U dice_user -d dice_db >/dev/null 2>&1; then
+        if docker exec dice_backend_postgres pg_isready -U dice_user -d dice_db >/dev/null 2>&1; then
             print_success "✅ PostgreSQL Database is healthy"
             break
         else
@@ -631,7 +663,7 @@ enhanced_backend_health_check() {
     
     # Retry logic for Redis health check
     while [[ $retry_count -lt $max_retries ]]; do
-        if docker exec backend_redis redis-cli ping >/dev/null 2>&1; then
+        if docker exec dice_backend_redis redis-cli ping >/dev/null 2>&1; then
             print_success "✅ Redis Cache is healthy"
             break
         else
@@ -767,6 +799,69 @@ enhanced_elk_health_check() {
     fi
 }
 
+# Enhanced LocalStack health check function
+enhanced_localstack_health_check() {
+    local failures=0
+    local total_checks=0
+    local max_retries=5
+    local retry_delay=10
+    
+    print_status "🔍 Checking LocalStack Core..."
+    ((total_checks++))
+    local core_response="000"
+    local retry_count=0
+    
+    # Retry logic for LocalStack core health check
+    while [[ $retry_count -lt $max_retries ]]; do
+        core_response=$(curl -s -w "%{http_code}" "http://localhost.localstack.cloud:4566/_localstack/health" -o /dev/null --connect-timeout 15 --max-time 45)
+        if [[ "$core_response" == "200" ]]; then
+            print_success "✅ LocalStack Core is healthy"
+            break
+        else
+            ((retry_count++))
+            if [[ $retry_count -lt $max_retries ]]; then
+                print_warning "⚠️  LocalStack Core health check failed (HTTP $core_response), retrying in ${retry_delay}s... (attempt $retry_count/$max_retries)"
+                sleep $retry_delay
+            else
+                print_error "❌ LocalStack Core health check failed (HTTP $core_response) after $max_retries attempts"
+                ((failures++))
+            fi
+        fi
+    done
+    
+    print_status "🔍 Checking LocalStack Services..."
+    ((total_checks++))
+    local services_response="000"
+    retry_count=0
+    
+    # Retry logic for LocalStack services health check
+    while [[ $retry_count -lt $max_retries ]]; do
+        services_response=$(curl -s -w "%{http_code}" "http://localhost.localstack.cloud:4566/_localstack/services" -o /dev/null --connect-timeout 15 --max-time 45)
+        if [[ "$services_response" == "200" ]]; then
+            print_success "✅ LocalStack Services are healthy"
+            break
+        else
+            ((retry_count++))
+            if [[ $retry_count -lt $max_retries ]]; then
+                print_warning "⚠️  LocalStack Services health check failed (HTTP $services_response), retrying in ${retry_delay}s... (attempt $retry_count/$max_retries)"
+                sleep $retry_delay
+            else
+                print_error "❌ LocalStack Services health check failed (HTTP $services_response) after $max_retries attempts"
+                ((failures++))
+            fi
+        fi
+    done
+    
+    # Summary
+    if [[ $failures -eq 0 ]]; then
+        print_success "✅ LocalStack service is healthy (all $total_checks components)"
+        return 0
+    else
+        print_error "❌ LocalStack service has health issues ($failures/$total_checks components failed)"
+        return 1
+    fi
+}
+
 # =============================================================================
 # BULK OPERATIONS
 # =============================================================================
@@ -776,45 +871,46 @@ start_all_services() {
     local profiles="$1" # This variable will carry any profiles passed from the command line
 
     # Initialize progress tracking
-    init_progress 4
-    add_progress_step "backend" "Starting Backend API + Database + Temporal" "15-20s"
+    local total_steps=4
+    init_progress $total_steps
+    add_progress_step "orchestrator" "Starting Full Stack Orchestration (Traefik)" "5-10s"
+    add_progress_step "backend" "Starting Backend API + Database + Temporal + LocalStack" "25-35s"
     add_progress_step "pwa" "Starting PWA Frontend + Storybook" "5-10s"
     add_progress_step "elk" "Starting ELK Stack (Elasticsearch + Kibana + Fluent Bit)" "30-45s"
-    add_progress_step "orchestrator" "Starting Full Stack Orchestration (Traefik)" "5-10s"
     
     print_step "🚀 Starting all DICE services"
     echo "📋 Total steps: $TOTAL_STEPS"
-    echo "⏱️  Estimated total time: 55-85 seconds"
+    echo "⏱️  Estimated total time: 65-90 seconds (including LocalStack)"
     echo ""
     
     local failures=0
     local start_time=$(date +%s)
     
-    # Step 1: Backend
-    update_progress
-    if ! start_service "backend"; then
-        failures=$((failures + 1))
-    fi
-    
-    # Step 2: PWA
-    update_progress
-    if ! start_service "pwa"; then
-        failures=$((failures + 1))
-    fi
-    
-    # Step 3: ELK
-    update_progress
-    if ! start_service "elk" "logging"; then
-        failures=$((failures + 1))
-    fi
-    
-    # Step 4: Orchestrator
+    # Step 1: Orchestrator
     update_progress
     local orchestrator_profiles="proxy"
     if [ -n "$profiles" ]; then
         orchestrator_profiles="${orchestrator_profiles},${profiles}"
     fi
     if ! start_service "orchestrator" "$orchestrator_profiles"; then
+        failures=$((failures + 1))
+    fi
+
+    # Step 2: Backend (includes LocalStack)
+    update_progress
+    if ! start_service "backend"; then
+        failures=$((failures + 1))
+    fi
+    
+    # Step 3: PWA
+    update_progress
+    if ! start_service "pwa"; then
+        failures=$((failures + 1))
+    fi
+    
+    # Step 4: ELK
+    update_progress
+    if ! start_service "elk" "logging"; then
         failures=$((failures + 1))
     fi
     
@@ -841,17 +937,54 @@ stop_all_services() {
     
     local failures=0
     
-    # Stop services in reverse dependency order
-    for service in "orchestrator" "elk" "pwa" "backend"; do
-        if ! stop_service "$service"; then
+    # Stop backend services
+    print_status "Stopping services in workspace/backend/docker-compose.yml..."
+    if [ -f "workspace/backend/docker-compose.yml" ]; then
+        if ! docker compose -f "workspace/backend/docker-compose.yml" down; then
+            print_error "❌ Failed to stop services in workspace/backend/docker-compose.yml"
             ((failures++))
         fi
-    done
+    else
+        print_warning "⚠️  Compose file not found: workspace/backend/docker-compose.yml (skipping)"
+    fi
+    
+    # Stop PWA services
+    print_status "Stopping services in workspace/pwa/docker-compose.yml..."
+    if [ -f "workspace/pwa/docker-compose.yml" ]; then
+        if ! docker compose -f "workspace/pwa/docker-compose.yml" down; then
+            print_error "❌ Failed to stop services in workspace/pwa/docker-compose.yml"
+            ((failures++))
+        fi
+    else
+        print_warning "⚠️  Compose file not found: workspace/pwa/docker-compose.yml (skipping)"
+    fi
+    
+    # Stop ELK services with logging profile
+    print_status "Stopping services in infrastructure/docker/logging-stack.yml..."
+    if [ -f "infrastructure/docker/logging-stack.yml" ]; then
+        if ! docker compose -f "infrastructure/docker/logging-stack.yml" --profile logging down; then
+            print_error "❌ Failed to stop services in infrastructure/docker/logging-stack.yml"
+            ((failures++))
+        fi
+    else
+        print_warning "⚠️  Compose file not found: infrastructure/docker/logging-stack.yml (skipping)"
+    fi
+    
+    # Stop orchestrator services with proxy profile
+    print_status "Stopping services in infrastructure/docker/docker-compose.orchestrator.yml..."
+    if [ -f "infrastructure/docker/docker-compose.orchestrator.yml" ]; then
+        if ! docker compose -f "infrastructure/docker/docker-compose.orchestrator.yml" --profile proxy down; then
+            print_error "❌ Failed to stop services in infrastructure/docker/docker-compose.orchestrator.yml"
+            ((failures++))
+        fi
+    else
+        print_warning "⚠️  Compose file not found: infrastructure/docker/docker-compose.orchestrator.yml (skipping)"
+    fi
     
     if [[ $failures -eq 0 ]]; then
         print_success "✅ All services stopped successfully"
     else
-        print_warning "⚠️  $failures service(s) failed to stop"
+        print_warning "⚠️  $failures Docker Compose file(s) failed to stop completely"
     fi
     
     return $failures
@@ -927,10 +1060,23 @@ health_check_all_services() {
         ((failures++))
     fi
     
+    # Wait for LocalStack if it's running
+    if docker ps --format "table {{.Names}}" | grep -q "dice_localstack_orchestrated"; then
+        if ! wait_for_service "localstack"; then
+            print_error "❌ LocalStack failed to start"
+            ((failures++))
+        fi
+    fi
+    
     # Now perform detailed health checks
     print_status "🔍 Performing detailed health checks..."
     
-    for service in "backend" "pwa" "elk" "orchestrator"; do
+    for service in "backend" "pwa" "elk" "orchestrator" "localstack"; do
+        # Skip LocalStack if not running
+        if [[ "$service" == "localstack" ]] && ! docker ps --format "table {{.Names}}" | grep -q "dice_localstack_orchestrated"; then
+            continue
+        fi
+        
         if ! health_check_service "$service"; then
             ((failures++))
         fi
@@ -960,11 +1106,15 @@ clean_all() {
         print_status "Stopping all services..."
         stop_all_services
         
-        print_status "Removing containers..."
+        print_status "Removing containers and volumes..."
+        # Backend services
         docker compose -f workspace/backend/docker-compose.yml down -v
+        # PWA services
         docker compose -f workspace/pwa/docker-compose.yml down -v
-        docker compose -f infrastructure/docker/logging-stack.yml down -v
-        docker compose -f infrastructure/docker/docker-compose.orchestrator.yml down -v
+        # ELK services with logging profile
+        docker compose -f infrastructure/docker/logging-stack.yml --profile logging down -v
+        # Orchestrator services with proxy profile
+        docker compose -f infrastructure/docker/docker-compose.orchestrator.yml --profile proxy down -v
         
         print_status "Removing orphaned containers..."
         docker container prune -f

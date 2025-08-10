@@ -33,7 +33,7 @@ graph TB
                 RD1[backend_redis<br/>Redis 7 Cache<br/>Session management<br/>:6379]
                 TM1[backend_temporal<br/>Workflow Engine<br/>Secure workflows<br/>:7233-7235, :7239]
                 TU1[backend_temporal_ui<br/>Web Dashboard<br/>:8088]
-                LS1[backend_localstack<br/>AWS Simulation<br/>:4566<br/>Profile: aws]
+                LS1[backend_localstack<br/>AWS Simulation<br/>:4566]
             end
         end
         
@@ -52,7 +52,6 @@ graph TB
                 RD2[dice_redis_orchestrated<br/>Cache<br/>Session store<br/>:6379]
                 TM2[dice_temporal_orchestrated<br/>Workflows<br/>Secure execution<br/>:7233-7235, :7239]
                 TU2[dice_temporal_ui_orchestrated<br/>Dashboard<br/>Protected UI<br/>:8088]
-                LS2[dice_localstack_orchestrated<br/>AWS Services<br/>Simulated security<br/>:4566<br/>Profile: aws]
                 TK2[dice_traefik_orchestrated<br/>Reverse Proxy<br/>SSL termination<br/>:80, :8080<br/>Profile: proxy]
                 EL2[dice_elasticsearch<br/>Log Storage & Search<br/>Centralised logging<br/>:9200, :9300<br/>Profile: logging]
                 KB2[dice_kibana<br/>Log Visualization<br/>Dashboard & Analytics<br/>:5601<br/>Profile: logging]
@@ -96,7 +95,6 @@ graph TB
     WF3 -.-> RD2
     WF3 -.-> TM2
     WF3 -.-> TU2
-    WF3 -.-> LS2
     WF3 -.-> TK2
     
     WF4 -.-> EL2
@@ -359,7 +357,7 @@ docker-compose -f infrastructure/docker/logging-stack.yml --profile logging up -
 
 | `temporal`    | Workflow Engine           | 7233-7235, 7239 | `tctl workflow list` |
 | `temporal-ui` | Workflow Dashboard        | 8088            | HTTP check           |
-| `localstack`  | AWS Simulation (optional) | 4566            | Profile: `aws`       |
+| `localstack`  | AWS Simulation            | 4566            | `curl` health check  |
 
 ### **PWA Services (`workspace/pwa/docker-compose.yml`)**
 
@@ -372,11 +370,11 @@ docker-compose -f infrastructure/docker/logging-stack.yml --profile logging up -
 
 **Network-Only Orchestrator** - Connects workspace services without redefining them:
 
-| Service          | Purpose        | Network                                       | Description                                 |
-| ---------------- | -------------- | --------------------------------------------- | ------------------------------------------- |
-| `backend-bridge` | Network Bridge | `dice_integrated_network` ↔ `backend_network` | Alpine container bridging backend workspace |
-| `pwa-bridge`     | Network Bridge | `dice_integrated_network` ↔ `pwa_network`     | Alpine container bridging PWA workspace     |
-| `logging-bridge` | Logging Bridge | `dice_logging_network` ↔ All networks         | Bridge for centralised log collection       |
+| Service          | Purpose        | Network                                         | Description                                 |
+| ---------------- | -------------- | ----------------------------------------------- | ------------------------------------------- |
+| `backend-bridge` | Network Bridge | `dice_orchestrator_network` ↔ `backend_network` | Alpine container bridging backend workspace |
+| `pwa-bridge`     | Network Bridge | `dice_orchestrator_network` ↔ `pwa_network`     | Alpine container bridging PWA workspace     |
+| `logging-bridge` | Logging Bridge | `dice_logging_network` ↔ All networks           | Bridge for centralised log collection       |
 
 **Optional Shared Services** (Profiles):
 
@@ -385,7 +383,6 @@ docker-compose -f infrastructure/docker/logging-stack.yml --profile logging up -
 | `traefik`       | `proxy`      | 80, 8080, 443 | Reverse proxy and SSL termination |
 | `prometheus`    | `monitoring` | 9090          | Metrics collection                |
 | `grafana`       | `monitoring` | 3001          | Monitoring dashboards             |
-| `localstack`    | `aws`        | 4566          | AWS services simulation           |
 | `elasticsearch` | `logging`    | 9200, 9300    | Log storage and search engine     |
 | `kibana`        | `logging`    | 5601          | Log visualization and analytics   |
 | `fluent-bit`    | `logging`    | Internal      | Log collection and forwarding     |

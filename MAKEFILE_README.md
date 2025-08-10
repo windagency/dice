@@ -1,12 +1,12 @@
 # DICE Makefile Documentation
 
-**Version**: 4.0 - Unified Script Architecture  
-**Last Updated**: August 8, 2025 12:20 UTC  
-**Status**: ✅ Production Ready - 80% Code Reduction Achieved
+**Version**: 4.1 - Integrated Backend LocalStack
+**Last Updated**: August 8, 2025 2:25 p.m.  
+**Status**: ✅ Production Ready
 
 ## 📋 **Overview**
 
-The DICE Makefile provides a comprehensive interface for managing the distributed Docker development environment using the new unified script architecture. It includes production startup, debug-enabled development workflows, comprehensive logging, testing, and validation capabilities with 80% code reduction.
+The DICE Makefile provides a comprehensive interface for managing the distributed Docker development environment using the new unified script architecture. It includes production startup with integrated LocalStack AWS services emulation, debug-enabled development workflows, comprehensive logging, testing, and validation capabilities.
 
 ---
 
@@ -106,12 +106,14 @@ make dev-full-debug
 The enhanced startup commands now provide comprehensive progress indicators:
 
 #### **🔄 Step-by-Step Progress**
+
 ```
 🔄 [1/4] Starting Backend API + Database + Temporal
 ⏱️  Estimated time: 15-20s
 ```
 
 #### **🔧 Service Component Breakdown**
+
 ```
 🔧 Backend Service Components:
    📦 Backend API (NestJS)
@@ -122,6 +124,7 @@ The enhanced startup commands now provide comprehensive progress indicators:
 ```
 
 #### **⏳ Real-Time Container Monitoring**
+
 ```
 ⏳ Waiting for backend containers to be ready...
 ⏳ backend: 3/5 containers ready...
@@ -130,6 +133,7 @@ The enhanced startup commands now provide comprehensive progress indicators:
 ```
 
 #### **📊 Progress Summary**
+
 ```
 📊 Progress Summary:
 ✅ Completed: 4/4 steps
@@ -139,19 +143,19 @@ The enhanced startup commands now provide comprehensive progress indicators:
 
 ### **🎯 Enhanced Commands**
 
-| Command          | Enhanced Features                                    | Usage                 |
-| ---------------- | ---------------------------------------------------- | --------------------- |
-| `start-all`      | Full stack with verbose progress + time tracking     | `make start-all`      |
-| `start-backend`  | Backend with component breakdown + health monitoring | `make start-backend`  |
-| `start-frontend` | PWA with Storybook status + container monitoring     | `make start-frontend` |
+| Command          | Enhanced Features                                                 | Usage                 |
+| ---------------- | ----------------------------------------------------------------- | --------------------- |
+| `start-all`      | Full stack with verbose progress + time tracking                  | `make start-all`      |
+| `start-backend`  | Backend with LocalStack + component breakdown + health monitoring | `make start-backend`  |
+| `start-frontend` | PWA with Storybook status + container monitoring                  | `make start-frontend` |
 
 ### **⏱️ Time Estimates**
 
-- **Backend**: 15-20 seconds (API + Database + Temporal + Redis)
+- **Backend**: 25-35 seconds (API + Database + Temporal + Redis + LocalStack)
 - **PWA**: 5-10 seconds (Frontend + Storybook)
 - **ELK**: 30-45 seconds (Elasticsearch + Kibana + Fluent Bit)
 - **Orchestrator**: 5-10 seconds (Traefik)
-- **Total**: 55-85 seconds for full stack
+- **Total**: 60-90 seconds for full stack
 
 ---
 
@@ -193,6 +197,7 @@ The enhanced startup commands now provide comprehensive progress indicators:
 - No debug mode enabled
 - Optimised for performance
 - Health checks included
+- **Integrated LocalStack for backend**
 - **Enhanced verbose progress indicators**
 - **Real-time step tracking**
 - **Time estimates and actual execution times**
@@ -205,7 +210,6 @@ The enhanced startup commands now provide comprehensive progress indicators:
 - `--proxy` - Traefik reverse proxy
 - `--monitoring` - Prometheus + Grafana
 - `--logging` - ELK stack (Elasticsearch, Kibana, Fluent Bit)
-- `--aws` - LocalStack AWS services
 
 ### **🔧 DEVELOPMENT MODE (Debug Enabled)**
 
@@ -218,7 +222,7 @@ The enhanced startup commands now provide comprehensive progress indicators:
 
 **Debug Features:**
 
-- **Backend**: Node.js debugger on port 9229
+- **Backend**: Node.js debugger on port 9229, LocalStack on port 4566
 - **Frontend**: Browser DevTools (F12) + Chrome Debug (port 9222)
 - **Logging**: Real-time log streaming
 - **ELK**: Centralised log analysis
@@ -427,8 +431,8 @@ make validate-security
 # Validate entire infrastructure
 make validate-all
 
-# Test LocalStack AWS services
-make setup-localstack
+# Test LocalStack AWS services (now part of backend)
+make health-backend
 ```
 
 ### **7. Logging & Monitoring**
@@ -577,9 +581,9 @@ make restart
 
 | Target           | Services | Startup Time | Memory Usage |
 | ---------------- | -------- | ------------ | ------------ |
-| `start-backend`  | 5        | ~17.1s       | ~850MB       |
+| `start-backend`  | 6        | ~25-35s      | ~1.1GB       |
 | `start-frontend` | 1        | ~0.4s        | ~180MB       |
-| `start-all`      | 7-8      | ~17.8s       | ~1.6GB       |
+| `start-all`      | 8-9      | ~60-90s      | ~1.8GB       |
 | `start-elk`      | 3-4      | ~10-30s      | ~500MB       |
 
 ### **Resource Savings**
@@ -631,7 +635,7 @@ When modifying the Makefile:
 
 ---
 
-**🎯 RESULT**: The DICE Makefile provides **enterprise-grade development workflows** with **unified script architecture**, **comprehensive debugging**, **logging integration**, **enhanced database management**, and **production-ready automation** with **80% code reduction**!
+**🎯 RESULT**: The DICE Makefile provides **enterprise-grade development workflows** with **unified script architecture**, **comprehensive debugging**, **logging integration**, **enhanced database management**, and **integrated LocalStack AWS services emulation for the backend**!
 
 ---
 

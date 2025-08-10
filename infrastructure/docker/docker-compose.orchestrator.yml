@@ -1,0 +1,222 @@
+# DICE Network Orchestrator
+# This compose file provides network connectivity between workspace services
+# and optional shared services (proxy, monitoring)
+# Usage:
+#   1. Start workspaces: ./scripts/docker-orchestrator.sh full-stack
+#   2. Or manually: 
+#      - cd workspace/backend && docker compose up -d
+#      - cd workspace/pwa && docker compose up -d  
+#      - docker compose -f docker-compose.orchestrator.yml up -d
+
+name: dice-orchestrator
+
+services:
+  # ============================================================================
+  # NETWORK BRIDGE SERVICES
+  # ============================================================================
+  
+  # Network bridge for backend services
+  backend-bridge:
+    image: alpine:latest
+    container_name: dice_orchestrator_backend_bridge
+    command: ["tail", "-f", "/dev/null"]  # Keep container running
+    networks:
+      - dice_backend_network
+      - dice_orchestrator_network
+    profiles: ["bridge"]  # Only start when explicitly requested
+
+  # Network bridge for PWA services  
+  frontend-bridge:
+    image: alpine:latest
+    container_name: dice_orchestrator_frontend_bridge
+    command: ["tail", "-f", "/dev/null"]  # Keep container running
+    networks:
+      - dice_frontend_network
+      - dice_orchestrator_network
+    profiles: ["bridge"]  # Only start when explicitly requested
+
+  # ============================================================================
+  # SHARED ORCHESTRATION SERVICES
+  # ============================================================================
+
+  # Reverse Proxy for integrated development
+  traefik:
+    image: traefik:v3.0
+    container_name: dice_orchestrator_traefik
+    profiles: ["proxy"]
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--log.level=INFO"
+    ports:
+      - "8082:8080"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./infrastructure/data/traefik:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.api.rule=Host(`traefik.dice.local`)"
+      - "traefik.http.routers.api.tls=true"
+      - "traefik.http.routers.api.tls.certresolver=selfsigned"
+    networks:
+      - dice_orchestrator_network
+
+  # Monitoring stack (optional)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: dice_orchestrator_prometheus
+    profiles: ["monitoring"]
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - dice_orchestrator_network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: dice_orchestrator_grafana
+    profiles: ["monitoring"]
+    ports:
+      - "3002:3000"  # Avoid conflict with PWA on 3000
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - dice_orchestrator_network
+
+  # ============================================================================
+  # LOGGING SERVICES (ELK STACK INTEGRATION)
+  # ============================================================================
+
+  # Elasticsearch for log storage and search
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: dice_orchestrator_elasticsearch
+    profiles: ["logging"]
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.ml.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - cluster.name=dice-logging-cluster
+      - node.name=dice-es-node
+      - bootstrap.memory_lock=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - dice_orchestrator_elk_data:/usr/share/elasticsearch/data
+      - ../data/elk/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+    ports:
+      - "9201:9200"  # Avoid conflict with standalone ELK
+      - "9301:9300"
+    networks:
+      - dice_orchestrator_network
+      - dice_logging_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # Kibana for log visualisation and analytics
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: dice_orchestrator_kibana
+    profiles: ["logging"]
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - SERVER_NAME=dice-kibana-orchestrated
+      - SERVER_HOST=0.0.0.0
+    volumes:
+      - ../data/elk/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+    ports:
+      - "5602:5601"  # Avoid conflict with standalone ELK
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - dice_orchestrator_network
+      - dice_logging_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  # Fluent Bit for log collection and forwarding
+  fluent-bit:
+    image: fluent/fluent-bit:3.0
+    container_name: dice_orchestrator_fluent_bit
+    profiles: ["logging"]
+    volumes:
+      - ../logging/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf:ro
+      - ../logging/parsers.conf:/fluent-bit/etc/parsers.conf:ro
+      - ../data/elk/logs:/var/log/dice:rw
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/log:/host/var/log:ro
+    environment:
+      - FLUENT_ELASTICSEARCH_HOST=elasticsearch
+      - FLUENT_ELASTICSEARCH_PORT=9200
+      - FLUENT_LOG_LEVEL=info
+      - ENVIRONMENT=${NODE_ENV:-development}
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - dice_orchestrator_network
+      - dice_logging_network
+      - dice_backend_network
+      - dice_frontend_network
+    ports:
+      - "24226:24224"  # Forward input
+      - "24227:24225"  # HTTP input
+      - "2021:2020"    # Metrics endpoint
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:2020/api/v1/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+# ============================================================================
+# VOLUMES FOR ORCHESTRATOR SERVICES
+# ============================================================================
+volumes:
+  dice_orchestrator_localstack_data:
+    driver: local
+    name: dice_orchestrator_localstack_data
+  dice_orchestrator_elk_data:
+    driver: local
+    name: dice_orchestrator_elk_data
+
+# ============================================================================
+# INTEGRATED NETWORKING
+# ============================================================================
+networks:
+  dice_orchestrator_network:
+    driver: bridge
+    name: dice_orchestrator_network
+  
+  # Logging network for ELK stack
+  dice_logging_network:
+    driver: bridge
+    name: dice_logging_network
+  
+  # External networks from workspaces (must exist)
+  dice_backend_network:
+    external: true
+    name: dice_backend_network
+    
+  dice_frontend_network:
+    external: true  
+    name: dice_frontend_network 

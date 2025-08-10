@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  test_service:
+    image: alpine/git
+    container_name: test_service_with_profile
+    profiles: ["my_profile"]
+    command: tail -f /dev/null
+
+  another_test_service:
+    image: alpine/git
+    container_name: another_test_service_no_profile
+    command: tail -f /dev/null

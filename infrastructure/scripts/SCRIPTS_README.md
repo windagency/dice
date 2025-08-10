@@ -235,7 +235,7 @@ The new unified architecture provides significant improvements:
 # Options
 -m, --method METHOD  Execution method: 'host' or 'container' (default: container)
 -r, --region REGION  AWS region (default: eu-west-3)
--e, --endpoint URL   LocalStack endpoint (default: http://localhost:4566)
+-e, --endpoint URL   LocalStack endpoint (default: http://localhost.localstack.cloud:4566)
 -h, --help          Show help message
 
 # Examples

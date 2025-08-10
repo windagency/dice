@@ -12,8 +12,8 @@ source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 # Default configuration
 DEFAULT_METHOD="container"
 DEFAULT_REGION="eu-west-3"
-LOCALSTACK_ENDPOINT="http://localhost:4566"
-LOCALSTACK_HEALTH_ENDPOINT="http://localhost:4566/_localstack/health"
+LOCALSTACK_ENDPOINT="http://localhost.localstack.cloud:4566"
+LOCALSTACK_HEALTH_ENDPOINT="http://localhost.localstack.cloud:4566/_localstack/health"
 
 # LocalStack credentials (standard development values - safe for local development)
 export AWS_ACCESS_KEY_ID="${LOCALSTACK_ACCESS_KEY_ID:-test}"
@@ -33,7 +33,7 @@ Usage: $0 [OPTIONS]
 Options:
   -m, --method METHOD     Execution method: 'host' or 'container' (default: container)
   -r, --region REGION     AWS region (default: eu-west-3)
-  -e, --endpoint URL      LocalStack endpoint (default: http://localhost:4566)
+  -e, --endpoint URL      LocalStack endpoint (default: http://localhost.localstack.cloud:4566)
   -h, --help             Show this help message
 
 Execution Methods:
@@ -102,7 +102,7 @@ check_localstack_status() {
             fi
             ;;
         "container")
-            if ! docker compose exec localstack curl -s localhost:4566/_localstack/health > /dev/null 2>&1; then
+            if ! docker compose exec localstack curl -s localhost.localstack.cloudt:4566/_localstack/health > /dev/null 2>&1; then
                 print_error "LocalStack is not running"
                 print_info "Please start it first: docker compose up localstack -d"
                 return 1

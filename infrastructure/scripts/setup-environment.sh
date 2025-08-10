@@ -134,7 +134,7 @@ PWA_URL=http://pwa:3000
 TEMPORAL_ADDRESS=temporal:7233
 
 # LocalStack Configuration (AWS Simulation)
-LOCALSTACK_ENDPOINT=http://localstack:4566
+LOCALSTACK_ENDPOINT=http://localhost.localstack.cloud:4566
 LOCALSTACK_ACCESS_KEY_ID=test
 LOCALSTACK_SECRET_ACCESS_KEY=test
 AWS_ACCESS_KEY_ID=test

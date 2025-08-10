@@ -26,7 +26,8 @@ LocalStack provides AWS service emulation for local development, allowing you to
 - **Region**: us-east-1 (default)
 - **Access Key**: test
 - **Secret Key**: test
-- **Endpoint**: http://localhost:4566
+- **Endpoint**: http://localhost.localstack.cloud:4566
+- **UI**: https://app.localstack.cloud/inst/default/status
 
 ## 🚀 **Quick Start**
 
@@ -44,37 +45,37 @@ docker-compose -f workspace/backend/docker-compose.yml up localstack -d
 
 ```bash
 # Check LocalStack health
-curl http://localhost:4566/_localstack/health
+curl http://localhost.localstack.cloud:4566/_localstack/health
 
 # List available services
-curl http://localhost:4566/_localstack/services
+curl http://localhost.localstack.cloud:4566/_localstack/services
 ```
 
 ### **3. Test S3 Operations**
 
 ```bash
 # Create a bucket
-aws --endpoint-url=http://localhost:4566 s3 mb s3://dice-characters
+aws --endpoint-url=http://localhost.localstack.cloud:4566 s3 mb s3://dice-characters
 
 # Upload a file
-aws --endpoint-url=http://localhost:4566 s3 cp test.txt s3://dice-characters/
+aws --endpoint-url=http://localhost.localstack.cloud:4566 s3 cp test.txt s3://dice-characters/
 
 # List files
-aws --endpoint-url=http://localhost:4566 s3 ls s3://dice-characters/
+aws --endpoint-url=http://localhost.localstack.cloud:4566 s3 ls s3://dice-characters/
 ```
 
 ### **4. Test DynamoDB Operations**
 
 ```bash
 # Create a table
-aws --endpoint-url=http://localhost:4566 dynamodb create-table \
+aws --endpoint-url=http://localhost.localstack.cloud:4566 dynamodb create-table \
   --table-name dice-characters \
   --attribute-definitions AttributeName=id,AttributeType=S \
   --key-schema AttributeName=id,KeyType=HASH \
   --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
 
 # Put an item
-aws --endpoint-url=http://localhost:4566 dynamodb put-item \
+aws --endpoint-url=http://localhost.localstack.cloud:4566 dynamodb put-item \
   --table-name dice-characters \
   --item '{"id":{"S":"1"},"name":{"S":"Gandalf"},"class":{"S":"Wizard"}}'
 ```
@@ -93,7 +94,7 @@ const awsConfig = {
     accessKeyId: 'test',
     secretAccessKey: 'test'
   },
-  endpoint: 'http://localhost:4566'
+  endpoint: 'http://localhost.localstack.cloud:4566'
 };
 ```
 
@@ -141,7 +142,7 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 
 const dynamoClient = new DynamoDBClient({
   region: 'us-east-1',
-  endpoint: 'http://localhost:4566',
+  endpoint: 'http://localhost.localstack.cloud:4566',
   credentials: {
     accessKeyId: 'test',
     secretAccessKey: 'test'
@@ -157,7 +158,7 @@ import { KinesisClient } from '@aws-sdk/client-kinesis';
 
 const kinesisClient = new KinesisClient({
   region: 'us-east-1',
-  endpoint: 'http://localhost:4566',
+  endpoint: 'http://localhost.localstack.cloud:4566',
   credentials: {
     accessKeyId: 'test',
     secretAccessKey: 'test'
@@ -212,7 +213,7 @@ Access the LocalStack dashboard for service monitoring:
 
 ```bash
 # Open LocalStack dashboard
-open http://localhost:4566/_localstack/dashboard
+open http://localhost.localstack.cloud:4566/_localstack/dashboard
 ```
 
 ### **Service Logs**
@@ -229,10 +230,10 @@ docker logs -f backend_localstack_dev
 
 ```bash
 # Check LocalStack health
-curl http://localhost:4566/_localstack/health
+curl http://localhost.localstack.cloud:4566/_localstack/health
 
 # Check specific service health
-curl http://localhost:4566/_localstack/services/s3
+curl http://localhost.localstack.cloud:4566/_localstack/services/s3
 ```
 
 ## 🚨 **Troubleshooting**
@@ -267,7 +268,7 @@ Ensure your AWS SDK is configured for LocalStack:
 // Correct configuration
 const awsConfig = {
   region: 'us-east-1',
-  endpoint: 'http://localhost:4566',
+  endpoint: 'http://localhost.localstack.cloud:4566',
   credentials: {
     accessKeyId: 'test',
     secretAccessKey: 'test'
@@ -291,7 +292,7 @@ const awsConfig = {
 // Environment-based configuration
 const awsConfig = {
   region: process.env.AWS_REGION || 'us-east-1',
-  endpoint: process.env.AWS_ENDPOINT || 'http://localhost:4566',
+  endpoint: process.env.AWS_ENDPOINT || 'http://localhost.localstack.cloud:4566',
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID || 'test',
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || 'test'
